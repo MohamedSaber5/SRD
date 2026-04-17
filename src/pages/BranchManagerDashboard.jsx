@@ -206,9 +206,28 @@ export default function BranchManagerDashboard() {
                 </div>
 
                 {/* Purpose Snippet */}
-                <div className="mb-8 border-r-4 border-primary/20 pr-4 py-2 bg-primary/5 rounded-l-xl">
-                    <div className="text-[10px] font-black text-primary uppercase mb-1">الغرض من الاستخدام:</div>
-                    <p className="text-sm leading-relaxed text-on-surface font-medium italic">"{req.purpose}"</p>
+                <div className="mb-8 space-y-3">
+                  <div className="border-r-4 border-primary/20 pr-4 py-2 bg-primary/5 rounded-l-xl">
+                      <div className="text-[10px] font-black text-primary uppercase mb-1">الغرض من الاستخدام:</div>
+                      <p className="text-sm leading-relaxed text-on-surface font-medium italic">"{req.purpose}"</p>
+                  </div>
+                  
+                  {(req.isHolidayEvent || req.isOfficialOccasion) && (
+                    <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-right-4">
+                      {req.isHolidayEvent && (
+                        <div className="bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                           <span className="material-symbols-outlined text-[16px]">celebration</span>
+                           عطلة / نهاية الأسبوع
+                        </div>
+                      )}
+                      {req.isOfficialOccasion && (
+                        <div className="bg-[#b58b4b]/10 text-[#8b6a37] border border-[#b58b4b]/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                           <span className="material-symbols-outlined text-[16px]">stars</span>
+                           مناسبة رسمية ذات أولوية
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, getDocs, query, orderBy, onSnapshot, doc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, onSnapshot, doc, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const REGULAR_SLOTS = [
   { from: '08:30', to: '10:10', label: 'المحاضرة الأولى (08:30 - 10:10)' },
@@ -50,7 +50,9 @@ export default function BookingForm() {
     reqMic: false,
     reqMicQty: 1,
     reqLaptop: false,
-    reqVideoConf: false
+    reqVideoConf: false,
+    isHolidayEvent: false,
+    isOfficialOccasion: false
   });
   const [isRamadanMode, setIsRamadanMode] = useState(false);
   const [isLeadTimeError, setIsLeadTimeError] = useState(false);
@@ -80,6 +82,7 @@ export default function BookingForm() {
     
     if (userRole === 'secretary') {
       hoursToAdd = 48;
+      setFormData(prev => ({ ...prev, roomId: 'لم يتم التحديد', roomType: 'multi', hallCategory: 'multi' }));
     } else if (userRole === 'employee') {
       hoursToAdd = 24;
     }
@@ -128,9 +131,6 @@ export default function BookingForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-      const { db } = await import('../firebase.js');
-
       await addDoc(collection(db, 'bookings'), {
         roomId: formData.roomId,
         roomType: formData.roomType,
@@ -138,6 +138,8 @@ export default function BookingForm() {
         timeFrom: formData.timeFrom,
         timeTo: formData.timeTo,
         purpose: formData.purpose,
+        isHolidayEvent: formData.isHolidayEvent,
+        isOfficialOccasion: formData.isOfficialOccasion,
         responsibleName: formData.respName,
         responsibleJob: formData.respJob,
         responsibleMobile: formData.respMobile,
@@ -212,34 +214,36 @@ export default function BookingForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-1 md:col-span-2 space-y-2">
                   <label className="block text-sm font-label font-bold text-on-surface-variant">
-                    {userRole === 'employee' ? 'اختر نوع القاعة المطلوبة' : 'اختر نوع وتسمية القاعة'}
+                    {userRole === 'admin' ? 'اختر نوع وتسمية القاعة' : 'اختر نوع القاعة المطلوبة'}
                   </label>
                   
-                  {userRole === 'employee' ? (
+                  {userRole !== 'admin' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <button 
-                        type="button"
-                        onClick={() => setFormData(p => ({ 
-                          ...p, 
-                          roomId: 'لم يتم التحديد', 
-                          roomType: 'fixed', 
-                          hallCategory: 'lecture' 
-                        }))}
-                        className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${formData.hallCategory === 'lecture' ? 'border-primary bg-primary/5 shadow-md' : 'border-surface-container-high hover:border-primary/30 hover:bg-surface-container'}`}
-                      >
-                         <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'lecture' ? 'bg-primary text-white' : 'bg-surface-container-highest text-primary'}`}>
-                            <span className="material-symbols-outlined text-3xl">school</span>
-                         </div>
-                         <div className="text-center">
-                            <div className={`font-bold text-lg ${formData.hallCategory === 'lecture' ? 'text-primary' : 'text-on-surface'}`}>قاعة محاضرات</div>
-                            <div className="text-xs text-on-surface-variant">للمحاضرات الاستثنائية والتعويضية</div>
-                         </div>
-                         {formData.hallCategory === 'lecture' && (
-                           <div className="absolute top-3 right-3 text-primary animate-in zoom-in">
-                             <span className="material-symbols-outlined fill-1">check_circle</span>
+                      {userRole !== 'secretary' && (
+                        <button 
+                          type="button"
+                          onClick={() => setFormData(p => ({ 
+                            ...p, 
+                            roomId: 'لم يتم التحديد', 
+                            roomType: 'fixed', 
+                            hallCategory: 'lecture' 
+                          }))}
+                          className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${formData.hallCategory === 'lecture' ? 'border-primary bg-primary/5 shadow-md' : 'border-surface-container-high hover:border-primary/30 hover:bg-surface-container'}`}
+                        >
+                           <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'lecture' ? 'bg-primary text-white' : 'bg-surface-container-highest text-primary'}`}>
+                              <span className="material-symbols-outlined text-3xl">school</span>
                            </div>
-                         )}
-                      </button>
+                           <div className="text-center">
+                              <div className={`font-bold text-lg ${formData.hallCategory === 'lecture' ? 'text-primary' : 'text-on-surface'}`}>قاعة محاضرات</div>
+                              <div className="text-xs text-on-surface-variant">للمحاضرات الاستثنائية والتعويضية</div>
+                           </div>
+                           {formData.hallCategory === 'lecture' && (
+                             <div className="absolute top-3 right-3 text-primary animate-in zoom-in">
+                               <span className="material-symbols-outlined fill-1">check_circle</span>
+                             </div>
+                           )}
+                        </button>
+                      )}
 
                       <button 
                         type="button"
@@ -249,14 +253,14 @@ export default function BookingForm() {
                           roomType: 'multi', 
                           hallCategory: 'multi' 
                         }))}
-                        className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 relative ${formData.hallCategory === 'multi' ? 'border-secondary bg-secondary/5 shadow-md' : 'border-surface-container-high hover:border-secondary/30 hover:bg-surface-container'}`}
+                        className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 relative flex-1 ${formData.hallCategory === 'multi' ? 'border-secondary bg-secondary/5 shadow-md' : 'border-surface-container-high hover:border-secondary/30 hover:bg-surface-container'} ${userRole === 'secretary' ? 'col-span-2' : ''}`}
                       >
                          <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'multi' ? 'bg-secondary text-white' : 'bg-surface-container-highest text-secondary'}`}>
                             <span className="material-symbols-outlined text-3xl">event_seat</span>
                          </div>
                          <div className="text-center">
                             <div className={`font-bold text-lg ${formData.hallCategory === 'multi' ? 'text-secondary' : 'text-on-surface'}`}>قاعة متعددة الأغراض</div>
-                            <div className="text-xs text-on-surface-variant">للندوات، الاجتماعات، والفعاليات</div>
+                            <div className="text-xs text-on-surface-variant">للندوات، الاجتماعات، والفعاليات الرسمية</div>
                          </div>
                          {formData.hallCategory === 'multi' && (
                            <div className="absolute top-3 right-3 text-secondary animate-in zoom-in">
@@ -383,6 +387,26 @@ export default function BookingForm() {
                     rows={4}
                   ></textarea>
                 </div>
+                
+                {userRole === 'secretary' && (
+                  <div className="col-span-1 md:col-span-2 mt-2 bg-surface-container-highest p-4 rounded-xl space-y-3">
+                    <label className="block text-sm font-label font-bold text-on-surface-variant mb-2">امتيازات إضافية للطلب (يرجى التحديد إن وجد)</label>
+                    <label className="flex items-start gap-4 cursor-pointer">
+                      <input type="checkbox" name="isHolidayEvent" checked={formData.isHolidayEvent} onChange={handleChange} className="mt-1 w-5 h-5 text-secondary rounded focus:ring-secondary border-outline-variant" />
+                      <div>
+                        <div className="font-bold text-on-surface">حدث خلال عطلة رسمية أو إجازة نهاية الأسبوع</div>
+                        <div className="text-xs text-on-surface-variant">يضيف نقاط أولوية للطلب عند مدير الفرع</div>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-4 cursor-pointer">
+                      <input type="checkbox" name="isOfficialOccasion" checked={formData.isOfficialOccasion} onChange={handleChange} className="mt-1 w-5 h-5 text-secondary rounded focus:ring-secondary border-outline-variant" />
+                      <div>
+                        <div className="font-bold text-on-surface">مناسبة رسمية للكلية (مؤتمر مسجل، ندوة عامة)</div>
+                        <div className="text-xs text-on-surface-variant">يرجى توضيح التفاصيل في خانة "الغرض من الاستخدام"</div>
+                      </div>
+                    </label>
+                  </div>
+                )}
               </div>
             </div>
           )}
