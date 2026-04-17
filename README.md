@@ -14,3 +14,23 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Test Cases for Login
+
+Use the following credentials to test different roles within the system:
+
+### 1. Admin (المسؤول العام)
+- **Username**: admin
+- **Password**: aast1234
+
+### 2. Employee (موظف / أكاديمي)
+- **Username**: 12345
+- **Password**: 111111
+
+### 3. Secretary (سكرتير الكلية)
+- **Username**: secretary
+- **Password**: aasy1234
+
+### 4. Branch Manager (مدير الفرع)
+- **Username**: manager
+- **Password**: aast1234
