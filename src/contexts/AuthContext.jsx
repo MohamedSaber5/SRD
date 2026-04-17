@@ -104,13 +104,36 @@ export const AuthProvider = ({ children }) => {
         }, 2000);
 
         try {
-          unsubscribeDoc = onSnapshot(doc(db, "users", user.uid), (userDoc) => {
+          unsubscribeDoc = onSnapshot(doc(db, "users", user.uid), async (userDoc) => {
             clearTimeout(timeoutId);
             if (userDoc.exists()) {
               const data = userDoc.data();
               console.log("User role found:", data.role);
-              setUserData(data);
-              setUserRole(data.role);
+              
+              // Delegation / Temporary Access check
+              let activeRole = data.role;
+              if (activeRole === 'temp_admin' && data.tempAccessEnd) {
+                const now = new Date();
+                const endDate = new Date(data.tempAccessEnd);
+                if (now > endDate) {
+                  // Expired!
+                  console.log("Temporary admin access expired! Reverting to employee...");
+                  activeRole = 'employee';
+                  // Auto-revoke in firestore to keep state consistent
+                  try {
+                    await setDoc(doc(db, "users", user.uid), { 
+                      role: 'employee', 
+                      tempAccessEnd: null,
+                      collegeName: null
+                    }, { merge: true });
+                  } catch (e) {
+                    console.error("Failed to revoke in DB", e);
+                  }
+                }
+              }
+
+              setUserData({...data, role: activeRole});
+              setUserRole(activeRole);
             } else {
               setUserRole(forcedRole || 'employee');
             }

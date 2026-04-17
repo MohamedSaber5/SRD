@@ -167,10 +167,21 @@ export default function BookingForm() {
         userId: currentUser.uid,
         userName: currentUser.displayName || 'مستخدم',
         userRole: userRole,
-        college: userData?.college || '',
+        college: userData?.collegeName || '',
         status: userRole === 'admin' ? 'awaiting_manager_final' : 'pending',
         createdAt: serverTimestamp()
       });
+
+      // Audit Logging for special roles
+      if (userRole === 'secretary' || userRole === 'temp_admin') {
+         await addDoc(collection(db, 'audit_logs'), {
+           actionBy: currentUser.email,
+           actionByName: currentUser.displayName || 'مستخدم',
+           actionType: 'REQUEST_BOOKING',
+           details: `قام بإنشاء طلب حجز للقاعة (${formData.roomId}) بتاريخ ${formData.date}`,
+           timestamp: serverTimestamp()
+         });
+      }
 
       alert('تم إرسال الطلب بنجاح وهو الآن بانتظار الموافقة');
       navigate('/dashboard');
