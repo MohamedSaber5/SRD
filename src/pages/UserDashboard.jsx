@@ -1,17 +1,25 @@
-export default function UserDashboard() {
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+export default function UserDashboard({ title }) {
+  const { currentUser, userRole, userData } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <>
       <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl md:text-5xl font-headline font-black text-primary mb-2 tracking-wide">مرحباً د. أحمد</h1>
-          <p className="text-on-surface-variant font-body text-lg">نظرة عامة على حجوزاتك ونشاطك الأكاديمي اليوم.</p>
+          <h1 className="text-4xl md:text-5xl font-headline font-black text-primary mb-2 tracking-wide">
+            مرحباً {userData?.displayName || 'العضو الأكاديمي'}
+          </h1>
+          <p className="text-on-surface-variant font-body text-lg">
+            {title ? `لوحة تحكم ${title}` : 'نظرة عامة على حجوزاتك ونشاطك الأكاديمي اليوم.'}
+          </p>
         </div>
         <div className="flex gap-4">
-          <img 
-            alt="صورة الملف الشخصي للمستخدم" 
-            className="w-16 h-16 rounded-full object-cover border-2 border-surface-container-lowest shadow-sm" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG1szMTfw9WlXWiQRzSQYX0ltrniLuq9jICZLWxeY94tY2oLwxny6Kw6DBYmyrDkmbFYFN3bMCo52bAJuKe6p8TzcSr64pAMpy1QQjP8GsvGOLJ0j4hL3Vec_aetDDtHzRi8Wf7181iT_UujkYzgkNSCJJ82SBDUyiIpQzpIPXtiFBotytFJX038xW4YBIykhksgYCOYL_hJLn0zaskQsNUXlGNsjp4O5gCt7qFtqocCFycdo4R2Qds__gokyYs56itlWg3fPIa_M7"
-          />
+          <div className="w-16 h-16 rounded-full bg-surface-container-high border-2 border-surface-container-lowest shadow-sm flex items-center justify-center text-primary font-headline font-bold text-2xl">
+            {currentUser?.displayName?.charAt(0) || 'أ'}
+          </div>
         </div>
       </header>
 
@@ -44,7 +52,7 @@ export default function UserDashboard() {
           <div className="absolute bottom-0 right-0 w-32 h-32 bg-secondary/10 rounded-tl-full -mr-8 -mb-8 transition-transform group-hover:scale-110"></div>
         </div>
 
-        <div className="bg-gradient-to-br from-primary to-primary-container rounded-2xl p-6 relative overflow-hidden flex flex-col justify-center items-center text-center min-h-[160px] group cursor-pointer shadow-[0_12px_32px_-12px_rgba(0,30,64,0.4)] hover:-translate-y-1 transition-transform">
+        <div onClick={() => navigate('/booking')} className="bg-gradient-to-br from-primary to-primary-container rounded-2xl p-6 relative overflow-hidden flex flex-col justify-center items-center text-center min-h-[160px] group cursor-pointer shadow-[0_12px_32px_-12px_rgba(0,30,64,0.4)] hover:-translate-y-1 transition-transform">
           <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-3xl">add_business</span>
           </div>

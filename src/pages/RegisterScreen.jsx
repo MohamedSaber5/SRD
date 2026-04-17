@@ -1,7 +1,44 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function RegisterScreen() {
   const navigate = useNavigate();
+  const { register } = useAuth();
+  
+  const [role, setRole] = useState('admin');
+  const [name, setName] = useState('');
+  const [uid, setUid] = useState('');
+  const [dept, setDept] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name || !uid || !password) {
+      setError('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('كلمات المرور غير متطابقة');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    try {
+      await register(name, uid, role, password);
+      // Let standard routing take them based on their role
+      navigate('/dashboard');
+    } catch (err) {
+      console.error(err);
+      setError('حدث خطأ أثناء التسجيل، ربما الرقم الوظيفي مسجل مسبقاً');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-[radial-gradient(circle_at_0%_0%,_#d5e3ff_0%,_transparent_40%),_radial-gradient(circle_at_100%_100%,_#ffdea5_0%,_transparent_40%),_#f7f9fb] min-h-screen flex items-center justify-center p-4 md:p-8 rtl" dir="rtl">
@@ -20,16 +57,6 @@ export default function RegisterScreen() {
             </div>
             <h2 className="text-3xl font-black text-white tracking-tight leading-tight">بوابة الأكاديمية الحديثة</h2>
             <p className="text-primary-fixed-dim text-lg leading-relaxed">انضم إلى المنظومة الرقمية المتطورة لإدارة الموارد والقاعات الدراسية بكل سهولة واحترافية.</p>
-            <div className="pt-8 grid grid-cols-2 gap-4">
-              <div className="bg-primary-container/40 p-4 rounded-xl border border-white/5">
-                <p className="text-secondary-fixed font-bold text-2xl">24/7</p>
-                <p className="text-white/60 text-xs mt-1">وصول مستمر</p>
-              </div>
-              <div className="bg-primary-container/40 p-4 rounded-xl border border-white/5">
-                <p className="text-secondary-fixed font-bold text-2xl">100%</p>
-                <p className="text-white/60 text-xs mt-1">نظام آمن</p>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -39,12 +66,15 @@ export default function RegisterScreen() {
               <h1 className="text-4xl font-black text-on-surface tracking-tight mb-2">إنشاء حساب جديد</h1>
               <p className="text-on-surface-variant text-lg">ابدأ رحلتك في تنظيم وإدارة البيئة التعليمية</p>
             </header>
-            <form className="space-y-8" onSubmit={(e) => { e.preventDefault(); navigate('/dashboard'); }}>
+            
+            {error && <div className="bg-error-container text-on-error-container p-3 rounded-lg text-sm text-center mb-4">{error}</div>}
+
+            <form className="space-y-8" onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <label className="text-sm font-bold text-primary tracking-wide block">اختر الدور الوظيفي</label>
                 <div className="grid grid-cols-2 gap-3 text-right">
-                  <label className="relative group cursor-pointer">
-                    <input defaultChecked className="peer sr-only" name="role" type="radio"/>
+                  <label className="relative group cursor-pointer" onClick={() => setRole('admin')}>
+                    <input checked={role === 'admin'} readOnly className="peer sr-only" name="role" type="radio"/>
                     <div className="p-4 rounded-2xl bg-surface-container-low border-2 border-transparent peer-checked:border-secondary peer-checked:bg-secondary-container/10 transition-all duration-300 h-full">
                       <span className="material-symbols-outlined text-secondary mb-2 block" data-icon="admin_panel_settings">admin_panel_settings</span>
                       <h3 className="font-bold text-on-surface text-sm">مسؤول القاعات</h3>
@@ -52,8 +82,8 @@ export default function RegisterScreen() {
                     </div>
                   </label>
                   
-                  <label className="relative group cursor-pointer">
-                    <input className="peer sr-only" name="role" type="radio"/>
+                  <label className="relative group cursor-pointer" onClick={() => setRole('branch_manager')}>
+                    <input checked={role === 'branch_manager'} readOnly className="peer sr-only" name="role" type="radio"/>
                     <div className="p-4 rounded-2xl bg-surface-container-low border-2 border-transparent peer-checked:border-secondary peer-checked:bg-secondary-container/10 transition-all duration-300 h-full">
                       <span className="material-symbols-outlined text-secondary mb-2 block" data-icon="business_center">business_center</span>
                       <h3 className="font-bold text-on-surface text-sm">مدير الفرع</h3>
@@ -61,8 +91,8 @@ export default function RegisterScreen() {
                     </div>
                   </label>
                   
-                  <label className="relative group cursor-pointer">
-                    <input className="peer sr-only" name="role" type="radio"/>
+                  <label className="relative group cursor-pointer" onClick={() => setRole('employee')}>
+                    <input checked={role === 'employee'} readOnly className="peer sr-only" name="role" type="radio"/>
                     <div className="p-4 rounded-2xl bg-surface-container-low border-2 border-transparent peer-checked:border-secondary peer-checked:bg-secondary-container/10 transition-all duration-300 h-full">
                       <span className="material-symbols-outlined text-secondary mb-2 block" data-icon="badge">badge</span>
                       <h3 className="font-bold text-on-surface text-sm">موظف</h3>
@@ -70,8 +100,8 @@ export default function RegisterScreen() {
                     </div>
                   </label>
                   
-                  <label className="relative group cursor-pointer">
-                    <input className="peer sr-only" name="role" type="radio"/>
+                  <label className="relative group cursor-pointer" onClick={() => setRole('secretary')}>
+                    <input checked={role === 'secretary'} readOnly className="peer sr-only" name="role" type="radio"/>
                     <div className="p-4 rounded-2xl bg-surface-container-low border-2 border-transparent peer-checked:border-secondary peer-checked:bg-secondary-container/10 transition-all duration-300 h-full">
                       <span className="material-symbols-outlined text-secondary mb-2 block" data-icon="assignment_ind">assignment_ind</span>
                       <h3 className="font-bold text-on-surface text-sm">سكرتير الكلية</h3>
@@ -85,16 +115,16 @@ export default function RegisterScreen() {
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-xs font-bold text-on-surface-variant pr-2" htmlFor="name">الاسم الكامل</label>
                   <div className="relative">
-                    <input className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50 text-on-surface" id="name" placeholder="أدخل اسمك كما في الهوية" type="text"/>
+                    <input value={name} onChange={e=>setName(e.target.value)} className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50 text-on-surface" id="name" placeholder="أدخل اسمك كما في الهوية" type="text" required/>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-on-surface-variant pr-2" htmlFor="uid">الرقم الوظيفي الفريد (Unique ID)</label>
-                  <input className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50 text-on-surface" id="uid" placeholder="مثال: AAST-12345" type="text"/>
+                  <input value={uid} onChange={e=>setUid(e.target.value)} className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50 text-on-surface" id="uid" placeholder="مثال: 12345" type="text" required/>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-on-surface-variant pr-2" htmlFor="dept">الكلية / القسم</label>
-                  <select defaultValue="" className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 text-on-surface appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2343474f%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:left_1rem_center]" id="dept">
+                  <label className="text-xs font-bold text-on-surface-variant pr-2" htmlFor="dept">الكلية / القسم (اختياري)</label>
+                  <select value={dept} onChange={e=>setDept(e.target.value)} className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 text-on-surface appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2343474f%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:left_1rem_center]" id="dept">
                     <option disabled value="">اختر كليتك</option>
                     <option>كلية النقل البحري</option>
                     <option>كلية الهندسة</option>
@@ -103,19 +133,19 @@ export default function RegisterScreen() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-on-surface-variant pr-2" htmlFor="pass">كلمة المرور</label>
-                  <input className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50 text-on-surface" id="pass" placeholder="••••••••" type="password"/>
+                  <label className="text-xs font-bold text-on-surface-variant pr-2" htmlFor="pass">كلمة المرور (6 أحرف على الأقل)</label>
+                  <input value={password} onChange={e=>setPassword(e.target.value)} className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50 text-on-surface" id="pass" placeholder="••••••••" type="password" required/>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-on-surface-variant pr-2" htmlFor="confirm">تأكيد كلمة المرور</label>
-                  <input className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50 text-on-surface" id="confirm" placeholder="••••••••" type="password"/>
+                  <input value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} className="w-full px-5 py-4 rounded-xl bg-surface-container-high border-none focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50 text-on-surface" id="confirm" placeholder="••••••••" type="password" required/>
                 </div>
               </div>
 
               <div className="pt-4">
-                <button className="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-white font-black text-lg rounded-2xl shadow-xl shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
-                  <span>إنشاء الحساب</span>
-                  <span className="material-symbols-outlined" data-icon="person_add">person_add</span>
+                <button type="submit" disabled={isLoading} className="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-white font-black text-lg rounded-2xl shadow-xl shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-70 disabled:scale-100">
+                  <span>{isLoading ? 'جاري التسجيل...' : 'إنشاء الحساب'}</span>
+                  {!isLoading && <span className="material-symbols-outlined" data-icon="person_add">person_add</span>}
                 </button>
               </div>
 
