@@ -23,7 +23,8 @@ export default function SideNavBar() {
     <aside className="hidden md:flex flex-col h-screen w-64 fixed right-0 top-0 border-l border-outline-variant/15 bg-background dark:bg-slate-950 text-primary dark:text-slate-100 font-['Tajawal'] font-medium text-md leading-relaxed z-40 p-6 text-right">
       <div className="mb-8 flex flex-col items-center w-full">
         <img src="/logo_aast.jpg" alt="AAST Logo" className="w-16 h-16 rounded-full mb-3 object-cover shadow-sm" onError={(e) => e.target.style.display='none'} />
-        <div className="text-xl font-black text-primary dark:text-white mb-1">البوابة الأكاديمية</div>
+        <div className="text-xl font-black text-primary dark:text-white mb-1 text-center leading-tight">نظام حجز القاعات</div>
+        <div className="text-[10px] text-on-surface-variant font-bold mb-2 text-center">الأكاديمية العربية للعلوم والتكنولوجيا</div>
         <div className="text-xs text-on-surface-variant font-bold bg-surface-container-highest px-3 py-1 rounded-full">
           {userRole === 'admin' ? 'المسؤول العام' : 
            userRole === 'branch_manager' ? 'مدير الفرع' : 

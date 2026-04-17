@@ -81,11 +81,11 @@ export default function LoginScreen() {
       <div className="relative z-20 w-full max-w-6xl mx-auto px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between gap-16">
         <div className="w-full lg:w-1/2 text-right hidden md:block">
           <h1 className="font-headline font-black text-6xl lg:text-7xl text-on-primary leading-tight tracking-wide mb-6 drop-shadow-lg">
-            البوابة الأكاديمية<br/>
-            <span className="text-secondary-fixed">لحجز القاعات</span>
+            نظام حجز القاعات<br/>
+            <span className="text-secondary-fixed">والفعاليات</span>
           </h1>
           <p className="font-body text-xl lg:text-2xl text-primary-fixed-dim max-w-lg leading-[1.8] opacity-90">
-            إدارة المساحات الأكاديمية بالأكاديمية العربية بدقة وذكاء
+            الأكاديمية العربية للعلوم والتكنولوجيا والنقل البحري
           </p>
           <div className="mt-12 flex items-center gap-6 opacity-80">
             <div className="flex items-center gap-3">
@@ -101,14 +101,14 @@ export default function LoginScreen() {
             
             <div className="md:hidden text-center mb-8">
               <span className="material-symbols-outlined text-primary text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
-              <h2 className="font-headline font-black text-3xl text-primary">البوابة الأكاديمية</h2>
-              <p className="text-on-surface-variant font-body text-sm mt-2">إدارة المساحات الأكاديمية بدقة وذكاء</p>
+              <h2 className="font-headline font-black text-3xl text-primary">نظام حجز القاعات</h2>
+              <p className="text-on-surface-variant font-body text-sm mt-2">الأكاديمية العربية للعلوم والتكنولوجيا</p>
             </div>
 
             <div className="mb-8 hidden md:block text-center">
               <img src="/logo_aast.jpg" alt="AAST Logo" className="w-24 h-24 mx-auto mb-4 rounded-full shadow-md object-cover" onError={(e) => e.target.style.display='none'} />
               <h2 className="font-headline font-bold text-3xl text-primary mb-2">تسجيل الدخول</h2>
-              <p className="text-on-surface-variant font-body text-base">مرحباً بك في البوابة الأكاديمية</p>
+              <p className="text-on-surface-variant font-body text-base">مرحباً بك في نظام حجز القاعات بالأكاديمية</p>
             </div>
 
             {error && <div className="bg-error-container text-on-error-container p-3 rounded-lg text-sm text-center mb-4">{error}</div>}
