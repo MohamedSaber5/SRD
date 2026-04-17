@@ -58,10 +58,12 @@ export default function SideNavBar() {
           <span>الإشعارات</span>
         </NavLink>
 
-        <NavLink to="/booking" className={getNavClass}>
-          <span className="material-symbols-outlined ml-2" data-icon="add_circle">add_circle</span>
-          <span>طلب حجز جديد</span>
-        </NavLink>
+        {userRole !== 'branch_manager' && (
+          <NavLink to="/booking" className={getNavClass}>
+            <span className="material-symbols-outlined ml-2" data-icon="add_circle">add_circle</span>
+            <span>طلب حجز جديد</span>
+          </NavLink>
+        )}
         
         {/* Dummy links for visual completeness */}
         {userRole === 'admin' && (

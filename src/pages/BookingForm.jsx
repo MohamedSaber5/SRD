@@ -149,7 +149,7 @@ export default function BookingForm() {
         userName: currentUser.displayName || 'مستخدم',
         userRole: userRole,
         college: userData?.college || '',
-        status: 'pending',
+        status: userRole === 'admin' ? 'awaiting_manager_final' : 'pending',
         createdAt: serverTimestamp()
       });
 
@@ -161,19 +161,22 @@ export default function BookingForm() {
     }
   };
 
+  const isEmployeeLecture = userRole === 'employee' && formData.hallCategory === 'lecture';
+
   return (
     <>
       <div className="mb-10 flex flex-col justify-between items-start gap-2">
         <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-2">طلب حجز قاعة جديدة</h2>
         <p className="text-on-surface-variant text-lg">يرجى إكمال تفاصيل الحجز، سيتم مراجعة الطلب بناءً على التوافر.</p>
-        {(userRole === 'secretary' || userRole === 'employee') && (
+        {(userRole === 'secretary' || userRole === 'employee' || userRole === 'admin') && (
            <p className="text-sm font-bold text-error bg-error-container/20 px-3 py-1 rounded-md mt-2">
-            ملاحظة نظامية: {userRole === 'secretary' ? 'لا يمكن حجز موعد أقل من 48 ساعة ويُسمح فقط بالقاعات متعددة الأغراض.' : 'لا يمكن حجز موعد أقل من 24 ساعة من الآن.'}
+            ملاحظة نظامية: {userRole === 'admin' ? 'يمكن حجز القاعات متعددة الأغراض فقط، وسيتم تحويل الطلب لمدير الفرع مباشرة.' : userRole === 'secretary' ? 'لا يمكن حجز موعد أقل من 48 ساعة ويُسمح فقط بالقاعات متعددة الأغراض.' : 'لا يمكن حجز موعد أقل من 24 ساعة من الآن.'}
            </p>
         )}
       </div>
 
       {/* Stepper UI */}
+      {!isEmployeeLecture && (
       <div className="mb-12 relative max-w-2xl mx-auto">
         <div className="absolute top-1/2 left-0 right-0 h-1 bg-surface-container-high -z-10 -translate-y-1/2 rounded-full"></div>
         <div 
@@ -196,11 +199,12 @@ export default function BookingForm() {
           </div>
         </div>
       </div>
+      )}
 
       <div className="bg-surface-container-lowest rounded-2xl p-8 shadow-sm relative overflow-hidden max-w-3xl mx-auto">
         <div className="absolute top-0 right-0 w-2 h-full bg-gradient-to-b from-primary to-primary-container"></div>
         
-        <form onSubmit={step === 3 ? handleSubmit : (e) => e.preventDefault()}>
+        <form onSubmit={(step === 3 || isEmployeeLecture) ? handleSubmit : (e) => e.preventDefault()}>
           
           {step === 1 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
@@ -286,7 +290,7 @@ export default function BookingForm() {
                           ))}
                         </optgroup>
 
-                        {userRole !== 'secretary' && (
+                        {userRole !== 'secretary' && userRole !== 'admin' && (
                           <>
                             <optgroup label="الدور الأول (A-1xx)">
                               {rooms.filter(r => r.type === 'fixed' && r.floor === 1).map(r => (
@@ -450,7 +454,7 @@ export default function BookingForm() {
                </button>
             ) : <div></div>}
             
-            {step < 3 ? (
+            {(step < 3 && !isEmployeeLecture) ? (
               <button 
                 onClick={handleNext} 
                 className="px-8 py-2.5 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-bold hover:scale-[1.02] transition-transform shadow-md flex items-center gap-2 disabled:opacity-50 disabled:scale-100" 
@@ -464,9 +468,13 @@ export default function BookingForm() {
             ) : (
               <button 
                 onClick={handleSubmit} 
-                className="px-8 py-2.5 bg-gradient-to-br from-secondary to-[#876a20] text-white rounded-xl font-bold hover:scale-[1.02] transition-transform shadow-md flex items-center gap-2" 
+                className="px-8 py-2.5 bg-gradient-to-br from-secondary to-[#876a20] text-white rounded-xl font-bold hover:scale-[1.02] transition-transform shadow-md flex items-center gap-2 disabled:opacity-50 disabled:scale-100" 
                 type="button"
-                disabled={!formData.respName || !formData.respJob || !formData.respMobile}
+                disabled={
+                  isEmployeeLecture 
+                    ? (!formData.roomId || !formData.date || !formData.timeFrom || isLeadTimeError)
+                    : (!formData.respName || !formData.respJob || !formData.respMobile)
+                }
               >
                 <span>تأكيد وإرسال الطلب</span>
                 <span className="material-symbols-outlined text-sm rtl:rotate-180">check_circle</span>

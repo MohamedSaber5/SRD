@@ -110,10 +110,11 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
       // 2. Create notification for the user
       await addDoc(collection(db, 'notifications'), {
         userId: booking.userId,
-        message: "تم تعديل حجزك من قبل مدير الفرع",
+        title: 'تعديل على حجز القاعة',
+        message: `تم إجراء تعديل على حجز القاعة (${formData.roomId}) الخاص بك من قبل مدير الفرع.`,
         bookingId: booking.id,
-        type: 'modification',
-        read: false,
+        type: 'system_alert',
+        isRead: false,
         createdAt: serverTimestamp()
       });
 
