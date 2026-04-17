@@ -59,6 +59,22 @@ export default function BranchManagerDashboard() {
         status: 'approved',
         branchApprovedAt: serverTimestamp()
       });
+
+      // VIP Admin Notification
+      const qAdmins = query(collection(db, 'users'), where('role', 'in', ['admin', 'super_admin'])); // support for admin role
+      const adminsSnap = await getDocs(qAdmins);
+      const bookingInfo = requests.find(r => r.id === id);
+      const notifyTasks = adminsSnap.docs.map(aDoc => addDoc(collection(db, 'notifications'), {
+           userId: aDoc.id,
+           title: 'تأكيد حجز متعدد الأغراض',
+           message: `قام مدير الفرع بالموافقة النهائية على حجز القاعة (${bookingInfo?.roomId || id}) الخاص بـ ${bookingInfo?.responsibleName || ''}`,
+           type: 'vip_alert',
+           bookingId: id,
+           isRead: false,
+           createdAt: serverTimestamp()
+      }));
+      await Promise.all(notifyTasks);
+
       alert('تم منح الاعتماد النهائي للطلب بنجاح');
     } catch (e) {
       console.error(e);

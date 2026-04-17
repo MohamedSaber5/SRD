@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import DashboardLayout from './components/layout/DashboardLayout';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminRequests from './pages/AdminRequests';
 import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
 import BookingForm from './pages/BookingForm';
@@ -30,6 +31,11 @@ function App() {
             <Route path="/admin" element={
               <RoleRouteGuard allowedRoles={['admin']}>
                 <AdminDashboard />
+              </RoleRouteGuard>
+            } />
+            <Route path="/admin/requests" element={
+              <RoleRouteGuard allowedRoles={['admin']}>
+                <AdminRequests />
               </RoleRouteGuard>
             } />
             <Route path="/branch_manager" element={

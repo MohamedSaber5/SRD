@@ -82,6 +82,20 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
         createdAt: serverTimestamp()
       });
 
+      // 3. Create VIP notification for admin
+      const qAdmins = query(collection(db, 'users'), where('role', 'in', ['admin', 'super_admin'])); // support admin roles
+      const adminsSnap = await getDocs(qAdmins);
+      const notifyTasks = adminsSnap.docs.map(aDoc => addDoc(collection(db, 'notifications'), {
+           userId: aDoc.id,
+           title: 'تعديل على حجز متعدد الإغراض',
+           message: `قام مدير الفرع بتعديل بيانات حجز القاعة (${formData.roomId}) الخاص بـ ${booking.responsibleName}`,
+           type: 'vip_alert',
+           bookingId: booking.id,
+           isRead: false,
+           createdAt: serverTimestamp()
+      }));
+      await Promise.all(notifyTasks);
+
       alert('تم تعديل الحجز وإرسال إشعار للمسؤول');
       onUpdate();
       onClose();
