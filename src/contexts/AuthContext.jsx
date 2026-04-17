@@ -70,9 +70,19 @@ export const AuthProvider = ({ children }) => {
 
       if (user) {
         setCurrentUser(user);
-        setLoading(false); // Set loading false immediately to allow Guard to mount
+        setLoading(false); 
 
-        // Start a safety timeout for role fetch only
+        // Temporary Auto-Promotion for admin@aast.com
+        if (user.email === 'admin@aast.com') {
+          console.log("Admin detected, ensuring admin role in Firestore...");
+          setUserRole('admin');
+          setDoc(doc(db, "users", user.uid), { 
+            role: 'admin', 
+            email: user.email,
+            displayName: "Admin" 
+          }, { merge: true });
+        }
+
         const timeoutId = setTimeout(() => {
           if (!userRole) {
             console.warn("Firestore role fetch timed out, defaulting to employee");
