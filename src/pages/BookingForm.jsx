@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 export default function BookingForm() {
   const { userRole, currentUser } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [minDate, setMinDate] = useState('');
+  const [rooms, setRooms] = useState([]);
+  const [loadingRooms, setLoadingRooms] = useState(true);
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -26,6 +30,22 @@ export default function BookingForm() {
   });
 
   useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const q = query(collection(db, 'rooms'), orderBy('id', 'asc'));
+        const querySnapshot = await getDocs(q);
+        const roomsData = querySnapshot.docs.map(doc => ({
+          ...doc.data()
+        }));
+        setRooms(roomsData);
+      } catch (err) {
+        console.error("Error fetching rooms:", err);
+      } finally {
+        setLoadingRooms(false);
+      }
+    };
+    fetchRooms();
+
     // Calculate minimum date based on constraints:
     // Secretary: max 48 hours before (only multi-purpose)
     // Employee: max 24 hours before
@@ -138,24 +158,43 @@ export default function BookingForm() {
                       name="roomId" 
                       value={formData.roomId} 
                       onChange={(e) => {
-                         handleChange(e);
-                         // Infer type from selection
-                         const isMulti = e.target.value.startsWith('m_');
-                         setFormData(p => ({...p, roomId: e.target.value, roomType: isMulti ? 'multi' : 'fixed'}));
+                         const selectedRoom = rooms.find(r => r.id === e.target.value);
+                         setFormData(p => ({
+                           ...p, 
+                           roomId: e.target.value, 
+                           roomType: selectedRoom?.type || 'fixed'
+                         }));
                       }} 
                       className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                      disabled={loadingRooms}
                     >
-                      <option disabled value="">يرجى اختيار قاعة...</option>
+                      <option disabled value="">{loadingRooms ? 'جاري تحميل القاعات...' : 'يرجى اختيار قاعة...'}</option>
+                      
+                      {/* Categorized rendering */}
                       <optgroup label="قاعات متعددة الأغراض">
-                        <option value="m_1">قاعة المؤتمرات الكبرى (مبنى A)</option>
-                        <option value="m_2">قاعة الندوات المتعددة (مبنى B)</option>
+                        {rooms.filter(r => r.type === 'multi').map(r => (
+                          <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
+                        ))}
                       </optgroup>
-                      {/* Hide fixed rooms if user is secretary */}
+
                       {userRole !== 'secretary' && (
-                        <optgroup label="قاعات المحاضرات والسكاشن">
-                          <option value="f_1">مدرج 1 (مبنى الهندسة)</option>
-                          <option value="f_2">قاعة 120 (مبنى الإدارة)</option>
-                        </optgroup>
+                        <>
+                          <optgroup label="الدور الأول (A-1xx)">
+                            {rooms.filter(r => r.type === 'fixed' && r.floor === 1).map(r => (
+                              <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="الدور الثاني (A-2xx)">
+                            {rooms.filter(r => r.type === 'fixed' && r.floor === 2).map(r => (
+                              <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="الدور الثالث (A-3xx)">
+                            {rooms.filter(r => r.type === 'fixed' && r.floor === 3).map(r => (
+                              <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
+                            ))}
+                          </optgroup>
+                        </>
                       )}
                     </select>
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>

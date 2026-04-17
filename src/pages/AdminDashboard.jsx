@@ -7,7 +7,8 @@ import {
   doc, 
   updateDoc, 
   serverTimestamp,
-  orderBy 
+  orderBy,
+  writeBatch 
 } from 'firebase/firestore';
 
 export default function AdminDashboard() {
@@ -17,6 +18,62 @@ export default function AdminDashboard() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [alternativeSlot, setAlternativeSlot] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSeedRooms = async () => {
+    if (!window.confirm('هل تريد تهيئة/تحديث قائمة القاعات في قاعدة البيانات؟')) return;
+    setIsSyncing(true);
+    try {
+      const batch = writeBatch(db);
+      const rooms = [
+        // Level 1
+        { id: 'A-102', roomNumber: 'A-102', building: 'A', floor: 1, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-103', roomNumber: 'A-103', building: 'A', floor: 1, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-104', roomNumber: 'A-104', building: 'A', floor: 1, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-105', roomNumber: 'A-105', building: 'A', floor: 1, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-106', roomNumber: 'A-106', building: 'A', floor: 1, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-107', roomNumber: 'A-107', building: 'A', floor: 1, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+
+        // Level 2
+        { id: 'A-202', roomNumber: 'A-202', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-203', roomNumber: 'A-203', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-204', roomNumber: 'A-204', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-205', roomNumber: 'A-205', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-206', roomNumber: 'A-206', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-208', roomNumber: 'A-208', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-209', roomNumber: 'A-209', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-210', roomNumber: 'A-210', building: 'A', floor: 2, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-211', roomNumber: 'A-211', building: 'A', floor: 2, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+
+        // Level 3
+        { id: 'A-302', roomNumber: 'A-302', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-303', roomNumber: 'A-303', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-304', roomNumber: 'A-304', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-305', roomNumber: 'A-305', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-306', roomNumber: 'A-306', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-308', roomNumber: 'A-308', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-309', roomNumber: 'A-309', building: 'A', floor: 3, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+        { id: 'A-310', roomNumber: 'A-310', building: 'A', floor: 3, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
+
+        // Multi-purpose
+        { id: 'm_1', roomNumber: 'قاعة المؤتمرات الكبرى', building: 'A', floor: 1, capacity: 200, status: 'available', type: 'multi', createdAt: serverTimestamp() },
+        { id: 'm_2', roomNumber: 'قاعة الندوات المتعددة', building: 'B', floor: 1, capacity: 100, status: 'available', type: 'multi', createdAt: serverTimestamp() },
+      ];
+
+      rooms.forEach(room => {
+        const roomRef = doc(db, 'rooms', room.id);
+        batch.set(roomRef, room, { merge: true });
+      });
+
+      await batch.commit();
+      alert('تم تحديث قائمة القاعات بنجاح في Firestore');
+    } catch (err) {
+      console.error(err);
+      alert('خطأ أثناء مزامنة القاعات');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
@@ -88,6 +145,16 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-4xl font-headline font-bold text-primary tracking-tight">لوحة تحكم المسؤول</h1>
           <p className="text-on-surface-variant mt-2 text-lg">إدارة الجداول الأسبوعية والطلبات الاستثنائية</p>
+        </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={handleSeedRooms}
+            disabled={isSyncing}
+            className={`px-4 py-2 rounded-lg border border-outline-variant/15 transition-all flex items-center gap-2 font-bold shadow-sm ${isSyncing ? 'bg-surface-container text-on-surface-variant cursor-not-allowed' : 'bg-surface-container-lowest text-secondary hover:bg-secondary/10'}`}
+          >
+            <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
+            {isSyncing ? 'جاري المزامنة...' : 'تحديث القاعات (Firestore)'}
+          </button>
         </div>
       </div>
 

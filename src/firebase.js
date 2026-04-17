@@ -17,7 +17,10 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+// Attempting 'default' without parentheses as seen in the user's console
+const db = getFirestore(app, "default");
+
+console.log("🔥 Firebase Initialized for Project:", firebaseConfig.projectId);
 
 let analytics = null;
 try {

@@ -80,8 +80,10 @@ export const AuthProvider = ({ children }) => {
           'secretary@aast.edu': { role: 'secretary', name: 'سكرتير الكلية' }
         };
 
+        let forcedRole = null;
         if (rolesMap[user.email]) {
           const { role, name } = rolesMap[user.email];
+          forcedRole = role;
           console.log(`Auto-promoting ${user.email} to ${role}...`);
           setUserRole(role);
           setDoc(doc(db, "users", user.uid), { 
@@ -92,10 +94,13 @@ export const AuthProvider = ({ children }) => {
         }
 
         const timeoutId = setTimeout(() => {
-          if (!userRole) {
-            console.warn("Firestore role fetch timed out, defaulting to employee");
-            setUserRole('employee');
-          }
+          setUserRole(prev => {
+            if (!prev) {
+              console.warn("Firestore role fetch timed out, defaulting to", forcedRole || 'employee');
+              return forcedRole || 'employee';
+            }
+            return prev;
+          });
         }, 2000);
 
         try {
@@ -107,16 +112,16 @@ export const AuthProvider = ({ children }) => {
               setUserData(data);
               setUserRole(data.role);
             } else {
-              setUserRole('employee');
+              setUserRole(forcedRole || 'employee');
             }
           }, (error) => {
             console.error("Snapshot error:", error);
             clearTimeout(timeoutId);
-            if (!userRole) setUserRole('employee');
+            setUserRole(prev => prev || forcedRole || 'employee');
           });
         } catch (error) {
           clearTimeout(timeoutId);
-          if (!userRole) setUserRole('employee');
+          setUserRole(prev => prev || forcedRole || 'employee');
         }
       } else {
         setCurrentUser(null);

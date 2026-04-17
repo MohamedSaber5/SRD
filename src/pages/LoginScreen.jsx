@@ -32,8 +32,8 @@ export default function LoginScreen() {
     setError('');
     try {
       await login(employeeId, password);
-      console.log("Login successful, navigating to dashboard...");
-      navigate('/dashboard');
+      console.log("Login successful, waiting for role validation...");
+      // removed blind navigate('/dashboard') to let useEffect handle role-based routing
     } catch (err) {
       console.error("Login Error Details:", err.code, err.message);
       if (err.code === 'auth/user-not-found') {
