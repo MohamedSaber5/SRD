@@ -72,14 +72,22 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser(user);
         setLoading(false); 
 
-        // Temporary Auto-Promotion for admin@aast.com
-        if (user.email === 'admin@aast.com') {
-          console.log("Admin detected, ensuring admin role in Firestore...");
-          setUserRole('admin');
+        // Role Auto-Promotion Mapping
+        const rolesMap = {
+          'admin@aast.edu': { role: 'admin', name: 'المسؤول العام' },
+          'manager@aast.edu': { role: 'branch_manager', name: 'مدير الفرع' },
+          'employee@aast.edu': { role: 'employee', name: 'موظف تجريبي' },
+          'secretary@aast.edu': { role: 'secretary', name: 'سكرتير الكلية' }
+        };
+
+        if (rolesMap[user.email]) {
+          const { role, name } = rolesMap[user.email];
+          console.log(`Auto-promoting ${user.email} to ${role}...`);
+          setUserRole(role);
           setDoc(doc(db, "users", user.uid), { 
-            role: 'admin', 
+            role: role, 
             email: user.email,
-            displayName: "Admin" 
+            displayName: name 
           }, { merge: true });
         }
 

@@ -1,23 +1,86 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { db } from '../firebase';
+import { 
+  collection, 
+  query, 
+  onSnapshot, 
+  doc, 
+  updateDoc, 
+  serverTimestamp,
+  orderBy 
+} from 'firebase/firestore';
 
 export default function AdminDashboard() {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [alternativeSlot, setAlternativeSlot] = useState('');
+
+  useEffect(() => {
+    const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setBookings(data);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleApprove = async (bookingId) => {
+    try {
+      const bookingRef = doc(db, 'bookings', bookingId);
+      await updateDoc(bookingRef, {
+        status: 'approved',
+        updatedAt: serverTimestamp()
+      });
+      alert('تم قبول الحجز بنجاح');
+    } catch (e) {
+      console.error(e);
+      alert('حدث خطأ أثناء معالجة الطلب');
+    }
+  };
 
   const handleRejectClick = (req) => {
     setSelectedRequest(req);
     setIsRejectModalOpen(true);
   };
 
-  const submitReject = () => {
-    alert(`تم رفض الطلب. السبب: ${rejectReason}. البديل: ${alternativeSlot}`);
-    setIsRejectModalOpen(false);
-    setSelectedRequest(null);
-    setRejectReason('');
-    setAlternativeSlot('');
+  const submitReject = async () => {
+    if (!selectedRequest) return;
+    try {
+      const bookingRef = doc(db, 'bookings', selectedRequest.id);
+      await updateDoc(bookingRef, {
+        status: 'rejected',
+        rejectReason,
+        alternativeSlot,
+        updatedAt: serverTimestamp()
+      });
+      setIsRejectModalOpen(false);
+      setSelectedRequest(null);
+      setRejectReason('');
+      setAlternativeSlot('');
+      alert('تم إرسال الرفض لمقدم الطلب');
+    } catch (e) {
+      console.error(e);
+      alert('حدث خطأ أثناء رفض الطلب');
+    }
   };
+
+  // Stats Logic
+  const pendingCount = bookings.filter(b => b.status === 'pending' || b.status === 'approved_by_branch').length;
+  const acceptedTodayCount = bookings.filter(b => b.status === 'approved' && b.date === new Date().toISOString().split('T')[0]).length;
+
+  // Requests Logic
+  // Show pending fixed rooms OR branch approved multi rooms
+  const requests = bookings.filter(b => 
+    (b.roomType === 'fixed' && b.status === 'pending') || 
+    (b.status === 'approved_by_branch')
+  );
 
   return (
     <>
@@ -25,12 +88,6 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-4xl font-headline font-bold text-primary tracking-tight">لوحة تحكم المسؤول</h1>
           <p className="text-on-surface-variant mt-2 text-lg">إدارة الجداول الأسبوعية والطلبات الاستثنائية</p>
-        </div>
-        <div className="hidden md:flex gap-3">
-          <button className="bg-surface-container-lowest text-primary px-4 py-2 rounded-lg border border-outline-variant/15 hover:bg-surface-container-low transition-colors flex items-center gap-2 font-bold shadow-sm">
-            <span className="material-symbols-outlined text-sm">print</span>
-            التقرير الصباحي
-          </button>
         </div>
       </div>
 
@@ -47,7 +104,7 @@ export default function AdminDashboard() {
           </div>
           <div className="relative z-10">
             <div className="text-on-surface-variant text-sm font-medium mb-1">الطلبات المقبولة اليوم</div>
-            <div className="text-4xl font-headline font-bold text-primary">12</div>
+            <div className="text-4xl font-headline font-bold text-primary">{acceptedTodayCount}</div>
           </div>
         </div>
 
@@ -59,63 +116,49 @@ export default function AdminDashboard() {
           </div>
           <div className="relative z-10">
             <div className="text-on-surface-variant text-sm font-medium mb-1">الطلبات قيد الانتظار</div>
-            <div className="text-4xl font-headline font-bold text-secondary">5</div>
+            <div className="text-4xl font-headline font-bold text-secondary">{pendingCount}</div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Weekly View */}
+        {/* Weekly View - Simplified for now based on approved fixed bookings */}
         <div className="lg:col-span-2 bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-high">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-2xl font-headline font-bold text-primary">الجدول الأسبوعي (Weekly View)</h2>
             <div className="flex flex-wrap gap-3 text-xs font-medium">
               <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-green-500"></div> ثابتة</div>
               <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-blue-500"></div> متعددة الأغراض</div>
-              <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-yellow-500"></div> استثنائية</div>
             </div>
           </div>
+          
           <div className="overflow-x-auto">
-            <div className="min-w-[700px]">
-              <div className="grid grid-cols-6 gap-2 mb-4 text-center text-sm font-medium text-on-surface-variant">
-                <div className="text-right pl-4">الوقت</div>
-                <div>الأحد</div>
-                <div>الإثنين</div>
-                <div>الثلاثاء</div>
-                <div>الأربعاء</div>
-                <div>الخميس</div>
-              </div>
-
-              <div className="space-y-3 relative">
-                <div className="grid grid-cols-6 gap-2 h-16 items-center relative z-10 border-b border-surface-variant pb-2">
-                  <div className="text-right text-sm text-on-surface-variant pr-2">08:00 ص</div>
-                  <div className="bg-green-100 border-r-4 border-green-500 text-green-900 rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center">
-                    <span>قاعة 101</span>
-                    <span className="opacity-70">محاضرة ثابتة</span>
-                  </div>
-                  <div></div>
-                  <div className="bg-yellow-100 border-r-4 border-yellow-500 text-yellow-900 rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center">
-                    <span>قاعة 204</span>
-                    <span className="opacity-70">حجز استثنائي</span>
-                  </div>
-                  <div></div>
-                  <div className="bg-blue-100 border-r-4 border-blue-500 text-blue-900 rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center">
-                    <span>المسرح</span>
-                    <span className="opacity-70">فعالية نادي طلابي</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-6 gap-2 h-16 items-center relative z-10 border-b border-surface-variant pb-2">
-                  <div className="text-right text-sm text-on-surface-variant pr-2">10:00 ص</div>
-                  <div></div>
-                  <div className="bg-green-100 border-r-4 border-green-500 text-green-900 rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center col-span-2">
-                    <span>معمل الحاسبات (أ)</span>
-                    <span className="opacity-70">محاضرة ثابتة - ساعتين</span>
-                  </div>
-                  <div></div>
-                  <div></div>
-                </div>
-              </div>
+            <div className="min-w-[700px] border rounded-xl overflow-hidden">
+               <table className="w-full text-center border-collapse">
+                 <thead className="bg-surface-container-high text-on-surface-variant">
+                   <tr>
+                     <th className="py-3 px-4 border">القاعة</th>
+                     <th className="py-3 px-4 border">التاريخ</th>
+                     <th className="py-3 px-4 border">الوقت</th>
+                     <th className="py-3 px-4 border">المسؤول</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y">
+                   {bookings.filter(b => b.status === 'approved').slice(0, 10).map(b => (
+                     <tr key={b.id} className="hover:bg-surface-container-lowest transition-colors">
+                       <td className="py-3 px-4 font-bold text-primary">{b.roomId}</td>
+                       <td className="py-3 px-4">{b.date}</td>
+                       <td className="py-3 px-4 ltr" dir="ltr">{b.timeFrom} - {b.timeTo}</td>
+                       <td className="py-3 px-4 text-sm">{b.responsibleName}</td>
+                     </tr>
+                   ))}
+                   {bookings.filter(b => b.status === 'approved').length === 0 && (
+                     <tr>
+                       <td colSpan="4" className="py-10 text-on-surface-variant italic">لا توجد حجوزات معتمدة حالياً</td>
+                     </tr>
+                   )}
+                 </tbody>
+               </table>
             </div>
           </div>
         </div>
@@ -125,22 +168,34 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-headline font-bold text-primary">إدارة الطلبات</h2>
           </div>
-          <div className="space-y-4 flex-grow">
+          <div className="space-y-4 flex-grow overflow-y-auto max-h-[600px] pr-2">
             
-            {/* Request Card 1 */}
-            <div className="bg-surface rounded-xl p-4 border border-outline-variant/20 hover:border-outline-variant/60 transition-colors">
-              <div className="flex justify-between items-start mb-2">
-                <div className="font-bold text-on-surface">طلب حجز قاعة 105</div>
+            {requests.map(req => (
+              <div key={req.id} className="bg-surface rounded-xl p-4 border border-outline-variant/20 hover:border-outline-variant/60 transition-all shadow-sm">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-bold text-on-surface">طلب حجز: {req.roomId}</div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${req.status === 'approved_by_branch' ? 'bg-secondary text-white' : 'bg-surface-variant text-on-surface-variant'}`}>
+                    {req.status === 'approved_by_branch' ? 'معتمد فرعياً' : 'جديد'}
+                  </span>
+                </div>
+                <div className="text-sm text-on-surface-variant mb-4 space-y-1">
+                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px]">person</span> {req.responsibleName}</div>
+                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px]">calendar_today</span> {req.date}</div>
+                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px]">schedule</span> {req.timeFrom} - {req.timeTo}</div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleApprove(req.id)} className="flex-1 bg-primary text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-container transition-colors shadow-sm">قبول</button>
+                  <button onClick={() => handleRejectClick(req)} className="flex-1 bg-error-container text-on-error-container rounded-lg py-2 text-sm font-medium hover:bg-error transition-colors hover:text-white shadow-sm">رفض / بديل</button>
+                </div>
               </div>
-              <div className="text-sm text-on-surface-variant mb-4 space-y-1">
-                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px]">person</span> د. سامي عبد الله</div>
-                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px]">schedule</span> غداً، 10:00 ص - 12:00 م</div>
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 bg-primary text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-container transition-colors shadow-sm">قبول</button>
-                <button onClick={() => handleRejectClick('طلب حجز قاعة 105')} className="flex-1 bg-error-container text-on-error-container rounded-lg py-2 text-sm font-medium hover:bg-error transition-colors hover:text-white shadow-sm">رفض / بديل</button>
-              </div>
-            </div>
+            ))}
+
+            {requests.length === 0 && (
+               <div className="text-center py-10 opacity-50 space-y-2">
+                 <span className="material-symbols-outlined text-4xl">check_circle</span>
+                 <p className="font-bold">لا توجد طلبات معلقة</p>
+               </div>
+            )}
 
           </div>
         </div>
@@ -154,7 +209,7 @@ export default function AdminDashboard() {
               <span className="material-symbols-outlined">close</span>
             </button>
             <h2 className="text-2xl font-headline font-bold text-primary mb-2">رفض الطلب</h2>
-            <p className="text-sm text-on-surface-variant mb-6">{selectedRequest}</p>
+            <p className="text-sm text-on-surface-variant mb-6">{selectedRequest?.roomId} - {selectedRequest?.responsibleName}</p>
 
             <div className="space-y-4">
               <div className="space-y-2">
@@ -162,7 +217,7 @@ export default function AdminDashboard() {
                 <textarea 
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                  className="w-full bg-surface-container border border-outline-variant/50 rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary resize-none" 
+                  className="w-full bg-surface-container border border-outline-variant/50 rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary resize-none text-right" 
                   placeholder="مثال: القاعة مشغولة بجدول ثابت..." 
                   rows={3}
                 ></textarea>
@@ -174,7 +229,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={alternativeSlot}
                   onChange={(e) => setAlternativeSlot(e.target.value)}
-                  className="w-full bg-surface-container border border-outline-variant/50 rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary" 
+                  className="w-full bg-surface-container border border-outline-variant/50 rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary text-right" 
                   placeholder="مثال: قاعة 120 في نفس الموعد"
                 />
               </div>
@@ -200,3 +255,4 @@ export default function AdminDashboard() {
     </>
   );
 }
+

@@ -25,7 +25,7 @@ export default function SideNavBar() {
         <img src="/logo_aast.jpg" alt="AAST Logo" className="w-16 h-16 rounded-full mb-3 object-cover shadow-sm" onError={(e) => e.target.style.display='none'} />
         <div className="text-xl font-black text-primary dark:text-white mb-1">البوابة الأكاديمية</div>
         <div className="text-xs text-on-surface-variant font-bold bg-surface-container-highest px-3 py-1 rounded-full">
-          {userRole === 'admin' ? 'مسؤول القاعات' : 
+          {userRole === 'admin' ? 'المسؤول العام' : 
            userRole === 'branch_manager' ? 'مدير الفرع' : 
            userRole === 'secretary' ? 'سكرتير الكلية' : 'موظف / أكاديمي'}
         </div>
@@ -41,21 +41,21 @@ export default function SideNavBar() {
 
         {userRole === 'admin' && (
           <NavLink to="/admin" className={getNavClass}>
-            <span className="material-symbols-outlined ml-2" data-icon="calendar_month">calendar_month</span>
+            <span className="material-symbols-outlined ml-2" data-icon="admin_panel_settings">admin_panel_settings</span>
             <span>لوحة المسؤول</span>
           </NavLink>
         )}
 
         {userRole === 'branch_manager' && (
           <NavLink to="/branch_manager" className={getNavClass}>
-            <span className="material-symbols-outlined ml-2" data-icon="approval">approval</span>
-            <span>طلبات الفروع</span>
+            <span className="material-symbols-outlined ml-2" data-icon="approval_delegation">approval_delegation</span>
+            <span>اعتمادات الفرع</span>
           </NavLink>
         )}
 
         <NavLink to="/booking" className={getNavClass}>
-          <span className="material-symbols-outlined ml-2" data-icon="event_available">event_available</span>
-          <span>حجز قاعة</span>
+          <span className="material-symbols-outlined ml-2" data-icon="add_circle">add_circle</span>
+          <span>طلب حجز جديد</span>
         </NavLink>
         
         {/* Dummy links for visual completeness */}

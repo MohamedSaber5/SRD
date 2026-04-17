@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { auth } from '../firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginScreen() {
   const [employeeId, setEmployeeId] = useState('');
@@ -30,14 +32,41 @@ export default function LoginScreen() {
     setError('');
     try {
       await login(employeeId, password);
-      console.log("Login successful, navigating...");
+      console.log("Login successful, navigating to dashboard...");
       navigate('/dashboard');
     } catch (err) {
-      console.error(err);
-      setError('رقم وظيفي أو كلمة مرور غير صحيحة');
+      console.error("Login Error Details:", err.code, err.message);
+      if (err.code === 'auth/user-not-found') {
+        setError('هذا الرقم الوظيفي غير مسجل');
+      } else if (err.code === 'auth/wrong-password') {
+        setError('كلمة المرور غير صحيحة');
+      } else {
+        setError('رقم وظيفي أو كلمة مرور غير صحيحة');
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSeedUsers = async () => {
+    setIsLoading(true);
+    const testUsers = [
+      { email: 'admin@aast.edu', pass: 'aast1234' },
+      { email: 'manager@aast.edu', pass: 'aast1234' },
+      { email: 'employee@aast.edu', pass: 'aast1234' },
+      { email: 'secretary@aast.edu', pass: 'aast1234' }
+    ];
+
+    for (const u of testUsers) {
+      try {
+        await createUserWithEmailAndPassword(auth, u.email, u.pass);
+        console.log(`Created: ${u.email}`);
+      } catch (e) {
+        console.warn(`${u.email} already exists or failed:`, e.code);
+      }
+    }
+    alert('تمت تهيئة مستخدمي الاختبار بكلمة مرور: aast1234');
+    setIsLoading(false);
   };
 
   return (
@@ -132,10 +161,19 @@ export default function LoginScreen() {
                 </button>
               </div>
               
-              <div className="text-center mt-4">
+              <div className="text-center mt-6 space-y-4">
                 <p className="text-on-surface-variant text-sm">
-                  ليس لديك حساب؟ <a href="/register" className="text-primary font-bold hover:underline transition-all">إنشاء حساب جديد</a>
+                  ليس لديك حساب؟ <Link to="/register" className="text-primary font-bold hover:underline transition-all">إنشاء حساب جديد</Link>
                 </p>
+                <div className="pt-4 border-t border-surface-container-high">
+                  <button 
+                    type="button"
+                    onClick={handleSeedUsers} 
+                    className="text-[10px] text-on-surface-variant/40 hover:text-primary transition-colors"
+                  >
+                    تهيئة مستخدمي الاختبار (Dev Only)
+                  </button>
+                </div>
               </div>
             </form>
           </div>
