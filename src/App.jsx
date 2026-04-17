@@ -5,6 +5,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
 import BookingForm from './pages/BookingForm';
+import NotificationsPage from './pages/NotificationsPage';
 import './index.css';
 
 import BranchManagerDashboard from './pages/BranchManagerDashboard';
@@ -41,6 +42,7 @@ function App() {
                 <BookingForm />
               </RoleRouteGuard>
             } />
+            <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

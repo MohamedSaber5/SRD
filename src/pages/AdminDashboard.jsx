@@ -3,6 +3,9 @@ import { db } from '../firebase';
 import { 
   collection, 
   query, 
+  where,
+  getDocs,
+  addDoc,
   onSnapshot, 
   doc, 
   updateDoc, 
@@ -90,12 +93,41 @@ export default function AdminDashboard() {
 
   const handleApprove = async (bookingId) => {
     try {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+
+      const isMulti = booking.roomType === 'multi';
+      const targetStatus = isMulti ? 'awaiting_manager_final' : 'approved';
+
       const bookingRef = doc(db, 'bookings', bookingId);
       await updateDoc(bookingRef, {
-        status: 'approved',
+        status: targetStatus,
+        adminApprovedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      alert('تم قبول الحجز بنجاح');
+
+      if (isMulti) {
+        // Find all branch managers to notify them
+        const managersQuery = query(collection(db, 'users'), where('role', '==', 'branch_manager'));
+        const managersSnap = await getDocs(managersQuery);
+        
+        const notifyTasks = managersSnap.docs.map(mDoc => 
+          addDoc(collection(db, 'notifications'), {
+            userId: mDoc.id,
+            title: 'اعتماد نهائي مطلوب',
+            message: `هناك طلب حجز قاعة متعددة الأغراض (${booking.roomId}) بانتظار اعتمادك النهائي`,
+            type: 'manager_action',
+            bookingId: booking.id,
+            isRead: false,
+            createdAt: serverTimestamp()
+          })
+        );
+        
+        await Promise.all(notifyTasks);
+        alert('تمت الموافقة وتوجيه الطلب لمدير الفرع للاعتماد النهائي');
+      } else {
+        alert('تم قبول الحجز بنجاح');
+      }
     } catch (e) {
       console.error(e);
       alert('حدث خطأ أثناء معالجة الطلب');
@@ -129,14 +161,13 @@ export default function AdminDashboard() {
   };
 
   // Stats Logic
-  const pendingCount = bookings.filter(b => b.status === 'pending' || b.status === 'approved_by_branch').length;
+  const pendingCount = bookings.filter(b => b.status === 'pending' || b.status === 'awaiting_manager_final').length;
   const acceptedTodayCount = bookings.filter(b => b.status === 'approved' && b.date === new Date().toISOString().split('T')[0]).length;
 
   // Requests Logic
   // Show pending fixed rooms OR branch approved multi rooms
   const requests = bookings.filter(b => 
-    (b.roomType === 'fixed' && b.status === 'pending') || 
-    (b.status === 'approved_by_branch')
+    b.status === 'pending' || b.status === 'awaiting_manager_final'
   );
 
   return (
@@ -241,8 +272,8 @@ export default function AdminDashboard() {
               <div key={req.id} className="bg-surface rounded-xl p-4 border border-outline-variant/20 hover:border-outline-variant/60 transition-all shadow-sm">
                 <div className="flex justify-between items-start mb-2">
                   <div className="font-bold text-on-surface">طلب حجز: {req.roomId}</div>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${req.status === 'approved_by_branch' ? 'bg-secondary text-white' : 'bg-surface-variant text-on-surface-variant'}`}>
-                    {req.status === 'approved_by_branch' ? 'معتمد فرعياً' : 'جديد'}
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${req.status === 'awaiting_manager_final' ? 'bg-secondary text-white' : 'bg-surface-variant text-on-surface-variant'}`}>
+                    {req.status === 'awaiting_manager_final' ? 'بانتظار مدير الفرع' : 'جديد'}
                   </span>
                 </div>
                 <div className="text-sm text-on-surface-variant mb-4 space-y-1">
@@ -251,8 +282,16 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px]">schedule</span> {req.timeFrom} - {req.timeTo}</div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => handleApprove(req.id)} className="flex-1 bg-primary text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-container transition-colors shadow-sm">قبول</button>
-                  <button onClick={() => handleRejectClick(req)} className="flex-1 bg-error-container text-on-error-container rounded-lg py-2 text-sm font-medium hover:bg-error transition-colors hover:text-white shadow-sm">رفض / بديل</button>
+                  {req.status === 'pending' ? (
+                    <>
+                      <button onClick={() => handleApprove(req.id)} className="flex-1 bg-primary text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-container transition-colors shadow-sm">قبول</button>
+                      <button onClick={() => handleRejectClick(req)} className="flex-1 bg-error-container text-on-error-container rounded-lg py-2 text-sm font-medium hover:bg-error transition-colors hover:text-white shadow-sm">رفض / بديل</button>
+                    </>
+                  ) : (
+                    <div className="flex-1 text-center py-2 bg-secondary/10 text-secondary text-xs font-bold rounded-lg border border-secondary/20 italic">
+                      بانتظار الاعتماد النهائي من مدير الفرع
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

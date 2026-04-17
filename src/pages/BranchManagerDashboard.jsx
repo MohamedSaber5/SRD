@@ -7,19 +7,36 @@ import {
   onSnapshot, 
   doc, 
   updateDoc, 
-  serverTimestamp 
+  serverTimestamp,
+  getDocs
 } from 'firebase/firestore';
+import EditBookingModal from '../components/bookings/EditBookingModal';
 
 export default function BranchManagerDashboard() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [rooms, setRooms] = useState({});
 
   useEffect(() => {
-    // Only fetch multi-purpose rooms that are pending branch approval
+    // 1. Fetch multi-purpose rooms metadata once
+    const fetchRooms = async () => {
+      const qRooms = query(collection(db, 'rooms'), where('type', '==', 'multi'));
+      const snap = await getDocs(qRooms);
+      const roomsMap = {};
+      snap.docs.forEach(d => {
+        roomsMap[d.id] = d.data();
+      });
+      setRooms(roomsMap);
+    };
+    fetchRooms();
+
+    // 2. Listen to pending multi-purpose bookings
     const q = query(
       collection(db, 'bookings'), 
       where('roomType', '==', 'multi'),
-      where('status', '==', 'pending')
+      where('status', '==', 'awaiting_manager_final')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -35,87 +52,156 @@ export default function BranchManagerDashboard() {
   }, []);
 
   const handleApprove = async (id) => {
+    if (!window.confirm('هل أنت متأكد من اعتماد هذا الحجز؟')) return;
     try {
       const docRef = doc(db, 'bookings', id);
       await updateDoc(docRef, {
-        status: 'approved_by_branch',
+        status: 'approved',
         branchApprovedAt: serverTimestamp()
       });
-      alert('تم الاعتماد بنجاح وتم تحويل الطلب للمسؤول العام');
+      alert('تم منح الاعتماد النهائي للطلب بنجاح');
     } catch (e) {
       console.error(e);
       alert('حدث خطأ أثناء الاعتماد');
     }
   };
 
-  const handleReject = async (id) => {
-    try {
-      const docRef = doc(db, 'bookings', id);
-      await updateDoc(docRef, {
-        status: 'rejected',
-        rejectReason: 'مرفوض من قبل مدير الفرع لعدم توفر الصلاحية حالياً',
-        updatedAt: serverTimestamp()
-      });
-      alert('تم رفض الطلب');
-    } catch (e) {
-      console.error(e);
-      alert('حدث خطأ أثناء الرفض');
-    }
+  const handleEdit = (booking) => {
+    setSelectedBooking(booking);
+    setIsEditModalOpen(true);
   };
 
   return (
-    <>
-      <div className="flex justify-between items-end mb-8">
+    <div className="animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
         <div>
           <h1 className="text-4xl font-headline font-bold text-primary tracking-tight">اعتمادات مدير الفرع</h1>
-          <p className="text-on-surface-variant mt-2 text-lg">الطلبات الخاصة بالقاعات المتعددة الأغراض بانتظار الاعتماد المالي/الإداري</p>
+          <p className="text-on-surface-variant mt-2 text-lg">مراجعة واعتماد طلبات القاعات متعددة الأغراض</p>
+        </div>
+        <div className="bg-secondary/10 px-4 py-2 rounded-2xl flex items-center gap-2 border border-secondary/20 shadow-sm">
+          <span className="material-symbols-outlined text-secondary">verified_user</span>
+          <span className="text-secondary font-bold">صلاحية الاعتماد النهائي</span>
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-high flex flex-col min-h-[400px]">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-headline font-bold text-primary">الطلبات المعلقة ({requests.length})</h2>
+      <div className="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-surface-container-high flex flex-col min-h-[500px] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-primary via-secondary to-primary"></div>
+        
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-2xl font-headline font-bold text-primary flex items-center gap-3">
+              الطلبات المعلقة 
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-bold">{requests.length}</span>
+            </h2>
+            <p className="text-sm text-on-surface-variant mt-1 italic">يظهر هنا فقط حجوزات القاعات متعددة الأغراض</p>
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {requests.map(req => (
-            <div key={req.id} className="bg-surface rounded-xl p-6 border border-outline-variant/20 hover:border-outline-variant/60 transition-all shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-1.5 h-full bg-secondary"></div>
-              
-              <div className="flex justify-between items-start mb-4">
-                <div className="font-bold text-on-surface text-xl">حجز: {req.roomId}</div>
-                <span className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-xs font-bold">متعددة الأغراض</span>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-8">
+          {requests.map(req => {
+            const roomInfo = rooms[req.roomId];
+            return (
+              <div key={req.id} className="bg-surface-container-lowest rounded-2xl p-6 border-2 border-surface-container-high hover:border-secondary/40 transition-all shadow-sm hover:shadow-xl group relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-full bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                {/* Header: Room Name & Details */}
+                <div className="flex justify-between items-start mb-6">
+                  <div className="space-y-1">
+                    <div className="font-black text-primary text-2xl font-headline">
+                      {roomInfo?.roomNumber || req.roomId}
+                    </div>
+                    {roomInfo && (
+                      <div className="flex items-center gap-3 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                        <span className="bg-surface-container-highest px-2 py-1 rounded">مبنى {roomInfo.building}</span>
+                        <span className="bg-surface-container-highest px-2 py-1 rounded">الدور {roomInfo.floor}</span>
+                        <span className="bg-secondary/20 text-secondary px-2 py-1 rounded">سعة {roomInfo.capacity} فرداً</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="bg-primary/5 text-primary border border-primary/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">بانتظار الاعتماد النهائي</span>
+                  </div>
+                </div>
 
-              <div className="text-sm text-on-surface-variant mb-6 space-y-2">
-                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">person</span> مقدم الطلب: {req.responsibleName} ({req.userName})</div>
-                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">calendar_today</span> {req.date}</div>
-                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">schedule</span> {req.timeFrom} - {req.timeTo}</div>
-                <div className="flex items-start gap-2 pt-2 border-t border-surface-variant"><span className="material-symbols-outlined text-[18px] text-primary">info</span> <span>الغرض: {req.purpose}</span></div>
-              </div>
+                {/* Body: Date & Person */}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="bg-surface-container-low p-3 rounded-xl flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm text-primary">
+                      <span className="material-symbols-outlined">event</span>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold opacity-50 uppercase">التاريخ</div>
+                      <div className="text-sm font-black">{req.date}</div>
+                    </div>
+                  </div>
+                  <div className="bg-surface-container-low p-3 rounded-xl flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm text-secondary">
+                      <span className="material-symbols-outlined">schedule</span>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold opacity-50 uppercase">الوقت</div>
+                      <div className="text-sm font-black ltr" dir="ltr">{req.timeFrom} - {req.timeTo}</div>
+                    </div>
+                  </div>
+                  <div className="col-span-2 bg-surface-container-low p-3 rounded-xl flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm text-green-600">
+                      <span className="material-symbols-outlined">account_circle</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold opacity-50 uppercase">مقدم الطلب</div>
+                      <div className="text-sm font-black">{req.responsibleName} <span className="text-xs font-medium opacity-60">({req.userName})</span></div>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="flex gap-4 mt-auto">
-                <button onClick={() => handleApprove(req.id)} className="flex-1 bg-primary text-white rounded-xl py-3 text-sm font-bold hover:bg-primary-container transition-colors shadow-sm flex items-center justify-center gap-2">
-                   <span className="material-symbols-outlined">verified</span>
-                   اعتماد الطلب
-                </button>
-                <button onClick={() => handleReject(req.id)} className="flex-1 bg-error-container text-on-error-container rounded-xl py-3 text-sm font-bold hover:bg-error transition-colors hover:text-white shadow-sm flex items-center justify-center gap-2">
-                   <span className="material-symbols-outlined">block</span>
-                   رفض
-                </button>
+                {/* Purpose Snippet */}
+                <div className="mb-8 border-r-4 border-primary/20 pr-4 py-2 bg-primary/5 rounded-l-xl">
+                    <div className="text-[10px] font-black text-primary uppercase mb-1">الغرض من الاستخدام:</div>
+                    <p className="text-sm leading-relaxed text-on-surface font-medium italic">"{req.purpose}"</p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => handleApprove(req.id)} 
+                    className="flex-1 bg-primary text-white rounded-2xl py-3.5 text-sm font-black hover:bg-primary-container hover:scale-[1.02] transition-all shadow-[0_8px_20px_-8px_rgba(0,30,64,0.4)] flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined">verified</span>
+                    اعتماد الطلب
+                  </button>
+                  <button 
+                    onClick={() => handleEdit(req)} 
+                    className="bg-surface-container-highest text-on-surface rounded-2xl px-6 py-3.5 text-sm font-black hover:bg-secondary/10 hover:text-secondary transition-all flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined">edit_note</span>
+                    تعديل
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {!loading && requests.length === 0 && (
-            <div className="col-span-full py-20 text-center opacity-50 flex flex-col items-center gap-4">
-               <span className="material-symbols-outlined text-7xl">checklist_rtl</span>
-               <p className="text-xl font-bold">لا توجد طلبات معلقة بانتظارك حالياً</p>
+            <div className="col-span-full py-32 text-center flex flex-col items-center gap-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+               <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center">
+                  <span className="material-symbols-outlined text-5xl text-on-surface-variant/40">assignment_turned_in</span>
+               </div>
+               <div>
+                 <p className="text-2xl font-headline font-bold text-on-surface-variant">جميع المهمات مكتملة!</p>
+                 <p className="text-on-surface-variant/60 mt-1">لا توجد طلبات قاعات متعددة الأغراض بانتظارك حالياً.</p>
+               </div>
             </div>
           )}
         </div>
       </div>
-    </>
+
+      <EditBookingModal 
+        booking={selectedBooking} 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        onUpdate={() => {/* Re-fetch handled by onSnapshot */}} 
+      />
+    </div>
   );
 }
 

@@ -53,6 +53,11 @@ export default function SideNavBar() {
           </NavLink>
         )}
 
+        <NavLink to="/notifications" className={getNavClass}>
+          <span className="material-symbols-outlined ml-2" data-icon="notifications">notifications</span>
+          <span>الإشعارات</span>
+        </NavLink>
+
         <NavLink to="/booking" className={getNavClass}>
           <span className="material-symbols-outlined ml-2" data-icon="add_circle">add_circle</span>
           <span>طلب حجز جديد</span>

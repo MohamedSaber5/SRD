@@ -16,6 +16,7 @@ export default function BookingForm() {
   const [formData, setFormData] = useState({
     roomId: '',
     roomType: '', // 'fixed' or 'multi'
+    hallCategory: '', // 'lecture' or 'multi' (for employee UI)
     date: '',
     timeFrom: '',
     timeTo: '',
@@ -152,53 +153,108 @@ export default function BookingForm() {
               <h3 className="text-xl font-headline font-bold text-primary mb-6 border-b border-surface-container-high pb-4">المعلومات الأساسية</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-1 md:col-span-2 space-y-2">
-                  <label className="block text-sm font-label font-bold text-on-surface-variant">اختر نوع وتسمية القاعة</label>
-                  <div className="relative">
-                    <select 
-                      name="roomId" 
-                      value={formData.roomId} 
-                      onChange={(e) => {
-                         const selectedRoom = rooms.find(r => r.id === e.target.value);
-                         setFormData(p => ({
-                           ...p, 
-                           roomId: e.target.value, 
-                           roomType: selectedRoom?.type || 'fixed'
-                         }));
-                      }} 
-                      className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-                      disabled={loadingRooms}
-                    >
-                      <option disabled value="">{loadingRooms ? 'جاري تحميل القاعات...' : 'يرجى اختيار قاعة...'}</option>
-                      
-                      {/* Categorized rendering */}
-                      <optgroup label="قاعات متعددة الأغراض">
-                        {rooms.filter(r => r.type === 'multi').map(r => (
-                          <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
-                        ))}
-                      </optgroup>
+                  <label className="block text-sm font-label font-bold text-on-surface-variant">
+                    {userRole === 'employee' ? 'اختر نوع القاعة المطلوبة' : 'اختر نوع وتسمية القاعة'}
+                  </label>
+                  
+                  {userRole === 'employee' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button 
+                        type="button"
+                        onClick={() => setFormData(p => ({ 
+                          ...p, 
+                          roomId: 'لم يتم التحديد', 
+                          roomType: 'fixed', 
+                          hallCategory: 'lecture' 
+                        }))}
+                        className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${formData.hallCategory === 'lecture' ? 'border-primary bg-primary/5 shadow-md' : 'border-surface-container-high hover:border-primary/30 hover:bg-surface-container'}`}
+                      >
+                         <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'lecture' ? 'bg-primary text-white' : 'bg-surface-container-highest text-primary'}`}>
+                            <span className="material-symbols-outlined text-3xl">school</span>
+                         </div>
+                         <div className="text-center">
+                            <div className={`font-bold text-lg ${formData.hallCategory === 'lecture' ? 'text-primary' : 'text-on-surface'}`}>قاعة محاضرات</div>
+                            <div className="text-xs text-on-surface-variant">للمحاضرات الاستثنائية والتعويضية</div>
+                         </div>
+                         {formData.hallCategory === 'lecture' && (
+                           <div className="absolute top-3 right-3 text-primary animate-in zoom-in">
+                             <span className="material-symbols-outlined fill-1">check_circle</span>
+                           </div>
+                         )}
+                      </button>
 
-                      {userRole !== 'secretary' && (
-                        <>
-                          <optgroup label="الدور الأول (A-1xx)">
-                            {rooms.filter(r => r.type === 'fixed' && r.floor === 1).map(r => (
-                              <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
-                            ))}
-                          </optgroup>
-                          <optgroup label="الدور الثاني (A-2xx)">
-                            {rooms.filter(r => r.type === 'fixed' && r.floor === 2).map(r => (
-                              <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
-                            ))}
-                          </optgroup>
-                          <optgroup label="الدور الثالث (A-3xx)">
-                            {rooms.filter(r => r.type === 'fixed' && r.floor === 3).map(r => (
-                              <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
-                            ))}
-                          </optgroup>
-                        </>
-                      )}
-                    </select>
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
-                  </div>
+                      <button 
+                        type="button"
+                        onClick={() => setFormData(p => ({ 
+                          ...p, 
+                          roomId: 'لم يتم التحديد', 
+                          roomType: 'multi', 
+                          hallCategory: 'multi' 
+                        }))}
+                        className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 relative ${formData.hallCategory === 'multi' ? 'border-secondary bg-secondary/5 shadow-md' : 'border-surface-container-high hover:border-secondary/30 hover:bg-surface-container'}`}
+                      >
+                         <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'multi' ? 'bg-secondary text-white' : 'bg-surface-container-highest text-secondary'}`}>
+                            <span className="material-symbols-outlined text-3xl">event_seat</span>
+                         </div>
+                         <div className="text-center">
+                            <div className={`font-bold text-lg ${formData.hallCategory === 'multi' ? 'text-secondary' : 'text-on-surface'}`}>قاعة متعددة الأغراض</div>
+                            <div className="text-xs text-on-surface-variant">للندوات، الاجتماعات، والفعاليات</div>
+                         </div>
+                         {formData.hallCategory === 'multi' && (
+                           <div className="absolute top-3 right-3 text-secondary animate-in zoom-in">
+                             <span className="material-symbols-outlined fill-1">check_circle</span>
+                           </div>
+                         )}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <select 
+                        name="roomId" 
+                        value={formData.roomId} 
+                        onChange={(e) => {
+                           const selectedRoom = rooms.find(r => r.id === e.target.value);
+                           setFormData(p => ({
+                             ...p, 
+                             roomId: e.target.value, 
+                             roomType: selectedRoom?.type || 'fixed'
+                           }));
+                        }} 
+                        className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                        disabled={loadingRooms}
+                      >
+                        <option disabled value="">{loadingRooms ? 'جاري تحميل القاعات...' : 'يرجى اختيار قاعة...'}</option>
+                        
+                        {/* Categorized rendering */}
+                        <optgroup label="قاعات متعددة الأغراض">
+                          {rooms.filter(r => r.type === 'multi').map(r => (
+                            <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
+                          ))}
+                        </optgroup>
+
+                        {userRole !== 'secretary' && (
+                          <>
+                            <optgroup label="الدور الأول (A-1xx)">
+                              {rooms.filter(r => r.type === 'fixed' && r.floor === 1).map(r => (
+                                <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
+                              ))}
+                            </optgroup>
+                            <optgroup label="الدور الثاني (A-2xx)">
+                              {rooms.filter(r => r.type === 'fixed' && r.floor === 2).map(r => (
+                                <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
+                              ))}
+                            </optgroup>
+                            <optgroup label="الدور الثالث (A-3xx)">
+                              {rooms.filter(r => r.type === 'fixed' && r.floor === 3).map(r => (
+                                <option key={r.id} value={r.id}>{r.roomNumber} (سعة: {r.capacity})</option>
+                              ))}
+                            </optgroup>
+                          </>
+                        )}
+                      </select>
+                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="col-span-1 space-y-2">
