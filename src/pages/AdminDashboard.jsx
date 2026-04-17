@@ -11,7 +11,8 @@ import {
   where,
   getDocs,
   setDoc,
-  addDoc
+  addDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -51,6 +52,22 @@ export default function AdminDashboard() {
   const [selectedCollege, setSelectedCollege] = useState('');
   const collegeOptions = ['هندسة', 'حاسبات ومعلومات', 'لوجستيك', 'اثار', 'تجارة'];
   
+  // Add New Room State
+  const [newRoomData, setNewRoomData] = useState({
+    roomNumber: '',
+    type: 'fixed',
+    building: '',
+    floor: 1,
+    capacity: 20
+  });
+  const [isAddingRoom, setIsAddingRoom] = useState(false);
+  
+  // Delete Room State
+  const [selectedRoomToDelete, setSelectedRoomToDelete] = useState('');
+  const [replacementRoom, setReplacementRoom] = useState('');
+  const [isDeletingRoom, setIsDeletingRoom] = useState(false);
+  const [needsReplacementMode, setNeedsReplacementMode] = useState(false);
+
   // PDF Printing Reference
   const reportRef = useRef();
 
@@ -366,6 +383,107 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAddRoom = async (e) => {
+    e.preventDefault();
+    if (!newRoomData.roomNumber || !newRoomData.building || !newRoomData.capacity) {
+       return alert("الرجاء تعبئة كافة الحقول الخاصة بالقاعة");
+    }
+    
+    try {
+      setIsAddingRoom(true);
+      const newRoomRef = doc(collection(db, 'rooms'));
+      const newRoom = {
+         id: newRoomRef.id,
+         roomNumber: newRoomData.roomNumber,
+         type: newRoomData.type,
+         building: newRoomData.building,
+         floor: Number(newRoomData.floor),
+         capacity: Number(newRoomData.capacity),
+         status: 'available',
+         createdAt: serverTimestamp()
+      };
+      
+      await setDoc(newRoomRef, newRoom);
+      
+      // Audit log it
+      await addDoc(collection(db, 'audit_logs'), {
+         actionBy: currentUser.email,
+         actionByName: currentUser.displayName || 'Admin',
+         actionType: 'ADD_ROOM',
+         details: `تم إضافة قاعة جديدة برقم/اسم: ${newRoom.roomNumber} بسعة ${newRoom.capacity}`,
+         timestamp: serverTimestamp()
+      });
+
+      alert('تم إضافة القاعة بنجاح!');
+      setNewRoomData({ roomNumber: '', type: 'fixed', building: '', floor: 1, capacity: 20 });
+    } catch (err) {
+      console.error(err);
+      alert('حدث خطأ أثناء إضافة القاعة');
+    } finally {
+      setIsAddingRoom(false);
+    }
+  };
+
+  const handleDeleteRoom = async (e) => {
+    e.preventDefault();
+    if (!selectedRoomToDelete) return alert("الرجاء اختيار قاعة للحذف");
+    
+    try {
+      setIsDeletingRoom(true);
+
+      const qBookings = query(collection(db, 'bookings'), where('roomId', '==', selectedRoomToDelete));
+      const snapshot = await getDocs(qBookings);
+      const activeBookings = snapshot.docs.filter(d => 
+        ['pending', 'awaiting_manager_final', 'approved', 'approved_by_branch'].includes(d.data().status)
+      );
+
+      if (activeBookings.length > 0) {
+          if (!needsReplacementMode) {
+              setIsDeletingRoom(false);
+              setNeedsReplacementMode(true);
+              return alert(`هذه القاعة تعرقل بـ ${activeBookings.length} حجز نشط أو معلق. يرجى اختيار قاعة بديلة أدناه ليتم ترحيل الحجوزات إليها تلقائياً.`);
+          }
+          if (!replacementRoom) {
+              setIsDeletingRoom(false);
+              return alert("الرجاء اختيار القاعة البديلة للترحيل قبل الحذف.");
+          }
+          if (replacementRoom === selectedRoomToDelete) {
+              setIsDeletingRoom(false);
+              return alert("القاعة البديلة لا يمكن أن تكون هي نفسها المراد حذفها!");
+          }
+          
+          // Migrate Bookings
+          const batch = writeBatch(db);
+          activeBookings.forEach(d => {
+              batch.update(doc(db, 'bookings', d.id), { roomId: replacementRoom });
+          });
+          await batch.commit();
+      }
+
+      await deleteDoc(doc(db, 'rooms', selectedRoomToDelete));
+      
+      await addDoc(collection(db, 'audit_logs'), {
+          actionBy: currentUser.email,
+          actionByName: currentUser.displayName || 'Admin',
+          actionType: 'DELETE_ROOM',
+          details: (needsReplacementMode && replacementRoom) 
+              ? `تم إزالة القاعة ${selectedRoomToDelete} وترحيل كافة حجوزاتها إلى القاعة ${replacementRoom}`
+              : `تم إزالة القاعة ${selectedRoomToDelete} (بدون حجوزات نشطة)`,
+          timestamp: serverTimestamp()
+      });
+
+      alert('تم إزالة القاعة والمزامنة بنجاح!');
+      setSelectedRoomToDelete('');
+      setReplacementRoom('');
+      setNeedsReplacementMode(false);
+    } catch(err) {
+      console.error(err);
+      alert('خطأ أثناء عملية الحذف');
+    } finally {
+      setIsDeletingRoom(false);
+    }
+  };
+
   const acceptedTodayCount = bookings.filter(b => b.status === 'approved' && b.date === todayDateStr).length;
 
   return (
@@ -597,6 +715,142 @@ export default function AdminDashboard() {
                  )}
                </div>
              )}
+          </div>
+
+          {/* Add New Room Section */}
+          <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full mt-4">
+             <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+               <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[28px]">add_business</span>
+               </div>
+               <div>
+                 <h2 className="text-2xl font-headline font-black text-[#001e40]">إضافة قاعة جديدة</h2>
+                 <p className="text-sm font-bold text-[#5a7698]">إدراج قاعة محاضرات أو قاعة متعددة الأغراض جديدة وتفعيلها لتلقي الحجوزات.</p>
+               </div>
+             </div>
+
+             <form onSubmit={handleAddRoom} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+                <div className="lg:col-span-2 space-y-2">
+                  <label className="block text-xs font-bold text-[#5a7698] uppercase">الاسم / الرقم التعريفي</label>
+                  <input 
+                    required type="text" placeholder="مثال: A-402 أو قاعة الدكاترة"
+                    value={newRoomData.roomNumber}
+                    onChange={e => setNewRoomData({...newRoomData, roomNumber: e.target.value})}
+                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none"
+                  />
+                </div>
+                
+                <div className="lg:col-span-1 space-y-2">
+                  <label className="block text-xs font-bold text-[#5a7698] uppercase">نوع القاعة</label>
+                  <select 
+                    value={newRoomData.type}
+                    onChange={e => setNewRoomData({...newRoomData, type: e.target.value})}
+                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none"
+                  >
+                    <option value="fixed">قاعة عادية</option>
+                    <option value="multi">متعددة الأغراض</option>
+                  </select>
+                </div>
+
+                <div className="lg:col-span-1 space-y-2">
+                  <label className="block text-xs font-bold text-[#5a7698] uppercase">المبنى</label>
+                  <input 
+                    required type="text" placeholder="A, B, C..."
+                    value={newRoomData.building}
+                    onChange={e => setNewRoomData({...newRoomData, building: e.target.value})}
+                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none text-center" dir="ltr"
+                  />
+                </div>
+
+                <div className="lg:col-span-1 space-y-2">
+                  <label className="block text-xs font-bold text-[#5a7698] uppercase">الدور</label>
+                  <input 
+                    required type="number" min="0" placeholder="1, 2, 3..."
+                    value={newRoomData.floor}
+                    onChange={e => setNewRoomData({...newRoomData, floor: e.target.value})}
+                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none text-center" dir="ltr"
+                  />
+                </div>
+
+                <div className="lg:col-span-1 space-y-2">
+                  <label className="block text-xs font-bold text-[#5a7698] uppercase">سعة القاعة (أفراد)</label>
+                  <input 
+                    required type="number" min="5" placeholder="50"
+                    value={newRoomData.capacity}
+                    onChange={e => setNewRoomData({...newRoomData, capacity: e.target.value})}
+                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none text-center" dir="ltr"
+                  />
+                </div>
+
+                <div className="lg:col-span-6 mt-2">
+                  <button 
+                    type="submit" 
+                    disabled={isAddingRoom}
+                    className={`w-full text-white px-6 py-4 rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 ${isAddingRoom ? 'bg-gray-400' : 'bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-1'}`}
+                  >
+                     <span className="material-symbols-outlined">save</span>
+                     {isAddingRoom ? 'جاري الإضافة...' : 'حفظ القاعة الجديدة'}
+                  </button>
+                </div>
+             </form>
+          </div>
+
+          {/* Manage / Delete Room Section */}
+          <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full mt-4">
+             <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+               <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[28px]">domain_disabled</span>
+               </div>
+               <div>
+                 <h2 className="text-2xl font-headline font-black text-[#001e40]">إزالة قاعة (نقل الحجوزات)</h2>
+                 <p className="text-sm font-bold text-[#5a7698]">حذف قاعة من النظام نهائياً. وإذا كانت قيد الاستخدام سيتم مطالبتك بتحديد قاعة بديلة.</p>
+               </div>
+             </div>
+
+             <form onSubmit={handleDeleteRoom} className="flex flex-col md:flex-row items-end gap-6 w-full">
+                <div className="w-full lg:w-1/3 space-y-2">
+                  <label className="block text-xs font-bold text-red-700 uppercase">اختر القاعة للحذف النهائي</label>
+                  <select 
+                    required 
+                    value={selectedRoomToDelete}
+                    onChange={e => { setSelectedRoomToDelete(e.target.value); setNeedsReplacementMode(false); setReplacementRoom(''); }}
+                    className="w-full bg-[#f8fafc] border border-red-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-red-400 outline-none"
+                  >
+                    <option value="" disabled>-- قائمة القاعات --</option>
+                    {roomsList.map(r => (
+                      <option key={r.id} value={r.id}>{r.roomNumber} ({r.type === 'multi' ? 'متعددة' : 'عادية'})</option>
+                    ))}
+                  </select>
+                </div>
+
+                {needsReplacementMode && (
+                  <div className="w-full lg:w-1/3 space-y-2 animate-in slide-in-from-right-4 font-headline text-orange-900 border-r-4 border-orange-400 pr-4 bg-orange-50 p-2 rounded-xl">
+                    <label className="block text-xs font-bold text-orange-700 uppercase">اختر قاعة بديلة لترحيل الحجوزات</label>
+                    <select 
+                      required 
+                      value={replacementRoom}
+                      onChange={e => setReplacementRoom(e.target.value)}
+                      className="w-full bg-white border border-orange-300 rounded-xl px-4 py-3 font-black focus:ring-2 focus:ring-orange-400 outline-none shadow-sm"
+                    >
+                      <option value="" disabled>-- قائمة القاعات البديلة --</option>
+                      {roomsList.filter(r => r.id !== selectedRoomToDelete).map(r => (
+                        <option key={r.id} value={r.id}>{r.roomNumber} ({r.type === 'multi' ? 'متعددة' : 'عادية'})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className={`w-full lg:w-1/3 ${!needsReplacementMode && 'md:w-1/2'}`}>
+                  <button 
+                    type="submit" 
+                    disabled={isDeletingRoom}
+                    className={`w-full text-white px-6 py-4 rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 ${isDeletingRoom ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700 hover:-translate-y-1'}`}
+                  >
+                     <span className="material-symbols-outlined">{needsReplacementMode ? 'move_up' : 'delete_forever'}</span>
+                     {isDeletingRoom ? 'جاري المعالجة...' : needsReplacementMode ? 'تأكيد الحذف وترحيل الحجوزات' : 'إزالة القاعة'}
+                  </button>
+                </div>
+             </form>
           </div>
 
           {/* Advanced Search for Empty Rooms */}
