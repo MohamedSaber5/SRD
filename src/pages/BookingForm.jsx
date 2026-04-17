@@ -109,8 +109,10 @@ export default function BookingForm() {
        const diffHours = (selectedDate - now) / (1000 * 60 * 60);
        
        if (userRole === 'employee') {
+          // Quick 24h check for employee date selection
           setIsLeadTimeError(diffHours < 24 && selectedDate.toDateString() === now.toDateString());
        } else if (userRole === 'secretary') {
+          // Quick 48h check for secretary date selection
           setIsLeadTimeError(diffHours < 48);
        }
     }
@@ -453,6 +455,7 @@ export default function BookingForm() {
                 onClick={handleNext} 
                 className="px-8 py-2.5 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-bold hover:scale-[1.02] transition-transform shadow-md flex items-center gap-2 disabled:opacity-50 disabled:scale-100" 
                 type="button"
+                // Combined validation for slots and lead-time
                 disabled={(step === 1 && (!formData.roomId || !formData.date || !formData.timeFrom || isLeadTimeError))}
               >
                 <span>التالي</span>

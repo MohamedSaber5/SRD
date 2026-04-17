@@ -8,8 +8,31 @@ import {
   doc, 
   updateDoc, 
   addDoc,
-  serverTimestamp 
+  serverTimestamp,
+  onSnapshot
 } from 'firebase/firestore';
+
+const REGULAR_SLOTS = [
+  { from: '08:30', to: '10:10', label: 'المحاضرة الأولى (08:30 - 10:10)' },
+  { from: '10:30', to: '12:10', label: 'المحاضرة الثانية (10:30 - 12:10)' },
+  { from: '12:30', to: '14:10', label: 'المحاضرة الثالثة (12:30 - 14:10)' },
+  { from: '14:30', to: '16:10', label: 'المحاضرة الرابعة (14:30 - 16:10)' },
+  { from: '16:30', to: '18:10', label: 'المحاضرة الخامسة (16:30 - 18:10)' },
+  { from: '18:30', to: '20:10', label: 'المحاضرة السادسة (18:30 - 20:10)' },
+  { from: '20:30', to: '22:10', label: 'المحاضرة السابعة (20:30 - 22:10)' },
+  { from: '22:30', to: '00:10', label: 'المحاضرة الثامنة (22:30 - 00:10)' },
+];
+
+const RAMADAN_SLOTS = [
+  { from: '09:30', to: '10:25', label: 'الفترة الأولى (09:30 - 10:25)' },
+  { from: '10:30', to: '11:25', label: 'الفترة الثانية (10:30 - 11:25)' },
+  { from: '11:30', to: '12:25', label: 'الفترة الثالثة (11:30 - 12:25)' },
+  { from: '12:30', to: '13:25', label: 'الفترة الرابعة (12:30 - 13:25)' },
+  { from: '13:30', to: '14:25', label: 'الفترة الخامسة (13:30 - 14:25)' },
+  { from: '14:30', to: '15:25', label: 'الفترة السادسة (14:30 - 15:25)' },
+  { from: '15:30', to: '16:25', label: 'الفترة السابعة (15:30 - 16:25)' },
+  { from: '16:30', to: '17:25', label: 'الفترة الثامنة (16:30 - 17:25)' },
+];
 
 export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }) {
   const [formData, setFormData] = useState({
@@ -26,6 +49,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
   });
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isRamadanMode, setIsRamadanMode] = useState(false);
 
   useEffect(() => {
     if (booking) {
@@ -49,7 +73,18 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
       setRooms(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     };
     fetchRooms();
+
+    // 3. Listen to system settings (Ramadan Mode)
+    const settingsUnsubscribe = onSnapshot(doc(db, 'settings', 'system'), (doc) => {
+      if (doc.exists()) {
+        setIsRamadanMode(doc.data().isRamadanMode);
+      }
+    });
+
+    return () => settingsUnsubscribe();
   }, [booking]);
+
+  const currentSlots = isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -147,15 +182,25 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
               <input type="date" name="date" value={formData.date} onChange={handleChange} className="w-full bg-surface-container-high rounded-xl px-4 py-3 border-none" required />
             </div>
 
-            <div className="col-span-1 grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-on-surface-variant">من</label>
-                <input type="time" name="timeFrom" value={formData.timeFrom} onChange={handleChange} className="w-full bg-surface-container-high rounded-xl px-4 py-3 border-none text-center" required />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-on-surface-variant">إلى</label>
-                <input type="time" name="timeTo" value={formData.timeTo} onChange={handleChange} className="w-full bg-surface-container-high rounded-xl px-4 py-3 border-none text-center" required />
-              </div>
+            <div className="col-span-1 space-y-2">
+              <label className="block text-sm font-bold text-on-surface-variant">اختيار الفترة الزمنية</label>
+              <select 
+                className="w-full bg-surface-container-high rounded-xl px-4 py-3 border-none appearance-none cursor-pointer"
+                onChange={(e) => {
+                   const slot = currentSlots[e.target.value];
+                   setFormData(p => ({
+                     ...p,
+                     timeFrom: slot.from,
+                     timeTo: slot.to
+                   }));
+                }}
+                value={currentSlots.findIndex(s => s.from === formData.timeFrom)}
+              >
+                <option value="-1">اختر فترة معدلة...</option>
+                {currentSlots.map((s, idx) => (
+                  <option key={idx} value={idx}>{s.label}</option>
+                ))}
+              </select>
             </div>
 
             {/* Purpose */}
