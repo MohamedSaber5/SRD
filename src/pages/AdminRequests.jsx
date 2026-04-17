@@ -13,6 +13,28 @@ import {
 } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
+const REGULAR_SLOTS = [
+  { from: '08:30', to: '10:10', label: 'المحاضرة الأولى (08:30 - 10:10)' },
+  { from: '10:30', to: '12:10', label: 'المحاضرة الثانية (10:30 - 12:10)' },
+  { from: '12:30', to: '14:10', label: 'المحاضرة الثالثة (12:30 - 14:10)' },
+  { from: '14:30', to: '16:10', label: 'المحاضرة الرابعة (14:30 - 16:10)' },
+  { from: '16:30', to: '18:10', label: 'المحاضرة الخامسة (16:30 - 18:10)' },
+  { from: '18:30', to: '20:10', label: 'المحاضرة السادسة (18:30 - 20:10)' },
+  { from: '20:30', to: '22:10', label: 'المحاضرة السابعة (20:30 - 22:10)' },
+  { from: '22:30', to: '00:10', label: 'المحاضرة الثامنة (22:30 - 00:10)' },
+];
+
+const RAMADAN_SLOTS = [
+  { from: '09:30', to: '10:25', label: 'الفترة الأولى (09:30 - 10:25)' },
+  { from: '10:30', to: '11:25', label: 'الفترة الثانية (10:30 - 11:25)' },
+  { from: '11:30', to: '12:25', label: 'الفترة الثالثة (11:30 - 12:25)' },
+  { from: '12:30', to: '13:25', label: 'الفترة الرابعة (12:30 - 13:25)' },
+  { from: '13:30', to: '14:25', label: 'الفترة الخامسة (13:30 - 14:25)' },
+  { from: '14:30', to: '15:25', label: 'الفترة السادسة (14:30 - 15:25)' },
+  { from: '15:30', to: '16:25', label: 'الفترة السابعة (15:30 - 16:25)' },
+  { from: '16:30', to: '17:25', label: 'الفترة الثامنة (16:30 - 17:25)' },
+];
+
 export default function AdminRequests() {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
@@ -20,12 +42,15 @@ export default function AdminRequests() {
   const [availableRooms, setAvailableRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCheckingRooms, setIsCheckingRooms] = useState(false);
+  const [isRamadanMode, setIsRamadanMode] = useState(false);
   
   // Rejection State
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
-  const [alternativeSlot, setAlternativeSlot] = useState('');
+  const [suggestedRoomId, setSuggestedRoomId] = useState('');
+  const [suggestedDate, setSuggestedDate] = useState('');
+  const [suggestedSlotIndex, setSuggestedSlotIndex] = useState('');
 
   // Approval State
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
@@ -52,8 +77,16 @@ export default function AdminRequests() {
       setRoomsList(r_data);
     });
 
-    return () => { unsubBookings(); unsubRooms(); }
+    const settingsUnsub = onSnapshot(doc(db, 'settings', 'system'), (doc) => {
+      if (doc.exists()) {
+        setIsRamadanMode(doc.data().isRamadanMode);
+      }
+    });
+
+    return () => { unsubBookings(); unsubRooms(); settingsUnsub(); }
   }, []);
+
+  const currentSlots = isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
 
   const handleApproveClick = async (req) => {
     setApproveSelectedRequest(req);
@@ -143,18 +176,35 @@ export default function AdminRequests() {
     if (!selectedRequest) return;
     try {
       const bookingRef = doc(db, 'bookings', selectedRequest.id);
-      await updateDoc(bookingRef, {
+      
+      const suggestedSlot = suggestedSlotIndex !== '' ? currentSlots[suggestedSlotIndex] : null;
+      
+      const updateData = {
         status: 'rejected',
         rejectReason,
-        alternativeSlot,
+        suggestedRoomId,
+        suggestedDate,
+        suggestedTimeFrom: suggestedSlot?.from || '',
+        suggestedTimeTo: suggestedSlot?.to || '',
+        suggestedSlotLabel: suggestedSlot?.label || '',
         updatedAt: serverTimestamp()
-      });
+      };
+      
+      await updateDoc(bookingRef, updateData);
+
+      let suggestionText = '';
+      if (suggestedRoomId || suggestedDate || suggestedSlot) {
+        suggestionText = ' البديل المقترح: ';
+        suggestionText += suggestedRoomId ? `القاعة ${suggestedRoomId}` : '';
+        suggestionText += suggestedDate ? ` يوم ${suggestedDate}` : '';
+        suggestionText += suggestedSlot ? ` من ${suggestedSlot.from} إلى ${suggestedSlot.to}` : '';
+      }
 
       // Employee VIP Notification for Rejection
       await addDoc(collection(db, 'notifications'), {
         userId: selectedRequest.userId,
         title: 'تم رفض طلبك / يتطلب تعديل',
-        message: `تم رفض الحجز لأن القاعة أو الوقت غير متاح. السبب: ${rejectReason || 'غير محدد'}. البديل المقترح: ${alternativeSlot || 'لا يوجد'}`,
+        message: `تم رفض الحجز لأن القاعة أو الوقت غير متاح. السبب: ${rejectReason || 'غير محدد'}.${suggestionText}`,
         type: 'rejection_alert',
         bookingId: selectedRequest.id,
         isRead: false,
@@ -164,7 +214,9 @@ export default function AdminRequests() {
       setIsRejectModalOpen(false);
       setSelectedRequest(null);
       setRejectReason('');
-      setAlternativeSlot('');
+      setSuggestedRoomId('');
+      setSuggestedDate('');
+      setSuggestedSlotIndex('');
       alert('تم إرسال الرفض وإشعار مقدم الطلب بالبدائل المقترحة');
     } catch (e) {
       console.error(e);
@@ -341,15 +393,48 @@ export default function AdminRequests() {
                 ></textarea>
               </div>
               
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-[#5a7698]">غرفة بديلة أو موعد بديل مقترح (اختياري)</label>
-                <input 
-                  type="text"
-                  value={alternativeSlot}
-                  onChange={(e) => setAlternativeSlot(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none font-bold text-sm" 
-                  placeholder="متاح غرفة A-108 بنفس التوقيت"
-                />
+              <div className="space-y-4 pt-4 border-t border-gray-100">
+                <h3 className="text-sm font-bold text-[#001e40]">غرفة أو موعد بديل مقترح (اختياري)</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                     <label className="block text-xs font-bold text-[#5a7698]">القاعة المقترحة</label>
+                     <select 
+                       value={suggestedRoomId}
+                       onChange={e => setSuggestedRoomId(e.target.value)}
+                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+                     >
+                       <option value="">لا يوجد تغيير</option>
+                       {roomsList.filter(r => r.status !== 'unavailable').map(r => (
+                         <option key={r.id} value={r.id}>{r.roomNumber}</option>
+                       ))}
+                     </select>
+                   </div>
+                   
+                   <div className="space-y-2">
+                     <label className="block text-xs font-bold text-[#5a7698]">التاريخ المقترح</label>
+                     <input 
+                        type="date"
+                        value={suggestedDate}
+                        onChange={e => setSuggestedDate(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-right font-bold text-sm outline-none focus:ring-2 focus:ring-red-500"
+                     />
+                   </div>
+                   
+                   <div className="col-span-1 md:col-span-2 space-y-2">
+                     <label className="block text-xs font-bold text-[#5a7698]">الفترة الزمنية المقترحة</label>
+                     <select 
+                        value={suggestedSlotIndex}
+                        onChange={e => setSuggestedSlotIndex(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+                     >
+                        <option value="">لا يوجد تغيير</option>
+                        {currentSlots.map((s, idx) => (
+                          <option key={idx} value={idx}>{s.label}</option>
+                        ))}
+                     </select>
+                   </div>
+                </div>
               </div>
 
               <div className="flex gap-4 mt-8 pt-6 border-t border-gray-100">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, getDocs, query, orderBy, onSnapshot, doc, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -34,25 +34,28 @@ export default function BookingForm() {
   const [rooms, setRooms] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
 
+  const location = useLocation();
+  const prefill = location.state?.prefill || {};
+
   // Form Data
   const [formData, setFormData] = useState({
-    roomId: '',
-    roomType: '', // 'fixed' or 'multi'
-    hallCategory: '', // 'lecture' or 'multi' (for employee UI)
-    date: '',
-    selectedSlot: null, // {from, to, label}
-    timeFrom: '',
-    timeTo: '',
-    purpose: '',
-    respName: currentUser?.displayName || '',
-    respJob: '',
-    respMobile: '',
+    roomId: prefill.roomId || '',
+    roomType: prefill.roomType || '', // 'fixed' or 'multi'
+    hallCategory: prefill.hallCategory || '', // 'lecture' or 'multi' (for employee UI)
+    date: prefill.date || '',
+    selectedSlot: prefill.timeFrom ? { from: prefill.timeFrom, to: prefill.timeTo, label: `${prefill.timeFrom} - ${prefill.timeTo}` } : null,
+    timeFrom: prefill.timeFrom || '',
+    timeTo: prefill.timeTo || '',
+    purpose: prefill.purpose || '',
+    respName: prefill.responsibleName || currentUser?.displayName || '',
+    respJob: '', // not in prefill originally 
+    respMobile: prefill.responsibleMobile || '',
     reqMic: false,
     reqMicQty: 1,
     reqLaptop: false,
     reqVideoConf: false,
-    isHolidayEvent: false,
-    isOfficialOccasion: false
+    isHolidayEvent: prefill.isHolidayEvent || false,
+    isOfficialOccasion: prefill.isOfficialOccasion || false
   });
   const [isRamadanMode, setIsRamadanMode] = useState(false);
   const [isLeadTimeError, setIsLeadTimeError] = useState(false);
@@ -66,6 +69,21 @@ export default function BookingForm() {
           ...doc.data()
         }));
         setRooms(roomsData);
+
+        // Correctly set roomType and hallCategory if a room was prefilled
+        setFormData(prev => {
+          if (prev.roomId && prev.roomId !== 'لم يتم التحديد') {
+            const selectedRoom = roomsData.find(r => r.id === prev.roomId);
+            if (selectedRoom) {
+              return { 
+                ...prev, 
+                roomType: selectedRoom.type || 'fixed', 
+                hallCategory: selectedRoom.type === 'multi' ? 'multi' : 'lecture' 
+              };
+            }
+          }
+          return prev;
+        });
       } catch (err) {
         console.error("Error fetching rooms:", err);
       } finally {
@@ -82,7 +100,6 @@ export default function BookingForm() {
     
     if (userRole === 'secretary') {
       hoursToAdd = 48;
-      setFormData(prev => ({ ...prev, roomId: 'لم يتم التحديد', roomType: 'multi', hallCategory: 'multi' }));
     } else if (userRole === 'employee') {
       hoursToAdd = 24;
     }
@@ -339,6 +356,7 @@ export default function BookingForm() {
                    <div className="relative">
                      <select 
                        className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                       value={formData.timeFrom ? currentSlots.findIndex(s => s.from === formData.timeFrom && s.to === formData.timeTo) : ""}
                        onChange={(e) => {
                          const slot = currentSlots[e.target.value];
                          setFormData(p => ({

@@ -138,10 +138,44 @@ export default function UserDashboard({ title }) {
                     <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">info</span> الغرض: {req.purpose}</span>
                   </div>
                   {req.status === 'rejected' && (
-                    <p className="mt-3 text-sm text-error font-bold flex items-center gap-1 bg-error-container/10 p-2 rounded-lg">
-                      <span className="material-symbols-outlined text-[16px]">error</span>
-                      السبب: {req.rejectReason || 'لم يتم ذكر سبب محدد'}
-                    </p>
+                    <div className="mt-4 flex flex-col gap-2">
+                       <p className="text-sm text-error font-bold flex items-center gap-1 bg-error-container/10 p-2 rounded-lg">
+                         <span className="material-symbols-outlined text-[16px]">error</span>
+                         السبب: {req.rejectReason || 'لم يتم ذكر سبب محدد'}
+                       </p>
+                       {(req.suggestedRoomId || req.suggestedDate || req.suggestedTimeFrom) && (
+                         <div className="bg-blue-50/50 border border-blue-100 p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                           <div className="text-sm text-[#001e40]">
+                             <span className="font-bold flex items-center gap-1 mb-1 text-blue-700">
+                               <span className="material-symbols-outlined text-[16px]">lightbulb</span>
+                               تفاصيل البديل المقترح:
+                             </span>
+                             <div className="flex flex-wrap gap-3 text-xs opacity-80 mt-2">
+                               {req.suggestedRoomId && <span className="bg-white px-2 py-1 rounded border border-blue-100 shadow-sm">القاعة: {req.suggestedRoomId}</span>}
+                               {req.suggestedDate && <span className="bg-white px-2 py-1 rounded border border-blue-100 shadow-sm">التاريخ: {req.suggestedDate}</span>}
+                               {req.suggestedTimeFrom && <span className="bg-white px-2 py-1 rounded border border-blue-100 shadow-sm">الوقت: {req.suggestedTimeFrom} - {req.suggestedTimeTo}</span>}
+                             </div>
+                           </div>
+                           <button 
+                             onClick={() => navigate('/booking', { 
+                               state: { 
+                                 prefill: {
+                                   ...req,
+                                   roomId: req.suggestedRoomId || req.roomId,
+                                   date: req.suggestedDate || req.date,
+                                   timeFrom: req.suggestedTimeFrom || req.timeFrom,
+                                   timeTo: req.suggestedTimeTo || req.timeTo
+                                 } 
+                               }
+                             })}
+                             className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
+                           >
+                             <span className="material-symbols-outlined text-[18px]">refresh</span>
+                             تقديم الطلب بالبديل
+                           </button>
+                         </div>
+                       )}
+                    </div>
                   )}
                 </div>
               </div>
