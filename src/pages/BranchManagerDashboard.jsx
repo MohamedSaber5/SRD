@@ -18,6 +18,8 @@ export default function BranchManagerDashboard() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [rooms, setRooms] = useState({});
+  const [isRamadanMode, setIsRamadanMode] = useState(false);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
 
   useEffect(() => {
     // 1. Fetch multi-purpose rooms metadata once
@@ -48,8 +50,31 @@ export default function BranchManagerDashboard() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // 3. Listen to system settings (Ramadan Mode)
+    const settingsUnsubscribe = onSnapshot(doc(db, 'settings', 'system'), (doc) => {
+      if (doc.exists()) {
+        setIsRamadanMode(doc.data().isRamadanMode);
+      }
+      setIsSettingsLoading(false);
+    });
+
+    return () => {
+      unsubscribe();
+      settingsUnsubscribe();
+    };
   }, []);
+
+  const toggleRamadanMode = async () => {
+    try {
+      const newMode = !isRamadanMode;
+      const docRef = doc(db, 'settings', 'system');
+      await updateDoc(docRef, { isRamadanMode: newMode });
+      alert(newMode ? 'تم تفعيل وضع رمضان للنظام بالكامل' : 'تم العودة للمواعيد العادية');
+    } catch (e) {
+      console.error(e);
+      alert('حدث خطأ أثناء تحديث الإعدادات');
+    }
+  };
 
   const handleApprove = async (id) => {
     if (!window.confirm('هل أنت متأكد من اعتماد هذا الحجز؟')) return;
@@ -78,9 +103,19 @@ export default function BranchManagerDashboard() {
           <h1 className="text-4xl font-headline font-bold text-primary tracking-tight">اعتمادات مدير الفرع</h1>
           <p className="text-on-surface-variant mt-2 text-lg">مراجعة واعتماد طلبات القاعات متعددة الأغراض</p>
         </div>
-        <div className="bg-secondary/10 px-4 py-2 rounded-2xl flex items-center gap-2 border border-secondary/20 shadow-sm">
-          <span className="material-symbols-outlined text-secondary">verified_user</span>
-          <span className="text-secondary font-bold">صلاحية الاعتماد النهائي</span>
+        <div className="flex flex-col md:flex-row gap-3">
+          <button 
+            onClick={toggleRamadanMode}
+            disabled={isSettingsLoading}
+            className={`px-5 py-2.5 rounded-2xl flex items-center gap-3 font-bold transition-all shadow-sm border ${isRamadanMode ? 'bg-orange-500 text-white border-orange-600' : 'bg-surface-container-highest text-on-surface border-surface-container-high'}`}
+          >
+            <span className="material-symbols-outlined">{isRamadanMode ? 'ramadan_fasting' : 'schedule'}</span>
+            {isRamadanMode ? 'وضع رمضان: مفعّل' : 'تفعيل وضع رمضان'}
+          </button>
+          <div className="bg-secondary/10 px-4 py-2 rounded-2xl flex items-center gap-2 border border-secondary/20 shadow-sm">
+            <span className="material-symbols-outlined text-secondary">verified_user</span>
+            <span className="text-secondary font-bold">صلاحية الاعتماد النهائي</span>
+          </div>
         </div>
       </div>
 

@@ -2,7 +2,29 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, onSnapshot, doc } from 'firebase/firestore';
+
+const REGULAR_SLOTS = [
+  { from: '08:30', to: '10:10', label: 'المحاضرة الأولى (08:30 - 10:10)' },
+  { from: '10:30', to: '12:10', label: 'المحاضرة الثانية (10:30 - 12:10)' },
+  { from: '12:30', to: '14:10', label: 'المحاضرة الثالثة (12:30 - 14:10)' },
+  { from: '14:30', to: '16:10', label: 'المحاضرة الرابعة (14:30 - 16:10)' },
+  { from: '16:30', to: '18:10', label: 'المحاضرة الخامسة (16:30 - 18:10)' },
+  { from: '18:30', to: '20:10', label: 'المحاضرة السادسة (18:30 - 20:10)' },
+  { from: '20:30', to: '22:10', label: 'المحاضرة السابعة (20:30 - 22:10)' },
+  { from: '22:30', to: '00:10', label: 'المحاضرة الثامنة (22:30 - 00:10)' },
+];
+
+const RAMADAN_SLOTS = [
+  { from: '09:30', to: '10:25', label: 'الفترة الأولى (09:30 - 10:25)' },
+  { from: '10:30', to: '11:25', label: 'الفترة الثانية (10:30 - 11:25)' },
+  { from: '11:30', to: '12:25', label: 'الفترة الثالثة (11:30 - 12:25)' },
+  { from: '12:30', to: '13:25', label: 'الفترة الرابعة (12:30 - 13:25)' },
+  { from: '13:30', to: '14:25', label: 'الفترة الخامسة (13:30 - 14:25)' },
+  { from: '14:30', to: '15:25', label: 'الفترة السادسة (14:30 - 15:25)' },
+  { from: '15:30', to: '16:25', label: 'الفترة السابعة (15:30 - 16:25)' },
+  { from: '16:30', to: '17:25', label: 'الفترة الثامنة (16:30 - 17:25)' },
+];
 
 export default function BookingForm() {
   const { userRole, currentUser } = useAuth();
@@ -18,6 +40,7 @@ export default function BookingForm() {
     roomType: '', // 'fixed' or 'multi'
     hallCategory: '', // 'lecture' or 'multi' (for employee UI)
     date: '',
+    selectedSlot: null, // {from, to, label}
     timeFrom: '',
     timeTo: '',
     purpose: '',
@@ -29,6 +52,8 @@ export default function BookingForm() {
     reqLaptop: false,
     reqVideoConf: false
   });
+  const [isRamadanMode, setIsRamadanMode] = useState(false);
+  const [isLeadTimeError, setIsLeadTimeError] = useState(false);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -61,17 +86,37 @@ export default function BookingForm() {
 
     const minAllowed = new Date(today.getTime() + hoursToAdd * 60 * 60 * 1000);
     setMinDate(minAllowed.toISOString().split('T')[0]);
+
+    // 3. Listen to system settings (Ramadan Mode)
+    const settingsUnsubscribe = onSnapshot(doc(db, 'settings', 'system'), (doc) => {
+      if (doc.exists()) {
+        setIsRamadanMode(doc.data().isRamadanMode);
+      }
+    });
+
+    return () => settingsUnsubscribe();
   }, [userRole]);
 
   const handleNext = () => setStep((s) => Math.min(s + 1, 3));
   const handlePrev = () => setStep((s) => Math.max(s - 1, 1));
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    
+    if (name === 'date' && userRole === 'employee') {
+       // Quick 24h check for employee date selection
+       const selectedDate = new Date(value);
+       const now = new Date();
+       const diffHours = (selectedDate - now) / (1000 * 60 * 60);
+       setIsLeadTimeError(diffHours < 24 && selectedDate.toDateString() === now.toDateString());
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
   };
+
+  const currentSlots = isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -272,16 +317,45 @@ export default function BookingForm() {
                   </div>
                 </div>
 
-                <div className="col-span-1 grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-label font-bold text-on-surface-variant">من</label>
-                    <input name="timeFrom" value={formData.timeFrom} onChange={handleChange} required className="w-full bg-surface-container-high border-none rounded-xl px-2 py-3 text-on-surface focus:ring-2 focus:ring-primary cursor-pointer text-center" type="time"/>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-label font-bold text-on-surface-variant">إلى</label>
-                    <input name="timeTo" value={formData.timeTo} onChange={handleChange} required className="w-full bg-surface-container-high border-none rounded-xl px-2 py-3 text-on-surface focus:ring-2 focus:ring-primary cursor-pointer text-center" type="time"/>
-                  </div>
-                </div>
+                 <div className="col-span-1 space-y-2">
+                   <label className="block text-sm font-label font-bold text-on-surface-variant">الفترة الزمنية المتاحة</label>
+                   <div className="relative">
+                     <select 
+                       className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                       onChange={(e) => {
+                         const slot = currentSlots[e.target.value];
+                         setFormData(p => ({
+                           ...p,
+                           selectedSlot: slot,
+                           timeFrom: slot.from,
+                           timeTo: slot.to
+                         }));
+                         
+                         // Re-check 24h rule with exact time if same day
+                         if (userRole === 'employee' && formData.date) {
+                            const [hours, minutes] = slot.from.split(':');
+                            const bookingTime = new Date(formData.date);
+                            bookingTime.setHours(parseInt(hours), parseInt(minutes));
+                            const diff = (bookingTime - new Date()) / (1000 * 60 * 60);
+                            setIsLeadTimeError(diff < 24);
+                         }
+                       }}
+                       required
+                     >
+                       <option value="">اختر فترة...</option>
+                       {currentSlots.map((s, idx) => (
+                         <option key={idx} value={idx}>{s.label}</option>
+                       ))}
+                     </select>
+                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                   </div>
+                   {isLeadTimeError && (
+                     <p className="text-xs text-error font-bold mt-1 px-1 flex items-center gap-1 animate-pulse">
+                        <span className="material-symbols-outlined text-sm">warning</span> 
+                        عفواً، يجب أن يكون الحجز قبل الموعد بـ 24 ساعة على الأقل.
+                     </p>
+                   )}
+                 </div>
 
                 <div className="col-span-1 md:col-span-2 space-y-2">
                   <label className="block text-sm font-label font-bold text-on-surface-variant">الغرض من الاستخدام</label>
@@ -369,10 +443,10 @@ export default function BookingForm() {
             {step < 3 ? (
               <button 
                 onClick={handleNext} 
-                className="px-8 py-2.5 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-bold hover:scale-[1.02] transition-transform shadow-md flex items-center gap-2" 
+                className="px-8 py-2.5 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-bold hover:scale-[1.02] transition-transform shadow-md flex items-center gap-2 disabled:opacity-50 disabled:scale-100" 
                 type="button"
-                // Basic validation block before proceeding
-                disabled={step === 1 && (!formData.roomId || !formData.date || !formData.timeFrom || !formData.timeTo)}
+                // Combined validation for slots and lead-time
+                disabled={(step === 1 && (!formData.roomId || !formData.date || !formData.timeFrom || isLeadTimeError))}
               >
                 <span>التالي</span>
                 <span className="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
