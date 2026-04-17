@@ -1,15 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginScreen() {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
-  const [mockRole, setMockRole] = useState('employee'); // Default for development
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, currentUser, userRole } = useAuth();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (currentUser && userRole) {
+      if (userRole === 'admin') navigate('/admin');
+      else if (userRole === 'branch_manager') navigate('/branch_manager');
+      else navigate('/dashboard');
+    }
+  }, [currentUser, userRole, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,9 +30,7 @@ export default function LoginScreen() {
     setError('');
     try {
       await login(employeeId, password);
-      
-      // Navigate to a generic entry point; dashboard or App will handle redirection
-      // Actually we can just redirect to dashboard, the Sidebar will guide them.
+      console.log("Login successful, navigating...");
       navigate('/dashboard');
     } catch (err) {
       console.error(err);

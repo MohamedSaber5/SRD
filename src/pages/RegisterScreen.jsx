@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function RegisterScreen() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, currentUser, userRole } = useAuth();
   
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (currentUser && userRole) {
+      if (userRole === 'admin') navigate('/admin');
+      else if (userRole === 'branch_manager') navigate('/branch_manager');
+      else navigate('/dashboard');
+    }
+  }, [currentUser, userRole, navigate]);
+
   const [role, setRole] = useState('admin');
   const [name, setName] = useState('');
   const [uid, setUid] = useState('');
@@ -30,7 +39,8 @@ export default function RegisterScreen() {
     setError('');
     try {
       await register(name, uid, role, password);
-      // Let standard routing take them based on their role
+      console.log("Registration successful, navigating...");
+      // Standardize navigation to dashboard, Guard will handle the rest
       navigate('/dashboard');
     } catch (err) {
       console.error(err);

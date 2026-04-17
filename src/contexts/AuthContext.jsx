@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -17,28 +17,37 @@ export const AuthProvider = ({ children }) => {
   const formatEmail = (uid) => `${uid.trim()}@aast.edu`;
 
   const register = async (name, employeeId, role, password) => {
-    setLoading(true);
+    console.log("Starting registration for:", employeeId);
     try {
       const email = formatEmail(employeeId);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log("Auth user created:", user.uid);
       
-      const { setDoc } = await import('firebase/firestore');
-      await setDoc(doc(db, "users", user.uid), {
+      const userDataObj = {
         displayName: name,
         employeeId: employeeId,
         role: role,
         createdAt: new Date()
-      });
+      };
+
+      await setDoc(doc(db, "users", user.uid), userDataObj);
+      console.log("Firestore document created for user");
+      
+      // Update local state immediately to speed up navigation
+      setUserRole(role);
+      setUserData(userDataObj);
+      setCurrentUser(user);
+
       return user;
     } catch (error) {
+      console.error("Registration error:", error);
       setLoading(false);
       throw error;
     }
   };
 
   const login = async (employeeId, password) => {
-    setLoading(true);
     const email = formatEmail(employeeId);
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
@@ -49,35 +58,60 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true);
+    let unsubscribeDoc = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed:", user ? user.uid : "no user");
+      
+      if (unsubscribeDoc) {
+        unsubscribeDoc();
+        unsubscribeDoc = null;
+      }
+
       if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            setUserRole(data.role);
-            setUserData(data);
-            setCurrentUser(user);
-          } else {
-             setUserRole('employee'); 
-             setUserData({ displayName: user.email.split('@')[0] });
-             setCurrentUser(user);
+        setCurrentUser(user);
+        setLoading(false); // Set loading false immediately to allow Guard to mount
+
+        // Start a safety timeout for role fetch only
+        const timeoutId = setTimeout(() => {
+          if (!userRole) {
+            console.warn("Firestore role fetch timed out, defaulting to employee");
+            setUserRole('employee');
           }
+        }, 2000);
+
+        try {
+          unsubscribeDoc = onSnapshot(doc(db, "users", user.uid), (userDoc) => {
+            clearTimeout(timeoutId);
+            if (userDoc.exists()) {
+              const data = userDoc.data();
+              console.log("User role found:", data.role);
+              setUserData(data);
+              setUserRole(data.role);
+            } else {
+              setUserRole('employee');
+            }
+          }, (error) => {
+            console.error("Snapshot error:", error);
+            clearTimeout(timeoutId);
+            if (!userRole) setUserRole('employee');
+          });
         } catch (error) {
-           console.error("Error fetching role:", error);
-           setUserRole('employee');
-           setCurrentUser(user);
+          clearTimeout(timeoutId);
+          if (!userRole) setUserRole('employee');
         }
       } else {
         setCurrentUser(null);
         setUserRole(null);
         setUserData(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeDoc) unsubscribeDoc();
+    };
   }, []);
 
   const value = {
