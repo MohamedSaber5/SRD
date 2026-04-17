@@ -8,7 +8,9 @@ import {
   doc, 
   updateDoc, 
   serverTimestamp,
-  getDocs
+  getDocs,
+  orderBy,
+  addDoc
 } from 'firebase/firestore';
 import EditBookingModal from '../components/bookings/EditBookingModal';
 
@@ -20,6 +22,7 @@ export default function BranchManagerDashboard() {
   const [rooms, setRooms] = useState({});
   const [isRamadanMode, setIsRamadanMode] = useState(false);
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
+  const [auditLogs, setAuditLogs] = useState([]);
 
   useEffect(() => {
     // 1. Fetch multi-purpose rooms metadata once
@@ -58,9 +61,17 @@ export default function BranchManagerDashboard() {
       setIsSettingsLoading(false);
     });
 
+    // 4. Fetch Audit Logs for activity tracking
+    const qAudit = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'));
+    const auditUnsubscribe = onSnapshot(qAudit, (snapshot) => {
+      const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAuditLogs(logs);
+    });
+
     return () => {
       unsubscribe();
       settingsUnsubscribe();
+      auditUnsubscribe();
     };
   }, []);
 
@@ -271,6 +282,52 @@ export default function BranchManagerDashboard() {
         onClose={() => setIsEditModalOpen(false)} 
         onUpdate={() => {/* Re-fetch handled by onSnapshot */}} 
       />
+
+      {/* Audit Logs Section */}
+      <div className="mt-12 bg-white rounded-3xl p-8 shadow-sm border border-gray-100 min-h-[400px]">
+         <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+            <div>
+              <h2 className="text-2xl font-headline font-black text-[#001e40] flex items-center gap-3">
+                <span className="material-symbols-outlined text-[#b58b4b] text-[32px]">history_edu</span>
+                سجل النشاط والصلاحيات (Audit Logs)
+              </h2>
+              <p className="text-sm font-bold text-gray-500 mt-1">مراقبة دقيقة لكل تحركات مدراء النظام والسكرتارية لتحديد المسؤوليات.</p>
+            </div>
+         </div>
+
+         <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+            {auditLogs.length > 0 ? auditLogs.map((log, index) => (
+               <div key={log.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                     <span className="material-symbols-outlined text-[18px]">
+                        {log.actionType === 'REQUEST_BOOKING' ? 'bookmark_added' : log.actionType === 'DELEGATE_ADMIN' ? 'admin_panel_settings' : 'badge'}
+                     </span>
+                  </div>
+                  
+                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-gray-50 p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                     <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-gray-800 text-sm bg-white px-2 py-1 rounded shadow-sm border border-gray-100">
+                          {log.actionByName || log.actionBy}
+                        </span>
+                        <time className="text-xs font-bold text-gray-400">
+                          {log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString('ar-EG') : 'الآن'}
+                        </time>
+                     </div>
+                     <p className="text-[#1e3a5f] font-black text-sm leading-relaxed mb-1">
+                        {log.actionType === 'REQUEST_BOOKING' ? 'طلب حجز قاعة' : log.actionType === 'DELEGATE_ADMIN' ? 'منح تفويض أدمن مؤقت' : log.actionType === 'ASSIGN_SECRETARY' ? 'تعيين سكرتير كلية' : 'إجراء إداري'}
+                     </p>
+                     <p className="text-gray-500 font-medium text-xs leading-relaxed">
+                        {log.details}
+                     </p>
+                  </div>
+               </div>
+            )) : (
+              <div className="text-center py-10 text-gray-400 font-bold">
+                 لا توجد سجلات نشاط مسجلة حتى الآن.
+              </div>
+            )}
+         </div>
+      </div>
     </div>
   );
 }
