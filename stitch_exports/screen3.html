@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تسجيل الدخول - البوابة الأكاديمية لحجز القاعات</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Tajawal:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c3c6d1",
+                        "primary": "#001e40",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#3c475a",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#191c1e",
+                        "surface-tint": "#3a5f94",
+                        "on-surface-variant": "#43474f",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "on-secondary-fixed": "#261900",
+                        "tertiary": "#141f30",
+                        "secondary-fixed": "#ffdea5",
+                        "on-primary-container": "#799dd6",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-fixed": "#001b3c",
+                        "surface-dim": "#d8dadc",
+                        "secondary": "#775a19",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary-container": "#785a1a",
+                        "secondary-fixed-dim": "#e9c176",
+                        "surface": "#f7f9fb",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "tertiary-fixed": "#d8e3fb",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#111c2d",
+                        "primary-container": "#003366",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "inverse-primary": "#a7c8ff",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#293446",
+                        "tertiary-fixed-dim": "#bcc7de",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-container": "#919cb3",
+                        "on-secondary-fixed-variant": "#5d4201",
+                        "on-primary": "#ffffff",
+                        "outline": "#737780",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-container": "#fed488",
+                        "primary-fixed": "#d5e3ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Tajawal", "sans-serif"],
+                        "body": ["IBM Plex Sans Arabic", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: theme('colors.surface');
+            color: theme('colors.on-surface');
+        }
+        h1, h2, h3, h4, h5, h6, .font-headline {
+            font-family: 'Tajawal', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 0.5px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden bg-primary text-on-surface">
+<!-- Background Image with Blue Overlay -->
+<div class="absolute inset-0 z-0">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/90 to-primary-container/80 z-10 mix-blend-multiply"></div>
+<img alt="Academic Background" class="w-full h-full object-cover object-center filter blur-[2px] opacity-60" data-alt="modern architectural corridor of a high-tech university campus with natural light filtering through glass, academic setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJ1GHscbXb0e0GI3SLErKFr6WZApiCqtuLfbti7AbzO2NxrRpHQFkhFx8HBdE03KVdFnY-dIJ4E5C3Wk9WLZw7a57kAW1Zcf4Jy67_xhKskcfRD25OtHGJdGD64RCDItXuy9mrCMF_rp7UK_MOdLjM1t7mzMTTkrlCVPdskh4XTT9L-MlWJ8bwAMIOY4ht611V2OQmh01dO3lNEuPWOVwHRwgjTXeUW2RoI7bmSumU6vQ8ceE9JFio7LApY5cYnmzYHBkXK9lMsakU"/>
+</div>
+<!-- Ambient Shadow Element -->
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary rounded-full blur-[120px] opacity-30 z-0 pointer-events-none"></div>
+<!-- Main Content Container -->
+<div class="relative z-20 w-full max-w-6xl mx-auto px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between gap-16">
+<!-- Typography / Branding Column -->
+<div class="w-full lg:w-1/2 text-right hidden md:block">
+<h1 class="font-headline font-black text-6xl lg:text-7xl text-on-primary leading-tight tracking-wide mb-6 drop-shadow-lg">
+                البوابة الأكاديمية<br/>
+<span class="text-secondary-fixed">لحجز القاعات</span>
+</h1>
+<p class="font-body text-xl lg:text-2xl text-primary-fixed-dim max-w-lg leading-[1.8] opacity-90">
+                إدارة المساحات الأكاديمية بدقة وذكاء
+            </p>
+<div class="mt-12 flex items-center gap-6 opacity-80">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-fixed text-3xl" style="font-variation-settings: 'FILL' 1;">assured_workload</span>
+<span class="text-on-primary font-body text-lg">AASTMT</span>
+</div>
+</div>
+</div>
+<!-- Login Form Column -->
+<div class="w-full max-w-md lg:w-1/2">
+<div class="glass-panel rounded-3xl p-10 lg:p-12 shadow-[0_12px_32px_rgba(0,30,64,0.1)] relative overflow-hidden">
+<!-- Subtle Edge Catch-light -->
+<div class="absolute inset-0 rounded-3xl border border-white/40 pointer-events-none"></div>
+<!-- Mobile Branding (Visible only on small screens) -->
+<div class="md:hidden text-center mb-8">
+<span class="material-symbols-outlined text-primary text-5xl mb-4" style="font-variation-settings: 'FILL' 1;">assured_workload</span>
+<h2 class="font-headline font-black text-3xl text-primary">البوابة الأكاديمية</h2>
+<p class="text-on-surface-variant font-body text-sm mt-2">إدارة المساحات الأكاديمية بدقة وذكاء</p>
+</div>
+<div class="mb-8 hidden md:block">
+<h2 class="font-headline font-bold text-3xl text-primary mb-2">تسجيل الدخول</h2>
+<p class="text-on-surface-variant font-body text-base">مرحباً بك في البوابة الأكاديمية</p>
+</div>
+<form class="space-y-6">
+<!-- Full Name -->
+<div class="space-y-2">
+<label class="block font-body text-sm font-medium text-on-surface-variant" for="fullName">الاسم الكامل</label>
+<div class="relative">
+<span class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline">person</span>
+</span>
+<input class="block w-full rounded-xl border-0 py-3.5 pr-12 pl-4 text-on-surface bg-surface-container-high focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-colors text-right font-body placeholder:text-outline-variant" id="fullName" name="fullName" placeholder="أدخل اسمك الكامل" type="text"/>
+</div>
+</div>
+<!-- Unique ID -->
+<div class="space-y-2">
+<label class="block font-body text-sm font-medium text-on-surface-variant" for="employeeId">الرقم الوظيفي</label>
+<div class="relative">
+<span class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline">badge</span>
+</span>
+<input class="block w-full rounded-xl border-0 py-3.5 pr-12 pl-4 text-on-surface bg-surface-container-high focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-colors text-right font-body placeholder:text-outline-variant" id="employeeId" name="employeeId" placeholder="أدخل الرقم الوظيفي" type="text"/>
+</div>
+</div>
+<!-- Password -->
+<div class="space-y-2">
+<label class="block font-body text-sm font-medium text-on-surface-variant" for="password">كلمة المرور</label>
+<div class="relative">
+<span class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline">lock</span>
+</span>
+<input class="block w-full rounded-xl border-0 py-3.5 pr-12 pl-4 text-on-surface bg-surface-container-high focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-colors text-right font-body placeholder:text-outline-variant" id="password" name="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<!-- Actions -->
+<div class="pt-4">
+<button class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-bold text-lg py-4 rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300" type="button">
+                            تسجيل الدخول
+                            <span class="material-symbols-outlined rotate-180 text-xl">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</body></html>

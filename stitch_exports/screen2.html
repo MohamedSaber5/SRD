@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>البوابة الأكاديمية - لوحة التحكم</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Tajawal:wght@400;500;700;800;900&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c3c6d1",
+                        "primary": "#001e40",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#3c475a",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#191c1e",
+                        "surface-tint": "#3a5f94",
+                        "on-surface-variant": "#43474f",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "on-secondary-fixed": "#261900",
+                        "tertiary": "#141f30",
+                        "secondary-fixed": "#ffdea5",
+                        "on-primary-container": "#799dd6",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-fixed": "#001b3c",
+                        "surface-dim": "#d8dadc",
+                        "secondary": "#775a19",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary-container": "#785a1a",
+                        "secondary-fixed-dim": "#e9c176",
+                        "surface": "#f7f9fb",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "tertiary-fixed": "#d8e3fb",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#111c2d",
+                        "primary-container": "#003366",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "inverse-primary": "#a7c8ff",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#293446",
+                        "tertiary-fixed-dim": "#bcc7de",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-container": "#919cb3",
+                        "on-secondary-fixed-variant": "#5d4201",
+                        "on-primary": "#ffffff",
+                        "outline": "#737780",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-container": "#fed488",
+                        "primary-fixed": "#d5e3ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Tajawal", "Manrope", "sans-serif"],
+                        "body": ["Work Sans", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Work Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Tajawal', sans-serif; }
+        .glass-panel { background: rgba(247, 249, 251, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .ambient-shadow { box-shadow: 0 12px 32px rgba(0, 30, 64, 0.1); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen overflow-x-hidden selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-[#f7f9fb]/80 dark:bg-slate-950/80 backdrop-blur-lg text-[#001e40] dark:text-slate-100 font-['Tajawal'] font-bold text-lg leading-relaxed tracking-wide shadow-sm bg-[#f7f9fb] shadow-[0_1px_0_0_rgba(195,198,209,0.15)] flex flex-row-reverse justify-between items-center px-6 py-4 max-w-full mx-auto md:hidden">
+<div class="text-xl font-bold bg-gradient-to-br from-[#001e40] to-[#003366] bg-clip-text text-transparent dark:from-slate-100 dark:to-slate-300">
+            البوابة الأكاديمية
+        </div>
+<div class="flex items-center gap-4">
+<button class="text-[#001e40] hover:bg-[#e0e3e5] p-2 rounded-full transition-all duration-300 scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="text-[#001e40] hover:bg-[#e0e3e5] p-2 rounded-full transition-all duration-300 scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-[#001e40] hover:bg-[#e0e3e5] p-2 rounded-full transition-all duration-300 scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar (Web) -->
+<nav class="hidden md:flex flex-col h-screen w-64 fixed right-0 top-0 border-l border-[#c3c6d1]/15 bg-[#f7f9fb] dark:bg-slate-950 text-[#001e40] dark:text-slate-100 font-['Tajawal'] font-medium text-md leading-relaxed p-6 text-right z-40">
+<div class="mb-8">
+<div class="text-2xl font-black text-[#001e40] dark:text-white mb-2">البوابة الأكاديمية</div>
+<div class="text-on-surface-variant text-sm">نظام حجز القاعات</div>
+</div>
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-white rounded-xl px-4 py-3 mb-8 shadow-md hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+            طلب حجز جديد
+        </button>
+<ul class="space-y-2 flex-grow">
+<li>
+<a class="flex flex-row-reverse items-center gap-3 bg-gradient-to-l from-[#001e40] to-[#003366] text-white rounded-xl px-4 py-3 shadow-lg hover:translate-x-[-4px] transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>لوحة التحكم</span>
+</a>
+</li>
+<li>
+<a class="flex flex-row-reverse items-center gap-3 text-[#191c1e] dark:text-slate-400 px-4 py-3 hover:bg-[#e0e3e5] dark:hover:bg-slate-800 rounded-xl transition-colors hover:translate-x-[-4px] transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span>الجدول الأسبوعي</span>
+</a>
+</li>
+<li>
+<a class="flex flex-row-reverse items-center gap-3 text-[#191c1e] dark:text-slate-400 px-4 py-3 hover:bg-[#e0e3e5] dark:hover:bg-slate-800 rounded-xl transition-colors hover:translate-x-[-4px] transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span>حجوزاتي</span>
+</a>
+</li>
+<li>
+<a class="flex flex-row-reverse items-center gap-3 text-[#191c1e] dark:text-slate-400 px-4 py-3 hover:bg-[#e0e3e5] dark:hover:bg-slate-800 rounded-xl transition-colors hover:translate-x-[-4px] transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="meeting_room">meeting_room</span>
+<span>القاعات</span>
+</a>
+</li>
+<li>
+<a class="flex flex-row-reverse items-center gap-3 text-[#191c1e] dark:text-slate-400 px-4 py-3 hover:bg-[#e0e3e5] dark:hover:bg-slate-800 rounded-xl transition-colors hover:translate-x-[-4px] transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>التقارير</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto flex items-center gap-3 pt-4 border-t border-outline-variant/15">
+<img alt="صورة الملف الشخصي للمستخدم" class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-lowest" data-alt="professional headshot of an arab man in smart casual attire, warm lighting, blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh5PjG5pHMO1xrSnFXhDQ3pSlArqOgLOuO9JYtEiBafY6OuHaxxqIxtAHR2SdhFIjtXI3xeLxb3cjTs1c6PooOVbxtOhHE7_D9xRg1nz84f1CEWTM7p2RS4XtFiuuXMt36CB4ZHDfK8owvqRtwWjD4dv9sDdIiUe9VyC1cnCMrp6x8uugJxzcCgBbeSJbJRI4g6EWNOytmTGq4LjOaTyeJj72-jIRuLfsHu8Yg-0Byyc61qEeheyxrjTY-zJrfPHlnp2fWHUyFLw6i"/>
+<div class="text-right">
+<div class="font-bold text-sm text-on-surface">د. أحمد محمد</div>
+<div class="text-xs text-on-surface-variant">مدير النظام</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="pt-20 md:pt-8 px-6 md:pr-72 pb-12 max-w-7xl mx-auto">
+<!-- Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-4xl font-headline font-bold text-primary tracking-tight">نظرة عامة</h1>
+<p class="text-on-surface-variant mt-2 text-lg">ملخص نشاط الحجوزات اليوم</p>
+</div>
+<div class="hidden md:flex gap-3">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-lg border border-outline-variant/15 hover:bg-surface-container-low transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">download</span>
+                    تصدير التقرير
+                </button>
+</div>
+</div>
+<!-- Stats Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- Stat Card 1 -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 ambient-shadow relative overflow-hidden group">
+<div class="absolute -left-6 -top-6 w-24 h-24 bg-primary/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="p-3 bg-primary-container text-white rounded-xl">
+<span class="material-symbols-outlined" data-icon="book_online">book_online</span>
+</div>
+<span class="bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                        +12% <span class="material-symbols-outlined text-xs">trending_up</span>
+</span>
+</div>
+<div class="relative z-10">
+<div class="text-on-surface-variant text-sm font-medium mb-1">إجمالي الحجوزات</div>
+<div class="text-4xl font-headline font-bold text-primary">1,248</div>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 ambient-shadow relative overflow-hidden group">
+<div class="absolute -left-6 -top-6 w-24 h-24 bg-secondary/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="p-3 bg-secondary-container text-on-secondary-container rounded-xl">
+<span class="material-symbols-outlined" data-icon="pending_actions">pending_actions</span>
+</div>
+<span class="bg-surface-container-high text-on-surface px-3 py-1 rounded-full text-sm font-medium">اليوم</span>
+</div>
+<div class="relative z-10">
+<div class="text-on-surface-variant text-sm font-medium mb-1">الطلبات المعلقة</div>
+<div class="text-4xl font-headline font-bold text-secondary">34</div>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 ambient-shadow relative overflow-hidden group">
+<div class="absolute -left-6 -top-6 w-24 h-24 bg-tertiary/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="p-3 bg-tertiary-container text-white rounded-xl">
+<span class="material-symbols-outlined" data-icon="pie_chart">pie_chart</span>
+</div>
+</div>
+<div class="relative z-10">
+<div class="text-on-surface-variant text-sm font-medium mb-1">نسبة إشغال القاعات</div>
+<div class="text-4xl font-headline font-bold text-tertiary">86%</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 mt-4 overflow-hidden">
+<div class="bg-gradient-to-r from-tertiary to-tertiary-fixed h-2 rounded-full" style="width: 86%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Complex Layout Area -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Weekly Grid Schedule (Takes 2 columns on large screens) -->
+<div class="lg:col-span-2 bg-surface-container-lowest rounded-2xl p-6 ambient-shadow">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-2xl font-headline font-bold text-primary">الجدول الأسبوعي</h2>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container-low rounded-lg text-on-surface-variant transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+<span class="py-2 px-4 font-medium text-sm">أكتوبر 2023</span>
+<button class="p-2 hover:bg-surface-container-low rounded-lg text-on-surface-variant transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<div class="min-w-[700px]">
+<!-- Grid Header -->
+<div class="grid grid-cols-6 gap-2 mb-4 text-center text-sm font-medium text-on-surface-variant">
+<div class="text-right pl-4">الوقت</div>
+<div>الأحد</div>
+<div>الإثنين</div>
+<div>الثلاثاء</div>
+<div>الأربعاء</div>
+<div>الخميس</div>
+</div>
+<!-- Grid Body (Simulated rows) -->
+<div class="space-y-3 relative">
+<!-- Horizontal Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none z-0">
+<div class="border-t border-outline-variant/10 h-16"></div>
+<div class="border-t border-outline-variant/10 h-16"></div>
+<div class="border-t border-outline-variant/10 h-16"></div>
+<div class="border-t border-outline-variant/10 h-16"></div>
+</div>
+<!-- Row 1: 08:00 AM -->
+<div class="grid grid-cols-6 gap-2 h-16 items-center relative z-10">
+<div class="text-right text-sm text-on-surface-variant pr-2">08:00 ص</div>
+<div class="bg-primary-container/10 border-r-4 border-primary text-primary rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center">
+<span>قاعة 101</span>
+<span class="opacity-70">محاضرة ثابتة</span>
+</div>
+<div></div>
+<div class="bg-secondary-container/20 border-r-4 border-secondary text-secondary-fixed-variant rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center">
+<span>قاعة 204</span>
+<span class="opacity-70">حجز استثنائي</span>
+</div>
+<div></div>
+<div class="bg-tertiary-container/10 border-r-4 border-tertiary text-tertiary rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center">
+<span>المسرح</span>
+<span class="opacity-70">متعدد الأغراض</span>
+</div>
+</div>
+<!-- Row 2: 10:00 AM -->
+<div class="grid grid-cols-6 gap-2 h-16 items-center relative z-10">
+<div class="text-right text-sm text-on-surface-variant pr-2">10:00 ص</div>
+<div></div>
+<div class="bg-primary-container/10 border-r-4 border-primary text-primary rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center col-span-2">
+<span>معمل الحاسبات (أ)</span>
+<span class="opacity-70">محاضرة ثابتة - ساعتين</span>
+</div>
+<div></div>
+<div></div>
+</div>
+<!-- Row 3: 12:00 PM -->
+<div class="grid grid-cols-6 gap-2 h-16 items-center relative z-10">
+<div class="text-right text-sm text-on-surface-variant pr-2">12:00 م</div>
+<div class="bg-secondary-container/20 border-r-4 border-secondary text-secondary-fixed-variant rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center">
+<span>قاعة 302</span>
+<span class="opacity-70">مناقشة مشروع</span>
+</div>
+<div></div>
+<div></div>
+<div class="bg-tertiary-container/10 border-r-4 border-tertiary text-tertiary rounded-lg p-2 text-xs font-medium h-full flex flex-col justify-center">
+<span>قاعة الاجتماعات</span>
+<span class="opacity-70">اجتماع قسم</span>
+</div>
+<div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Requests Sidebar -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 ambient-shadow flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-2xl font-headline font-bold text-primary">الطلبات الأخيرة</h2>
+<button class="text-sm text-secondary font-medium hover:underline">عرض الكل</button>
+</div>
+<div class="space-y-4 flex-grow">
+<!-- Request Item 1 -->
+<div class="bg-surface rounded-xl p-4 border border-outline-variant/10 hover:border-outline-variant/30 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<div class="font-bold text-on-surface">طلب حجز قاعة 105</div>
+<span class="bg-error-container/20 text-error px-2 py-0.5 rounded text-xs font-medium">عاجل</span>
+</div>
+<div class="text-sm text-on-surface-variant mb-4 space-y-1">
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">person</span> د. سامي عبد الله</div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">schedule</span> غداً، 10:00 ص - 12:00 م</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-container transition-colors">قبول</button>
+<button class="flex-1 bg-surface-container-highest text-on-surface rounded-lg py-2 text-sm font-medium hover:bg-surface-dim transition-colors border border-outline-variant/20">رفض مع بديل</button>
+</div>
+</div>
+<!-- Request Item 2 -->
+<div class="bg-surface rounded-xl p-4 border border-outline-variant/10 hover:border-outline-variant/30 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<div class="font-bold text-on-surface">طلب حجز المسرح</div>
+</div>
+<div class="text-sm text-on-surface-variant mb-4 space-y-1">
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">person</span> أ. نورة السالم</div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">schedule</span> الخميس، 01:00 م - 04:00 م</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-container transition-colors">قبول</button>
+<button class="flex-1 bg-surface-container-highest text-on-surface rounded-lg py-2 text-sm font-medium hover:bg-surface-dim transition-colors border border-outline-variant/20">رفض مع بديل</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
