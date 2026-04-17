@@ -212,6 +212,23 @@ export default function AdminRequests() {
                          <span className="material-symbols-outlined text-[16px] text-gray-500">edit_note</span> 
                          <span className="italic leading-relaxed">{req.purpose || 'لا يوجد غرض محدد'}</span>
                       </div>
+                      
+                      {(req.isHolidayEvent || req.isOfficialOccasion) && (
+                        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-200">
+                          {req.isHolidayEvent && (
+                            <div className="bg-purple-100 text-purple-700 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                               <span className="material-symbols-outlined text-[14px]">celebration</span>
+                               عطلة
+                            </div>
+                          )}
+                          {req.isOfficialOccasion && (
+                            <div className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                               <span className="material-symbols-outlined text-[14px]">stars</span>
+                               مهم
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                 </div>
                 

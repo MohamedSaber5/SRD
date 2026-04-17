@@ -38,14 +38,15 @@ export default function UserDashboard({ title }) {
   }, [currentUser]);
 
   const activeCount = bookings.filter(b => b.status === 'approved').length;
-  const pendingCount = bookings.filter(b => b.status === 'pending' || b.status === 'approved_by_branch').length;
+  const pendingCount = bookings.filter(b => b.status === 'pending' || b.status === 'awaiting_manager_final').length;
+  const rejectedCount = bookings.filter(b => b.status === 'rejected').length;
 
   const getStatusBadge = (status) => {
     switch (status) {
       case 'approved':
         return <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">مقبول</span>;
-      case 'approved_by_branch':
-        return <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">معتمد فرعياً</span>;
+      case 'awaiting_manager_final':
+        return <span className="px-3 py-1 bg-[#b58b4b]/10 text-[#8b6a37] border border-[#b58b4b]/20 text-xs font-bold rounded-full">إعتماد نهائي</span>;
       case 'rejected':
         return <span className="px-3 py-1 bg-error-container text-on-error-container text-xs font-bold rounded-full">مرفوض</span>;
       default:
@@ -61,48 +62,55 @@ export default function UserDashboard({ title }) {
             مرحباً {userData?.displayName || currentUser?.displayName || 'زميلنا الأكاديمي'}
           </h1>
           <p className="text-on-surface-variant font-body text-lg">
-            {title ? `لوحة تحكم ${title}` : 'نظرة عامة على حجوزاتك ونشاطك الأكاديمي اليوم.'}
+            {title ? `لوحة تحكم ${title}` : 'نظرة عامة على سجل طلبات الحجز الخاصة بك.'}
           </p>
         </div>
         <div className="flex gap-4">
-          <div className="w-16 h-16 rounded-full bg-surface-container-high border-2 border-surface-container-lowest shadow-sm flex items-center justify-center text-primary font-headline font-bold text-2xl">
-            {(userData?.displayName || currentUser?.displayName || 'U').charAt(0)}
-          </div>
+          <button 
+            onClick={() => navigate('/booking')} 
+            className="px-6 py-3 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-bold shadow-md hover:-translate-y-1 transition-transform flex items-center gap-2"
+          >
+             <span className="material-symbols-outlined shrink-0 text-xl">add_circle</span>
+             <span>طلب حجز جديد</span>
+          </button>
         </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-        <div className="bg-surface-container-lowest rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[160px] group transition-all duration-300 hover:bg-surface border border-surface-container-high">
+        <div className="bg-surface-container-lowest rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[140px] group transition-all duration-300 hover:bg-surface border border-surface-container-high border-b-4 hover:border-b-green-500">
           <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+            <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-600">
               <span className="material-symbols-outlined text-2xl">check_circle</span>
             </div>
-            <span className="text-3xl font-headline font-bold text-primary">{activeCount}</span>
+            <span className="text-3xl font-headline font-black text-green-700">{activeCount}</span>
           </div>
           <div>
-            <h3 className="font-headline font-bold text-on-surface text-xl mb-1 text-right">حجوزاتي النشطة</h3>
-            <p className="text-sm text-on-surface-variant font-body text-right">قاعات معتمدة رسمياً</p>
+            <h3 className="font-headline font-bold text-on-surface text-lg text-right">الطلبات المقبولة (Approved)</h3>
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[160px] group transition-all duration-300 hover:bg-surface border border-surface-container-high">
+        <div className="bg-surface-container-lowest rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[140px] group transition-all duration-300 hover:bg-surface border border-surface-container-high border-b-4 hover:border-b-[#b58b4b]">
           <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+            <div className="w-12 h-12 rounded-full bg-[#fbf0dd]/50 flex items-center justify-center text-[#b58b4b]">
               <span className="material-symbols-outlined text-2xl">pending_actions</span>
             </div>
-            <span className="text-3xl font-headline font-bold text-secondary">{pendingCount}</span>
+            <span className="text-3xl font-headline font-black text-[#8b6a37]">{pendingCount}</span>
           </div>
           <div>
-            <h3 className="font-headline font-bold text-on-surface text-xl mb-1 text-right">طلبات معلقة</h3>
-            <p className="text-sm text-on-surface-variant font-body text-right">بانتظار مراجعة الإدارة</p>
+            <h3 className="font-headline font-bold text-on-surface text-lg text-right">قيد الانتظار (Pending)</h3>
           </div>
         </div>
 
-        <div onClick={() => navigate('/booking')} className="bg-gradient-to-br from-primary to-primary-container rounded-2xl p-6 relative overflow-hidden flex flex-col justify-center items-center text-center min-h-[160px] group cursor-pointer shadow-md hover:-translate-y-1 transition-all">
-          <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-3xl">add_business</span>
+        <div className="bg-surface-container-lowest rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[140px] group transition-all duration-300 hover:bg-surface border border-surface-container-high border-b-4 hover:border-b-error">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center text-error">
+              <span className="material-symbols-outlined text-2xl">cancel</span>
+            </div>
+            <span className="text-3xl font-headline font-black text-error">{rejectedCount}</span>
           </div>
-          <h3 className="font-headline font-bold text-white text-xl">طلب حجز قاعة جديدة</h3>
+          <div>
+            <h3 className="font-headline font-bold text-on-surface text-lg text-right">الطلبات المرفوضة (Rejected)</h3>
+          </div>
         </div>
       </div>
 
