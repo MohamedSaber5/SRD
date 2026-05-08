@@ -10,7 +10,7 @@
 
 ### 3. Secretary (سكرتير الكلية)
 - **Username**: secretary
-- **Password**: aasy1234
+- **Password**: aast1234
 
 ### 4. Branch Manager (مدير الفرع)
 - **Username**: manager
