@@ -115,7 +115,13 @@ export const AuthProvider = ({ children }) => {
               if (activeRole === 'temp_admin' && data.tempAccessEnd) {
                 const now = new Date();
                 const endDate = new Date(data.tempAccessEnd);
-                if (now > endDate) {
+                const startDate = data.tempAccessStart ? new Date(data.tempAccessStart) : null;
+                
+                if (startDate && now < startDate) {
+                  // Delegation hasn't started yet
+                  console.log("Temporary admin access hasn't started yet. Reverting to employee...");
+                  activeRole = 'employee';
+                } else if (now > endDate) {
                   // Expired!
                   console.log("Temporary admin access expired! Reverting to employee...");
                   activeRole = 'employee';
@@ -123,6 +129,7 @@ export const AuthProvider = ({ children }) => {
                   try {
                     await setDoc(doc(db, "users", user.uid), { 
                       role: 'employee', 
+                      tempAccessStart: null,
                       tempAccessEnd: null,
                       collegeName: null
                     }, { merge: true });

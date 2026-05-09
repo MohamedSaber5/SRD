@@ -29,7 +29,7 @@ const RoleRouteGuard = ({ children, allowedRoles }) => {
   // Logged in but role is not authorized for this route
   if (allowedRoles && !allowedRoles.includes(activeRole)) {
     console.log(`Access denied for role: ${activeRole}. Redirecting to native dashboard.`);
-    if (activeRole === 'admin') return <Navigate to="/admin" replace />;
+    if (activeRole === 'admin' || activeRole === 'temp_admin') return <Navigate to="/admin" replace />;
     if (activeRole === 'branch_manager') return <Navigate to="/branch_manager" replace />;
     return <Navigate to="/dashboard" replace />;
   }

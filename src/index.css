@@ -12,8 +12,18 @@
   }
   h1, h2, h3, h4, h5, h6 { 
     font-family: 'Tajawal', sans-serif; 
+  }
 }
 
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+  }
+  .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+  }
+}
 @media print {
   @page {
     size: A4 portrait;
@@ -35,5 +45,4 @@
     width: 100%;
     display: block !important;
   }
-}
 }

@@ -61,9 +61,15 @@ export default function UserDashboard({ title }) {
           <h1 className="text-4xl md:text-5xl font-headline font-black text-primary mb-2 tracking-wide">
             مرحباً {userData?.displayName || currentUser?.displayName || 'زميلنا الأكاديمي'}
           </h1>
-          <p className="text-on-surface-variant font-body text-lg">
-            {title ? `لوحة تحكم ${title}` : 'نظرة عامة على سجل طلبات الحجز الخاصة بك.'}
-          </p>
+          {userData?.role === 'secretary' && userData?.collegeName ? (
+            <p className="text-primary font-body text-lg font-bold bg-primary/5 inline-block px-4 py-1.5 rounded-lg border border-primary/20">
+              لوحة تحكم سكرتير {userData.collegeName}
+            </p>
+          ) : (
+            <p className="text-on-surface-variant font-body text-lg">
+              {title ? `لوحة تحكم ${title}` : 'نظرة عامة على سجل طلبات الحجز الخاصة بك.'}
+            </p>
+          )}
         </div>
         <div className="flex gap-4">
           <button 

@@ -29,7 +29,7 @@ export default function SideNavBar({ isOpen, closeMenu }) {
         ></div>
       )}
 
-      <aside className={`fixed md:flex flex-col h-screen w-64 right-0 top-0 border-l border-outline-variant/15 bg-background dark:bg-slate-950 text-primary dark:text-slate-100 font-['Tajawal'] font-medium text-md leading-relaxed z-50 p-6 text-right transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-[100%] md:translate-x-0'}`}>
+      <aside className={`fixed md:flex flex-col h-screen overflow-y-auto scrollbar-hide w-64 right-0 top-0 border-l border-outline-variant/15 bg-background dark:bg-slate-950 text-primary dark:text-slate-100 font-['Tajawal'] font-medium text-md leading-relaxed z-50 p-6 text-right transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-[100%] md:translate-x-0'}`}>
         {/* Mobile Close Button */}
         <button className="md:hidden absolute top-4 left-4 p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-colors" onClick={closeMenu}>
            <span className="material-symbols-outlined">close</span>
@@ -41,6 +41,7 @@ export default function SideNavBar({ isOpen, closeMenu }) {
         <div className="text-[10px] text-on-surface-variant font-bold mb-2 text-center">الأكاديمية العربية للعلوم والتكنولوجيا</div>
         <div className="text-xs text-on-surface-variant font-bold bg-surface-container-highest px-3 py-1 rounded-full">
           {userRole === 'admin' ? 'المسؤول العام' : 
+           userRole === 'temp_admin' ? 'مسؤول (تفويض مؤقت)' :
            userRole === 'branch_manager' ? 'مدير الفرع' : 
            userRole === 'secretary' ? 'سكرتير الكلية' : 'موظف / أكاديمي'}
         </div>
@@ -54,14 +55,14 @@ export default function SideNavBar({ isOpen, closeMenu }) {
           </NavLink>
         )}
 
-        {userRole === 'admin' && (
+        {(userRole === 'admin' || userRole === 'temp_admin') && (
           <NavLink to="/admin" className={getNavClass} end onClick={closeMenu}>
             <span className="material-symbols-outlined ml-2" data-icon="admin_panel_settings">admin_panel_settings</span>
             <span>مدير النظام</span>
           </NavLink>
         )}
 
-        {userRole === 'admin' && (
+        {(userRole === 'admin' || userRole === 'temp_admin') && (
           <NavLink to="/admin/requests" className={getNavClass} onClick={closeMenu}>
             <span className="material-symbols-outlined ml-2" data-icon="pending_actions">pending_actions</span>
             <span>الطلبات المعلقة</span>
@@ -69,21 +70,25 @@ export default function SideNavBar({ isOpen, closeMenu }) {
         )}
 
         {userRole === 'branch_manager' && (
-          <NavLink to="/branch_manager" className={getNavClass} end onClick={closeMenu}>
-            <span className="material-symbols-outlined ml-2" data-icon="domain_verification">domain_verification</span>
-            <span>مدير الفرع</span>
-          </NavLink>
+          <>
+            <NavLink to="/branch_manager" className={getNavClass} end onClick={closeMenu}>
+              <span className="material-symbols-outlined ml-2" data-icon="domain_verification">domain_verification</span>
+              <span>مدير الفرع</span>
+            </NavLink>
+            <NavLink to="/branch_manager/logs" className={getNavClass} onClick={closeMenu}>
+              <span className="material-symbols-outlined ml-2" data-icon="history_edu">history_edu</span>
+              <span>سجل النشاط والصلاحيات</span>
+            </NavLink>
+          </>
         )}
 
-        {userRole !== 'branch_manager' && (
-          <NavLink to="/booking" className={getNavClass} onClick={closeMenu}>
-            <span className="material-symbols-outlined ml-2" data-icon="add_circle">add_circle</span>
-            <span>طلب حجز جديد</span>
-          </NavLink>
-        )}
+        <NavLink to="/booking" className={getNavClass} onClick={closeMenu}>
+          <span className="material-symbols-outlined ml-2" data-icon="add_circle">add_circle</span>
+          <span>طلب حجز جديد</span>
+        </NavLink>
         
         {/* Dummy links for visual completeness */}
-        {userRole === 'admin' && (
+        {(userRole === 'admin' || userRole === 'temp_admin') && (
           <>
             <NavLink to="/admin/rooms" className={getNavClass} end onClick={closeMenu}>
               <span className="material-symbols-outlined ml-2" data-icon="meeting_room">meeting_room</span>
@@ -93,6 +98,12 @@ export default function SideNavBar({ isOpen, closeMenu }) {
               <span className="material-symbols-outlined ml-2" data-icon="search">search</span>
               <span>البحث المتقدم</span>
             </NavLink>
+            {userRole === 'admin' && (
+              <NavLink to="/admin/delegation" className={getNavClass} onClick={closeMenu}>
+                <span className="material-symbols-outlined ml-2" data-icon="manage_accounts">manage_accounts</span>
+                <span>الصلاحيات والتفويض</span>
+              </NavLink>
+            )}
             <div className="flex items-center gap-3 text-on-surface dark:text-slate-400 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-slate-800 rounded-xl transition-colors hover:translate-x-[-4px] transition-transform duration-200 cursor-not-allowed opacity-50">
               <span className="material-symbols-outlined ml-2" data-icon="settings">settings</span>
               <span>الإعدادات</span>
@@ -100,7 +111,7 @@ export default function SideNavBar({ isOpen, closeMenu }) {
           </>
         )}
 
-        {(userRole === 'admin' || userRole === 'branch_manager') && (
+        {(userRole === 'admin' || userRole === 'temp_admin' || userRole === 'branch_manager') && (
           <NavLink to="/admin/statistics" className={getNavClass} onClick={closeMenu}>
             <span className="material-symbols-outlined ml-2" data-icon="query_stats">query_stats</span>
             <span>الإحصائيات والتقارير</span>

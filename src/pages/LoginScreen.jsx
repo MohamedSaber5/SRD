@@ -11,13 +11,21 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, currentUser, userRole } = useAuth();
+  const { login, currentUser, userRole, loading } = useAuth();
   const { showAlert } = usePopup();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-primary">
+        <div className="w-12 h-12 border-4 border-on-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   // Auto-redirect if already logged in
   useEffect(() => {
     if (currentUser && userRole) {
-      if (userRole === 'admin') navigate('/admin');
+      if (userRole === 'admin' || userRole === 'temp_admin') navigate('/admin');
       else if (userRole === 'branch_manager') navigate('/branch_manager');
       else navigate('/dashboard');
     }
