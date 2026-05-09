@@ -103,27 +103,33 @@ export default function RoomFormModal({ isOpen, onClose, onSubmit, initialData, 
 
             <div className="space-y-2">
               <label className="block text-xs font-bold text-[#5a7698] uppercase">المبنى</label>
-              <input 
+              <select 
                 required 
-                type="text" 
-                placeholder="A, B, C..."
                 value={formData.building}
                 onChange={e => setFormData({...formData, building: e.target.value})}
                 className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none text-center" dir="ltr"
-              />
+              >
+                <option value="" disabled>اختر المبنى</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+              </select>
             </div>
 
             <div className="space-y-2">
               <label className="block text-xs font-bold text-[#5a7698] uppercase">الدور</label>
-              <input 
+              <select 
                 required 
-                type="number" 
-                min="0" 
-                placeholder="1, 2, 3..."
                 value={formData.floor}
-                onChange={e => setFormData({...formData, floor: e.target.value})}
+                onChange={e => setFormData({...formData, floor: Number(e.target.value)})}
                 className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none text-center" dir="ltr"
-              />
+              >
+                <option value="" disabled>اختر الدور</option>
+                <option value={0}>0</option>
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+              </select>
             </div>
 
             <div className="space-y-2 md:col-span-2">

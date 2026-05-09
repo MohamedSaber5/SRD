@@ -4,9 +4,11 @@ import { roomService } from '../services/roomService';
 import RoomTable from '../components/admin/RoomTable';
 import RoomFormModal from '../components/admin/RoomFormModal';
 import RoomDetailsDrawer from '../components/admin/RoomDetailsDrawer';
+import { usePopup } from '../contexts/PopupContext';
 
 export default function RoomManagement() {
   const { currentUser } = useAuth();
+  const { showAlert, showConfirm, showPrompt } = usePopup();
   
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,15 +53,15 @@ export default function RoomManagement() {
     try {
       if (editingRoom) {
         await roomService.updateRoom(editingRoom.id, formData, currentUser);
-        alert('تم تحديث القاعة بنجاح');
+        showAlert('تم تحديث القاعة بنجاح', 'success');
       } else {
         await roomService.addRoom(formData, currentUser);
-        alert('تم إضافة القاعة بنجاح');
+        showAlert('تم إضافة القاعة بنجاح', 'success');
       }
       setIsFormModalOpen(false);
     } catch (error) {
       console.error(error);
-      alert('حدث خطأ أثناء حفظ القاعة');
+      showAlert('حدث خطأ أثناء حفظ القاعة', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -74,32 +76,43 @@ export default function RoomManagement() {
       if (activeBookings.length > 0) {
         // Needs a replacement room
         const msg = `هذه القاعة بها ${activeBookings.length} حجوزات نشطة. الرجاء إدخال الرقم التعريفي للقاعة البديلة (مثال: A-102) لترحيل الحجوزات إليها:`;
-        const input = window.prompt(msg);
-        
-        if (input === null) return; // User cancelled
-        
-        // Find room by number
-        const altRoom = rooms.find(r => r.roomNumber.toLowerCase() === input.trim().toLowerCase());
-        if (!altRoom) {
-          return alert('القاعة البديلة غير موجودة!');
-        }
-        if (altRoom.id === room.id) {
-          return alert('لا يمكن أن تكون القاعة البديلة هي نفسها القاعة المراد حذفها.');
-        }
-        replacementRoomId = altRoom.id;
+        showPrompt(msg, async (input) => {
+          if (!input) return; // User cancelled
+          
+          // Find room by number
+          const altRoom = rooms.find(r => r.roomNumber.toLowerCase() === input.trim().toLowerCase());
+          if (!altRoom) {
+            return showAlert('القاعة البديلة غير موجودة!', 'error');
+          }
+          if (altRoom.id === room.id) {
+            return showAlert('لا يمكن أن تكون القاعة البديلة هي نفسها القاعة المراد حذفها.', 'warning');
+          }
+          replacementRoomId = altRoom.id;
+          
+          await proceedWithDeletion(room, replacementRoomId, activeBookings);
+        });
       } else {
-        if (!window.confirm(`هل أنت متأكد من حذف القاعة ${room.roomNumber} نهائياً؟`)) return;
+        showConfirm(`هل أنت متأكد من حذف القاعة ${room.roomNumber} نهائياً؟`, async () => {
+          await proceedWithDeletion(room, null, activeBookings);
+        });
       }
+    } catch (error) {
+      console.error(error);
+      showAlert(error.message || 'حدث خطأ أثناء فحص الحجوزات.', 'error');
+    }
+  };
 
+  const proceedWithDeletion = async (room, replacementRoomId, activeBookings) => {
+    try {
       await roomService.deleteRoom(room.id, replacementRoomId, activeBookings, currentUser);
-      alert('تم حذف القاعة بنجاح.');
+      showAlert('تم حذف القاعة بنجاح.', 'success');
       
       if (selectedRoom?.id === room.id) {
         setIsDrawerOpen(false);
       }
     } catch (error) {
       console.error(error);
-      alert(error.message || 'حدث خطأ أثناء الحذف.');
+      showAlert(error.message || 'حدث خطأ أثناء الحذف.', 'error');
     }
   };
 

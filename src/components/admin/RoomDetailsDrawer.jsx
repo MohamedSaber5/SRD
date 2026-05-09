@@ -92,15 +92,17 @@ export default function RoomDetailsDrawer({ room, isOpen, onClose }) {
 
   return (
     <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-      
-      {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform transition-transform rtl" dir="rtl">
-        <div className="h-full flex flex-col">
+      {/* Backdrop & Modal Container */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm rtl p-4" dir="rtl" onClick={onClose}>
+        
+        {/* Modal */}
+        <div 
+          className="w-full max-w-xl bg-white rounded-[2rem] shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 animate-in zoom-in-95 duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
           
           {/* Header */}
-          <div className="px-6 py-6 border-b border-gray-100 flex justify-between items-center bg-[#f8fafc]">
+          <div className="px-6 py-6 border-b border-gray-100 flex justify-between items-center bg-[#f8fafc] rounded-t-[2rem]">
             <div>
               <h2 className="text-2xl font-headline font-black text-[#001e40] flex items-center gap-2">
                 <span className="material-symbols-outlined text-blue-600">meeting_room</span>
@@ -175,7 +177,7 @@ export default function RoomDetailsDrawer({ room, isOpen, onClose }) {
           </div>
 
           {/* Footer Actions */}
-          <div className="p-6 border-t border-gray-100 bg-white">
+          <div className="p-6 border-t border-gray-100 bg-white rounded-b-[2rem]">
             <button 
               onClick={handleDownloadPDF}
               className="w-full bg-[#001e40] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#1e3a5f] hover:-translate-y-1 hover:shadow-lg transition-all"

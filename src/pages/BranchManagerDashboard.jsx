@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import EditBookingModal from '../components/bookings/EditBookingModal';
+import { usePopup } from '../contexts/PopupContext';
 
 export default function BranchManagerDashboard() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function BranchManagerDashboard() {
   const [isRamadanMode, setIsRamadanMode] = useState(false);
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
   const [auditLogs, setAuditLogs] = useState([]);
+  const { showAlert, showConfirm } = usePopup();
 
   useEffect(() => {
     // 1. Fetch multi-purpose rooms metadata once
@@ -88,42 +90,43 @@ export default function BranchManagerDashboard() {
       const newMode = !isRamadanMode;
       const docRef = doc(db, 'settings', 'system');
       await updateDoc(docRef, { isRamadanMode: newMode });
-      alert(newMode ? 'تم تفعيل وضع رمضان للنظام بالكامل' : 'تم العودة للمواعيد العادية');
+      showAlert(newMode ? 'تم تفعيل وضع رمضان للنظام بالكامل' : 'تم العودة للمواعيد العادية', 'success');
     } catch (e) {
       console.error(e);
-      alert('حدث خطأ أثناء تحديث الإعدادات');
+      showAlert('حدث خطأ أثناء تحديث الإعدادات', 'error');
     }
   };
 
   const handleApprove = async (id) => {
-    if (!window.confirm('هل أنت متأكد من اعتماد هذا الحجز؟')) return;
-    try {
-      const docRef = doc(db, 'bookings', id);
-      await updateDoc(docRef, {
-        status: 'approved',
-        branchApprovedAt: serverTimestamp()
-      });
+    showConfirm('هل أنت متأكد من اعتماد هذا الحجز؟', async () => {
+      try {
+        const docRef = doc(db, 'bookings', id);
+        await updateDoc(docRef, {
+          status: 'approved',
+          branchApprovedAt: serverTimestamp()
+        });
 
-      // VIP Admin Notification
-      const qAdmins = query(collection(db, 'users'), where('role', 'in', ['admin', 'super_admin'])); // support for admin role
-      const adminsSnap = await getDocs(qAdmins);
-      const bookingInfo = requests.find(r => r.id === id);
-      const notifyTasks = adminsSnap.docs.map(aDoc => addDoc(collection(db, 'notifications'), {
-           userId: aDoc.id,
-           title: 'تأكيد حجز متعدد الأغراض',
-           message: `قام مدير الفرع بالموافقة النهائية على حجز القاعة (${bookingInfo?.roomId || id}) الخاص بـ ${bookingInfo?.responsibleName || ''}`,
-           type: 'vip_alert',
-           bookingId: id,
-           isRead: false,
-           createdAt: serverTimestamp()
-      }));
-      await Promise.all(notifyTasks);
+        // VIP Admin Notification
+        const qAdmins = query(collection(db, 'users'), where('role', 'in', ['admin', 'super_admin'])); // support for admin role
+        const adminsSnap = await getDocs(qAdmins);
+        const bookingInfo = requests.find(r => r.id === id);
+        const notifyTasks = adminsSnap.docs.map(aDoc => addDoc(collection(db, 'notifications'), {
+             userId: aDoc.id,
+             title: 'تأكيد حجز متعدد الأغراض',
+             message: `قام مدير الفرع بالموافقة النهائية على حجز القاعة (${bookingInfo?.roomId || id}) الخاص بـ ${bookingInfo?.responsibleName || ''}`,
+             type: 'vip_alert',
+             bookingId: id,
+             isRead: false,
+             createdAt: serverTimestamp()
+        }));
+        await Promise.all(notifyTasks);
 
-      alert('تم منح الاعتماد النهائي للطلب بنجاح');
-    } catch (e) {
-      console.error(e);
-      alert('حدث خطأ أثناء الاعتماد');
-    }
+        showAlert('تم منح الاعتماد النهائي للطلب بنجاح', 'success');
+      } catch (e) {
+        console.error(e);
+        showAlert('حدث خطأ أثناء الاعتماد', 'error');
+      }
+    });
   };
 
   const handleEdit = (booking) => {

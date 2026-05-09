@@ -12,6 +12,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { usePopup } from '../contexts/PopupContext';
 
 const REGULAR_SLOTS = [
   { from: '08:30', to: '10:10', label: 'المحاضرة الأولى (08:30 - 10:10)' },
@@ -43,6 +44,7 @@ export default function AdminRequests() {
   const [loading, setLoading] = useState(true);
   const [isCheckingRooms, setIsCheckingRooms] = useState(false);
   const [isRamadanMode, setIsRamadanMode] = useState(false);
+  const { showAlert } = usePopup();
   
   // Rejection State
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
@@ -94,6 +96,7 @@ export default function AdminRequests() {
 
   const handleApproveClick = async (req) => {
     setApproveSelectedRequest(req);
+    setApprovePriority('normal');
     setIsCheckingRooms(true);
     setIsApproveModalOpen(true);
     
@@ -167,16 +170,16 @@ export default function AdminRequests() {
         );
         
         await Promise.all(notifyTasks);
-        alert('تمت الموافقة وتخصيص القاعة وتوجيه الطلب لمدير الفرع للاعتماد النهائي');
+        showAlert('تمت الموافقة وتخصيص القاعة وتوجيه الطلب لمدير الفرع للاعتماد النهائي', 'success');
       } else {
-        alert('تم قبول الحجز وتخصيص القاعة بنجاح');
+        showAlert('تم قبول الحجز وتخصيص القاعة بنجاح', 'success');
       }
       
       setIsApproveModalOpen(false);
       setApproveSelectedRequest(null);
     } catch (e) {
       console.error(e);
-      alert('حدث خطأ أثناء معالجة الطلب');
+      showAlert('حدث خطأ أثناء معالجة الطلب', 'error');
     }
   };
 
@@ -230,10 +233,10 @@ export default function AdminRequests() {
       setSuggestedRoomId('');
       setSuggestedDate('');
       setSuggestedSlotIndex('');
-      alert('تم إرسال الرفض وإشعار مقدم الطلب بالبدائل المقترحة');
+      showAlert('تم إرسال الرفض وإشعار مقدم الطلب بالبدائل المقترحة', 'success');
     } catch (e) {
       console.error(e);
-      alert('حدث خطأ أثناء إغلاق الطلب');
+      showAlert('حدث خطأ أثناء إغلاق الطلب', 'error');
     }
   };
 
@@ -450,21 +453,21 @@ export default function AdminRequests() {
                  </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-[#5a7698]">مستوى الأولوية عند التوجيه للإدارة</label>
-                <div className="flex gap-4">
-                  <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${approvePriority === 'normal' ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f]' : 'border-gray-200 text-gray-400'}`}>
-                    <input type="radio" name="priority" value="normal" checked={approvePriority === 'normal'} onChange={() => setApprovePriority('normal')} className="hidden" />
-                    <span className="material-symbols-outlined text-sm">schedule</span>
-                    <span className="font-bold text-sm">عادي (افتراضي)</span>
-                  </label>
-                  <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${approvePriority === 'urgent' ? 'border-red-500 bg-red-50 text-red-600' : 'border-gray-200 text-gray-400'}`}>
-                    <input type="radio" name="priority" value="urgent" checked={approvePriority === 'urgent'} onChange={() => setApprovePriority('urgent')} className="hidden" />
-                    <span className="material-symbols-outlined text-sm">local_fire_department</span>
-                    <span className="font-bold text-sm">عاجل جداً</span>
+              {(approveSelectedRequest?.roomType === 'multi' || approveSelectedRequest?.hallCategory === 'multi') && (
+                <div className="space-y-2 mt-4">
+                  <label className="block text-xs font-bold text-[#5a7698]">مستوى الأولوية عند التوجيه للإدارة</label>
+                  <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${approvePriority === 'urgent' ? 'border-red-500 bg-red-50 text-red-600' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                    <input 
+                      type="checkbox" 
+                      checked={approvePriority === 'urgent'} 
+                      onChange={(e) => setApprovePriority(e.target.checked ? 'urgent' : 'normal')} 
+                      className="w-5 h-5 accent-red-500 cursor-pointer" 
+                    />
+                    <span className="material-symbols-outlined text-xl">local_fire_department</span>
+                    <span className="font-bold text-sm">تحديد الطلب كعاجل جداً (أولوية قصوى)</span>
                   </label>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-2 mt-4">
                 <label className="block text-xs font-bold text-[#5a7698]">القاعة النهائية المخصصة</label>

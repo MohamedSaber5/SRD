@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { auth } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { usePopup } from '../contexts/PopupContext';
 
 export default function LoginScreen() {
   const [employeeId, setEmployeeId] = useState('');
@@ -11,6 +12,7 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login, currentUser, userRole } = useAuth();
+  const { showAlert } = usePopup();
 
   // Auto-redirect if already logged in
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function LoginScreen() {
         console.warn(`${u.email} already exists or failed:`, e.code);
       }
     }
-    alert('تمت تهيئة مستخدمي الاختبار بكلمة مرور: aast1234');
+    showAlert('تمت تهيئة مستخدمي الاختبار بكلمة مرور: aast1234', 'info');
     setIsLoading(false);
   };
 

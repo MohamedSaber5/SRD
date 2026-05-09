@@ -38,7 +38,8 @@ export const getHourOptions = () => {
   return options;
 };
 
-export function useBookingForm() {
+export function useBookingForm({ showAlert } = {}) {
+  const _showAlert = showAlert || ((msg) => alert(msg));
   const { userRole, currentUser, userData } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -216,7 +217,7 @@ export function useBookingForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if ((isEmployeeLecture && !validateStep1()) || (!isEmployeeLecture && (!validateStep1() || !validateStep2() || !validateStep3()))) {
-      alert("يرجى التأكد من تعبئة جميع الحقول بشكل صحيح");
+      _showAlert('يرجى التأكد من تعبئة جميع الحقول بشكل صحيح', 'warning');
       return;
     }
 
@@ -258,11 +259,11 @@ export function useBookingForm() {
          });
       }
 
-      alert('تم إرسال الطلب بنجاح وهو الآن بانتظار الموافقة');
+      _showAlert('تم إرسال الطلب بنجاح وهو الآن بانتظار الموافقة', 'success');
       navigate('/dashboard');
     } catch (error) {
       console.error('Error adding document: ', error);
-      alert('حدث خطأ أثناء إرسال الطلب');
+      _showAlert('حدث خطأ أثناء إرسال الطلب', 'error');
     }
   };
 

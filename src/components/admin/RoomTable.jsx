@@ -1,10 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
 export default function RoomTable({ rooms, onEditClick, onDeleteClick, onRowClick }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [minCapacity, setMinCapacity] = useState('');
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 15;
 
   const filteredRooms = useMemo(() => {
     return rooms.filter(room => {
@@ -15,6 +18,13 @@ export default function RoomTable({ rooms, onEditClick, onDeleteClick, onRowClic
       return matchesSearch && matchesStatus && matchesType && matchesCapacity;
     });
   }, [rooms, searchTerm, statusFilter, typeFilter, minCapacity]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, typeFilter, minCapacity, rooms]);
+
+  const totalPages = Math.ceil(filteredRooms.length / ITEMS_PER_PAGE);
+  const paginatedRooms = filteredRooms.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const hasFilters = searchTerm || minCapacity || typeFilter !== 'all' || statusFilter !== 'all';
 
@@ -84,27 +94,27 @@ export default function RoomTable({ rooms, onEditClick, onDeleteClick, onRowClic
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-100">
+      <div className="overflow-x-auto rounded-2xl shadow-lg border border-gray-100 bg-white mb-2">
         <table className="w-full text-right border-collapse">
           <thead>
-            <tr className="bg-[#f8fafc] text-[#5a7698] text-sm border-b border-gray-100">
-              <th className="py-4 px-6 font-bold">اسم / رقم القاعة</th>
-              <th className="py-4 px-6 font-bold">النوع</th>
-              <th className="py-4 px-6 font-bold">المبنى والدور</th>
-              <th className="py-4 px-6 font-bold">السعة</th>
-              <th className="py-4 px-6 font-bold">الحالة</th>
-              <th className="py-4 px-6 font-bold text-center">الإجراءات</th>
+            <tr className="bg-gradient-to-r from-[#f8fafc] to-white text-[#5a7698] text-sm border-b-2 border-gray-100 shadow-sm">
+              <th className="py-5 px-6 font-black uppercase tracking-wider">اسم / رقم القاعة</th>
+              <th className="py-5 px-6 font-black uppercase tracking-wider">النوع</th>
+              <th className="py-5 px-6 font-black uppercase tracking-wider">المبنى والدور</th>
+              <th className="py-5 px-6 font-black uppercase tracking-wider">السعة</th>
+              <th className="py-5 px-6 font-black uppercase tracking-wider">الحالة</th>
+              <th className="py-5 px-6 font-black uppercase tracking-wider text-center">الإجراءات</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRooms.length > 0 ? (
-              filteredRooms.map(room => (
+            {paginatedRooms.length > 0 ? (
+              paginatedRooms.map(room => (
                 <tr 
                   key={room.id} 
-                  className="border-b border-gray-50 hover:bg-blue-50/50 transition-colors cursor-pointer group"
+                  className="border-b border-gray-50 hover:bg-blue-50/50 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group"
                   onClick={() => onRowClick(room)}
                 >
-                  <td className="py-4 px-6 font-black text-[#001e40]">{room.roomNumber}</td>
+                  <td className="py-5 px-6 font-black text-[#001e40]">{room.roomNumber}</td>
                   <td className="py-4 px-6">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${room.type === 'multi' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                       {room.type === 'multi' ? 'متعددة الأغراض' : 'محاضرات عادية'}
@@ -121,7 +131,7 @@ export default function RoomTable({ rooms, onEditClick, onDeleteClick, onRowClic
                     </span>
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-center gap-2">
                       <button 
                         onClick={(e) => { e.stopPropagation(); onEditClick(room); }}
                         className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors"
@@ -151,8 +161,38 @@ export default function RoomTable({ rooms, onEditClick, onDeleteClick, onRowClic
           </tbody>
         </table>
       </div>
-      <div className="mt-4 text-sm font-bold text-gray-500">
-        إجمالي القاعات المعروضة: {filteredRooms.length} من {rooms.length}
+      
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-6">
+        <div className="text-sm font-bold text-gray-500">
+          إجمالي القاعات: {filteredRooms.length} (عرض {paginatedRooms.length} في هذه الصفحة)
+        </div>
+        
+        {totalPages > 1 && (
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 disabled:opacity-50 hover:bg-gray-50 transition-colors shadow-sm"
+              title="الصفحة التالية"
+            >
+              <span className="material-symbols-outlined text-sm">chevron_left</span>
+            </button>
+            
+            <span className="text-sm font-bold text-[#001e40] px-2 bg-gray-50 rounded-lg py-1 border border-gray-100">
+              {currentPage} / {totalPages}
+            </span>
+            
+            <button 
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 disabled:opacity-50 hover:bg-gray-50 transition-colors shadow-sm"
+              title="الصفحة السابقة"
+            >
+              <span className="material-symbols-outlined text-sm">chevron_right</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

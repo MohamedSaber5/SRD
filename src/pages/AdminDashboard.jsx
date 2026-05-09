@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { usePopup } from '../contexts/PopupContext';
 
 export default function AdminDashboard() {
   const { currentUser } = useAuth();
@@ -24,6 +25,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const { showAlert, showConfirm } = usePopup();
 
   // 16-Week Fixed Lecture State
   const [isFixedLectureModalOpen, setIsFixedLectureModalOpen] = useState(false);
@@ -45,22 +47,20 @@ export default function AdminDashboard() {
     dayOfWeek: 1, // 0=Sunday
   });
 
-  // Delegation / Overrides State
-  const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
-  const [searchedUser, setSearchedUser] = useState(null);
-  const [tempEndDate, setTempEndDate] = useState('');
-  const [selectedCollege, setSelectedCollege] = useState('');
-  const collegeOptions = ['هندسة', 'حاسبات ومعلومات', 'لوجستيك', 'اثار', 'تجارة'];
 
-  // PDF Printing Reference
-  const reportRef = useRef();
 
   const weekDays = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
   const timeSlots = ['08:00', '10:00', '12:00', '14:00', '16:00'];
 
+  const cardThemes = [
+    { bg: 'bg-[#eef2f6]', border: 'border-[#1e3a5f]', textP: 'text-[#1e3a5f]', textS: 'text-[#5a7698]' },
+    { bg: 'bg-[#fbf0dd]', border: 'border-[#b58b4b]', textP: 'text-[#4a3615]', textS: 'text-[#8b6a37]' },
+    { bg: 'bg-[#e7e8eb]', border: 'border-[#1e232b]', textP: 'text-[#1e232b]', textS: 'text-[#555b63]' }
+  ];
+
   const getDayName = (dateString) => {
     const date = new Date(dateString);
-    const dayIndex = date.getDay(); 
+    const dayIndex = date.getDay();
     const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
     return days[dayIndex];
   };
@@ -70,153 +70,22 @@ export default function AdminDashboard() {
     return days.indexOf(dayName);
   };
 
-  // Pastel Card Themes based on image
-  const cardThemes = [
-    { bg: 'bg-[#eef2f6]', border: 'border-[#1e3a5f]', textP: 'text-[#1e3a5f]', textS: 'text-[#5a7698]' },
-    { bg: 'bg-[#fbf0dd]', border: 'border-[#b58b4b]', textP: 'text-[#4a3615]', textS: 'text-[#8b6a37]' },
-    { bg: 'bg-[#e7e8eb]', border: 'border-[#1e232b]', textP: 'text-[#1e232b]', textS: 'text-[#555b63]' }
-  ];
-
-  const handleSeedRooms = async () => {
-    if (!window.confirm('هل تريد تهيئة/تحديث قائمة القاعات في قاعدة البيانات؟')) return;
-    setIsSyncing(true);
-    try {
-      const batch = writeBatch(db);
-      const rooms = [
-        // Level 1
-        { id: 'A-102', roomNumber: 'A-102', building: 'A', floor: 1, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-103', roomNumber: 'A-103', building: 'A', floor: 1, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-104', roomNumber: 'A-104', building: 'A', floor: 1, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-105', roomNumber: 'A-105', building: 'A', floor: 1, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-106', roomNumber: 'A-106', building: 'A', floor: 1, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-107', roomNumber: 'A-107', building: 'A', floor: 1, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-
-        // Level 2
-        { id: 'A-202', roomNumber: 'A-202', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-203', roomNumber: 'A-203', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-204', roomNumber: 'A-204', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-205', roomNumber: 'A-205', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-206', roomNumber: 'A-206', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-208', roomNumber: 'A-208', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-209', roomNumber: 'A-209', building: 'A', floor: 2, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-210', roomNumber: 'A-210', building: 'A', floor: 2, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-211', roomNumber: 'A-211', building: 'A', floor: 2, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-
-        // Level 3
-        { id: 'A-302', roomNumber: 'A-302', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-303', roomNumber: 'A-303', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-304', roomNumber: 'A-304', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-305', roomNumber: 'A-305', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-306', roomNumber: 'A-306', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-308', roomNumber: 'A-308', building: 'A', floor: 3, capacity: 20, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-309', roomNumber: 'A-309', building: 'A', floor: 3, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-        { id: 'A-310', roomNumber: 'A-310', building: 'A', floor: 3, capacity: 40, status: 'available', type: 'fixed', createdAt: serverTimestamp() },
-
-        // Multi-purpose
-        { id: 'm_1', roomNumber: 'قاعة المؤتمرات الكبرى', building: 'A', floor: 1, capacity: 200, status: 'available', type: 'multi', createdAt: serverTimestamp() },
-        { id: 'm_2', roomNumber: 'قاعة الندوات المتعددة', building: 'B', floor: 1, capacity: 100, status: 'available', type: 'multi', createdAt: serverTimestamp() },
-      ];
-
-      rooms.forEach(room => {
-        const roomRef = doc(db, 'rooms', room.id);
-        batch.set(roomRef, room, { merge: true });
-      });
-
-      await batch.commit();
-      alert('تم تحديث قائمة القاعات بنجاح في Firestore');
-    } catch (err) {
-      console.error(err);
-      alert('خطأ أثناء مزامنة القاعات');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  useEffect(() => {
-    // Fetch Bookings
-    const qBookings = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
-    const unsubBookings = onSnapshot(qBookings, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setBookings(data);
-      setLoading(false);
-    });
-    
-    // Fetch Rooms for the drop down
-    const qRooms = query(collection(db, 'rooms'));
-    const unsubRooms = onSnapshot(qRooms, (snapshot) => {
-      const r_data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setRoomsList(r_data);
-    });
-
-    return () => { unsubBookings(); unsubRooms(); };
-  }, []);
-
-  // --- 16-Week Fixed Lecture Engine ---
-  const submitFixedLecture = async (e) => {
-    e.preventDefault();
-    if (!fixedLectureData.roomId || !fixedLectureData.startDate || !fixedLectureData.responsibleName || !fixedLectureData.courseName) {
-      alert("الرجاء تعبئة جميع الحقول المطلوبة (القاعة، الدكتور، المادة)");
-      return;
-    }
-
-    if (!window.confirm(`سيتم الآن إنشاء 16 حجزاً ثابتاً متتالياً لقاعة ${fixedLectureData.roomId}. هل أنت متأكد؟`)) {
-      return;
-    }
-
-    try {
-      setIsSyncing(true);
-      const batch = writeBatch(db);
-      
-      const startDateTime = new Date(fixedLectureData.startDate);
-      const currentDay = startDateTime.getDay(); 
-      const diff = fixedLectureData.dayOfWeek - currentDay;
-      startDateTime.setDate(startDateTime.getDate() + diff);
-
-      for (let i = 0; i < 16; i++) {
-        const lectureDate = new Date(startDateTime.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
-        const formattedDate = lectureDate.toISOString().split('T')[0];
-
-        const newDocRef = doc(collection(db, 'bookings'));
-        batch.set(newDocRef, {
-          roomId: fixedLectureData.roomId,
-          roomType: 'fixed',
-          date: formattedDate,
-          timeFrom: fixedLectureData.timeFrom,
-          timeTo: fixedLectureData.timeTo,
-          responsibleName: fixedLectureData.responsibleName,
-          courseName: fixedLectureData.courseName,
-          userId: currentUser?.uid || 'admin',
-          status: 'approved',
-          is16WeekFixed: true,
-          weekNumber: i + 1,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-      }
-
-      await batch.commit();
-      setIsFixedLectureModalOpen(false);
-      setFixedLectureData({ roomId: '', responsibleName: '', courseName: '', startDate: new Date().toISOString().split('T')[0], timeFrom: '08:00', timeTo: '10:00', dayOfWeek: 0 });
-      alert('تم إدراج 16 أسبوعاً بنجاح!');
-    } catch (err) {
-      console.error(err);
-      alert('خطأ أثناء إنشاء المحاضرات الثابتة');
-    } finally {
-      setIsSyncing(false);
-    }
+  const getGridBooking = (dayName, timeFrom) => {
+    return bookings.find(b =>
+      b.status === 'approved' &&
+      b.timeFrom === timeFrom &&
+      getDayName(b.date) === dayName
+    );
   };
 
   const openModalForCell = (dayName, timeStr) => {
     const dayIndex = getDayIndexFromName(dayName);
-    
-    // Guess end time based on slots list mapping (assume 2 hours duration normally)
     const slotIndex = timeSlots.indexOf(timeStr);
     const endTime = timeSlots[slotIndex + 1] || '18:00';
-
     setFixedLectureData({
       roomId: '',
       responsibleName: '',
-      courseName: '', // Empty course initially
+      courseName: '',
       startDate: new Date().toISOString().split('T')[0],
       dayOfWeek: dayIndex,
       timeFrom: timeStr,
@@ -226,147 +95,79 @@ export default function AdminDashboard() {
   };
 
   const handlePrintMorningReport = () => {
-     window.print();
+    window.print();
   };
 
-  // Matrix Logic for 7-Day CSS Grid
-  const getGridBooking = (dayName, timeFrom) => {
-    return bookings.find(b => 
-       b.status === 'approved' && 
-       b.timeFrom === timeFrom && 
-       getDayName(b.date) === dayName
-    );
+  const submitFixedLecture = async (e) => {
+    e.preventDefault();
+    if (!fixedLectureData.roomId || !fixedLectureData.startDate || !fixedLectureData.responsibleName || !fixedLectureData.courseName) {
+      showAlert('الرجاء تعبئة جميع الحقول المطلوبة (القاعة، الدكتور، المادة)', 'warning');
+      return;
+    }
+    showConfirm(`سيتم الآن إنشاء 16 حجزاً ثابتاً متتالياً لقاعة ${fixedLectureData.roomId}. هل أنت متأكد؟`, async () => {
+      try {
+        setIsSyncing(true);
+        const batch = writeBatch(db);
+        const startDateTime = new Date(fixedLectureData.startDate);
+        const currentDay = startDateTime.getDay();
+        const diff = fixedLectureData.dayOfWeek - currentDay;
+        startDateTime.setDate(startDateTime.getDate() + diff);
+        for (let i = 0; i < 16; i++) {
+          const lectureDate = new Date(startDateTime.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
+          const formattedDate = lectureDate.toISOString().split('T')[0];
+          const newDocRef = doc(collection(db, 'bookings'));
+          batch.set(newDocRef, {
+            roomId: fixedLectureData.roomId,
+            roomType: 'fixed',
+            date: formattedDate,
+            timeFrom: fixedLectureData.timeFrom,
+            timeTo: fixedLectureData.timeTo,
+            responsibleName: fixedLectureData.responsibleName,
+            courseName: fixedLectureData.courseName,
+            userId: currentUser?.uid || 'admin',
+            status: 'approved',
+            is16WeekFixed: true,
+            weekNumber: i + 1,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        }
+        await batch.commit();
+        setIsFixedLectureModalOpen(false);
+        setFixedLectureData({ roomId: '', responsibleName: '', courseName: '', startDate: new Date().toISOString().split('T')[0], timeFrom: '08:00', timeTo: '10:00', dayOfWeek: 0 });
+        showAlert('تم إدراج 16 أسبوعاً بنجاح!', 'success');
+      } catch (err) {
+        console.error(err);
+        showAlert('خطأ أثناء إنشاء المحاضرات الثابتة', 'error');
+      } finally {
+        setIsSyncing(false);
+      }
+    });
   };
 
-  // Morning Report PDF Logic
+  useEffect(() => {
+    const qBookings = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
+    const unsubBookings = onSnapshot(qBookings, (snapshot) => {
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setBookings(data);
+      setLoading(false);
+    });
+    const qRooms = query(collection(db, 'rooms'));
+    const unsubRooms = onSnapshot(qRooms, (snapshot) => {
+      setRoomsList(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return () => { unsubBookings(); unsubRooms(); };
+  }, []);
+
   const todayDateStr = new Date().toISOString().split('T')[0];
-  const morningReportEvents = bookings.filter(b => 
-    b.date === todayDateStr && 
-    (b.status === 'approved' || b.status === 'approved_by_branch') && 
+
+  const morningReportEvents = bookings.filter(b =>
+    b.date === todayDateStr &&
+    (b.status === 'approved' || b.status === 'approved_by_branch') &&
     (!b.is16WeekFixed || b.roomType === 'multi')
-  ).sort((a,b) => a.timeFrom.localeCompare(b.timeFrom));
+  ).sort((a, b) => a.timeFrom.localeCompare(b.timeFrom));
 
   const pendingCount = bookings.filter(b => b.status === 'pending' || b.status === 'awaiting_manager_final').length;
-  
-  // Empty Rooms Filtering Logic
-  const handleSearchEmptyRooms = () => {
-    const overlapping = bookings.filter(b => 
-       b.date === searchDate && 
-       b.timeFrom === searchTime && 
-       ['approved', 'approved_by_branch', 'pending', 'awaiting_manager_final'].includes(b.status)
-    );
-    const occupiedRoomIds = overlapping.map(b => b.roomId);
-
-    const available = roomsList.filter(r => {
-      if (r.status === 'unavailable') return false; 
-      if (searchRoomType !== 'all' && r.type !== searchRoomType) return false;
-      if (occupiedRoomIds.includes(r.id)) return false;
-      return true;
-    });
-
-    setEmptyRoomsResult(available);
-  };
-  
-  // === Delegation & Roles Logic ===
-  const handleSearchEmployee = async () => {
-    if (!employeeSearchQuery) return;
-    try {
-      setLoading(true);
-      const q = query(collection(db, 'users'), where('employeeId', '==', employeeSearchQuery.trim()));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        setSearchedUser({ id: snap.docs[0].id, ...snap.docs[0].data() });
-      } else {
-        setSearchedUser(null);
-        alert('لم يتم العثور على موظف بهذا الرقم الوظيفي.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('حدث خطأ أثناء البحث');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelegateRole = async (targetRole) => {
-    if (!searchedUser) return;
-    if (targetRole === 'temp_admin' && !tempEndDate) {
-      return alert('يجب تحديد تاريخ انتهاء التفويض.');
-    }
-    if (targetRole === 'secretary' && !selectedCollege) {
-      return alert('يجب اختيار الكلية.');
-    }
-
-    try {
-      // First, if secretary, ensuring there's only 1 secretary per college is usually done 
-      // by querying "users where role=secretary and collegeName=selectedCollege".
-      // Let's do a quick uniqueness check to swap/remove the old one.
-      if (targetRole === 'secretary') {
-        const checkQ = query(collection(db, 'users'), where('role', '==', 'secretary'), where('collegeName', '==', selectedCollege));
-        const checkSnap = await getDocs(checkQ);
-        const batch = writeBatch(db);
-        checkSnap.forEach(d => {
-           // Demote old secretary
-           batch.update(doc(db, 'users', d.id), { role: 'employee', collegeName: null });
-        });
-        await batch.commit(); // Ensure nobody else holds it
-      }
-
-      const updateData = {
-        role: targetRole,
-        tempAccessEnd: targetRole === 'temp_admin' ? tempEndDate : null,
-        collegeName: targetRole === 'secretary' ? selectedCollege : null
-      };
-
-      await setDoc(doc(db, 'users', searchedUser.id), updateData, { merge: true });
-      
-      // Emit Audit Log
-      await addDoc(collection(db, 'audit_logs'), {
-         actionBy: currentUser.email,
-         actionByName: currentUser.displayName || 'Admin',
-         actionType: targetRole === 'temp_admin' ? 'DELEGATE_ADMIN' : 'ASSIGN_SECRETARY',
-         targetUser: searchedUser.employeeId,
-         targetUserName: searchedUser.displayName,
-         details: targetRole === 'temp_admin' ? `تم تفويضه كأدمن مؤقت حتى ${tempEndDate}` : `تم تعيينه سكرتير لكلية ${selectedCollege}`,
-         timestamp: serverTimestamp()
-      });
-
-      alert('تم تحديث صلاحيات الموظف بنجاح!');
-      setSearchedUser({ ...searchedUser, ...updateData });
-    } catch (error) {
-       console.error(error);
-       alert('فشل تحديث الصلاحيات.');
-    }
-  };
-
-  const handleRevokeRole = async () => {
-    if (!searchedUser) return;
-    if (!window.confirm('هل أنت متأكد من سحب كافة الصلاحيات الإضافية من هذا الموظف؟')) return;
-    try {
-      await setDoc(doc(db, 'users', searchedUser.id), {
-        role: 'employee',
-        tempAccessEnd: null,
-        collegeName: null
-      }, { merge: true });
-
-      await addDoc(collection(db, 'audit_logs'), {
-         actionBy: currentUser.email,
-         actionByName: currentUser.displayName || 'Admin',
-         actionType: 'REVOKE_ACCESS',
-         targetUser: searchedUser.employeeId,
-         targetUserName: searchedUser.displayName,
-         details: 'تم سحب الصلاحيات الإضافية إدارياً',
-         timestamp: serverTimestamp()
-      });
-
-      alert('تم سحب الصلاحيات.');
-      setSearchedUser({ ...searchedUser, role: 'employee', tempAccessEnd: null, collegeName: null });
-    } catch (e) {
-      console.error(e);
-      alert('فشل سحب الصلاحيات');
-    }
-  };
-
   const acceptedTodayCount = bookings.filter(b => b.status === 'approved' && b.date === todayDateStr).length;
 
   return (
@@ -499,202 +300,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* User Permissions & Delegation (الصلاحيات الإضافية والتفويض) */}
-          <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full mt-4">
-             <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-               <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[28px]">admin_panel_settings</span>
-               </div>
-               <div>
-                 <h2 className="text-2xl font-headline font-black text-[#001e40]">إدارة الصلاحيات والتفويض</h2>
-                 <p className="text-sm font-bold text-[#5a7698]">ابحث بالرقم الوظيفي لمنح تفويض مؤقت أو تعيين سكرتير كلية.</p>
-               </div>
-             </div>
 
-             <div className="flex gap-4 mb-6">
-                <input 
-                  type="text" 
-                  placeholder="أدخل الرقم الوظيفي للموظف..."
-                  value={employeeSearchQuery}
-                  onChange={e => setEmployeeSearchQuery(e.target.value)}
-                  className="flex-1 bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none"
-                />
-                <button 
-                  onClick={handleSearchEmployee}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:-translate-y-1 transition-all flex items-center gap-2"
-                >
-                  <span className="material-symbols-outlined">person_search</span> بحث
-                </button>
-             </div>
-
-             {searchedUser && (
-               <div className="bg-[#f8fafc] rounded-2xl p-6 border border-gray-100 animate-in fade-in slide-in-from-bottom-2">
-                 <div className="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-gray-200 pb-4">
-                   <div className="flex items-center gap-4">
-                     <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
-                       <span className="material-symbols-outlined text-[32px]">person</span>
-                     </div>
-                     <div>
-                       <h3 className="text-xl font-black text-[#001e40]">{searchedUser.displayName}</h3>
-                       <p className="text-gray-500 font-bold text-sm">
-                         الرقم الوظيفي: {searchedUser.employeeId} | الصلاحية الحالية: {' '}
-                         <span className={`px-2 py-0.5 rounded text-xs text-white ${searchedUser.role === 'admin' ? 'bg-red-500' : searchedUser.role === 'temp_admin' ? 'bg-orange-500' : searchedUser.role === 'secretary' ? 'bg-blue-500' : 'bg-gray-500'}`}>
-                           {searchedUser.role}
-                         </span>
-                       </p>
-                       {searchedUser.role === 'temp_admin' && (
-                         <p className="text-orange-600 text-xs font-bold mt-1">تاريخ انتهاء التفويض: {searchedUser.tempAccessEnd}</p>
-                       )}
-                       {searchedUser.role === 'secretary' && (
-                         <p className="text-blue-600 text-xs font-bold mt-1">سكرتير لكلية: {searchedUser.collegeName}</p>
-                       )}
-                     </div>
-                     </div>
-                     {(searchedUser.role === 'temp_admin' || searchedUser.role === 'secretary') && (
-                        <button onClick={handleRevokeRole} className="mt-4 md:mt-0 bg-red-50 text-red-600 hover:bg-red-100 px-6 py-2 rounded-xl font-bold transition-colors">
-                          سحب الصلاحية (إلغاء)
-                        </button>
-                     )}
-                 </div>
-
-                 {searchedUser.role === 'employee' && (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-                     {/* Temp Admin Block */}
-                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
-                       <div className="absolute top-0 right-0 w-2 h-full bg-orange-400"></div>
-                       <h4 className="font-bold text-orange-800 flex items-center gap-2 mb-4">
-                         <span className="material-symbols-outlined">timer</span>
-                         منح مسؤولية مؤقتة (Temporary Admin)
-                       </h4>
-                       <label className="block text-xs font-bold text-gray-500 mb-2">تاريخ انتهاء الصلاحية</label>
-                       <input 
-                         type="date"
-                         value={tempEndDate}
-                         onChange={e => setTempEndDate(e.target.value)}
-                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4 font-bold text-gray-700 outline-none"
-                       />
-                       <button onClick={() => handleDelegateRole('temp_admin')} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-bold transition-all">ترقية كمؤقت</button>
-                     </div>
-
-                     {/* Secretary Block */}
-                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
-                       <div className="absolute top-0 right-0 w-2 h-full bg-blue-500"></div>
-                       <h4 className="font-bold text-blue-800 flex items-center gap-2 mb-4">
-                         <span className="material-symbols-outlined">badge</span>
-                         تعيين سكرتير كلية
-                       </h4>
-                       <label className="block text-xs font-bold text-gray-500 mb-2">اختيار الكلية</label>
-                       <select 
-                         value={selectedCollege}
-                         onChange={e => setSelectedCollege(e.target.value)}
-                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4 font-bold text-gray-700 outline-none"
-                       >
-                         <option value="">-- اختر كلية --</option>
-                         {collegeOptions.map(c => <option key={c} value={c}>{c}</option>)}
-                       </select>
-                       <button onClick={() => handleDelegateRole('secretary')} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold transition-all shadow-sm">تعيين سكرتير</button>
-                     </div>
-                   </div>
-                 )}
-               </div>
-             )}
-          </div>
-
-          {/* Manage Rooms Quick Access Link */}
-          <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full mt-4 flex flex-col md:flex-row items-center justify-between">
-             <div className="flex items-center gap-4 mb-4 md:mb-0">
-               <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[28px]">meeting_room</span>
-               </div>
-               <div>
-                 <h2 className="text-2xl font-headline font-black text-[#001e40]">إدارة القاعات والمدرجات</h2>
-                 <p className="text-sm font-bold text-[#5a7698]">إضافة قاعات جديدة، تعديل بيانات القاعات الحالية، وإزالة القاعات واستخراج تقارير الـ PDF.</p>
-               </div>
-             </div>
-             <button 
-               onClick={() => navigate('/admin/rooms')}
-               className="bg-[#001e40] hover:bg-[#1e3a5f] text-white px-8 py-3 rounded-xl font-bold shadow-md hover:-translate-y-1 transition-all flex items-center gap-2"
-             >
-               الانتقال إلى الإدارة الشاملة <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-             </button>
-          </div>
-
-          {/* Advanced Search for Empty Rooms */}
-          <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full mt-4">
-            <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-               <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[28px]">search</span>
-               </div>
-               <div>
-                 <h2 className="text-2xl font-headline font-black text-[#001e40]">البحث المتقدم (القاعات الفارغة)</h2>
-                 <p className="text-sm font-bold text-[#5a7698]">ابحث عن القاعات التي لا يوجد بها أي حجز مؤكد في فترة معينة.</p>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-               <div className="space-y-2">
-                 <label className="block text-xs font-bold text-[#5a7698] uppercase">تاريخ البحث</label>
-                 <input 
-                   type="date" 
-                   value={searchDate} 
-                   onChange={(e) => setSearchDate(e.target.value)} 
-                   className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none" 
-                 />
-               </div>
-               <div className="space-y-2">
-                 <label className="block text-xs font-bold text-[#5a7698] uppercase">الفترة الزمنية (Slot)</label>
-                 <select 
-                   value={searchTime} 
-                   onChange={(e) => setSearchTime(e.target.value)} 
-                   className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none" dir="ltr"
-                 >
-                   {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
-                 </select>
-               </div>
-               <div className="space-y-2">
-                 <label className="block text-xs font-bold text-[#5a7698] uppercase">نوع القاعة</label>
-                 <select 
-                   value={searchRoomType} 
-                   onChange={(e) => setSearchRoomType(e.target.value)} 
-                   className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none"
-                 >
-                   <option value="all">الجميع (أعد العرض بالكامل)</option>
-                   <option value="fixed">قاعات محاضرات عادية</option>
-                   <option value="multi">قاعات متعددة الأغراض</option>
-                 </select>
-               </div>
-            </div>
-
-            <button 
-              onClick={handleSearchEmptyRooms}
-              className="w-full bg-[#001e40] hover:bg-[#1e3a5f] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-md hover:-translate-y-1 flex items-center justify-center gap-2"
-            >
-               <span className="material-symbols-outlined">zoom_in</span>
-               عرض القاعات المتاحة
-            </button>
-
-            {emptyRoomsResult && (
-              <div className="mt-8 pt-8 border-t border-gray-100 animate-in fade-in slide-in-from-bottom-4">
-                 <h3 className="text-xl font-headline font-black text-[#001e40] mb-4 flex items-center gap-2">
-                   نتيجة البحث: <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">{emptyRoomsResult.length} قاعة متاحة</span>
-                 </h3>
-                 {emptyRoomsResult.length > 0 ? (
-                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                     {emptyRoomsResult.map(r => (
-                       <div key={r.id} className="bg-green-50 border border-green-200 rounded-xl p-4 text-center hover:bg-green-100 hover:border-green-300 transition-colors shadow-sm cursor-default">
-                         <div className="font-black text-green-800 text-xl font-headline mb-1">{r.roomNumber}</div>
-                         <div className="text-xs font-bold text-green-600">{r.type === 'multi' ? 'متعددة الأغراض' : 'محاضرات عادية'}</div>
-                       </div>
-                     ))}
-                   </div>
-                 ) : (
-                   <div className="bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-8 text-center text-gray-500 font-bold">
-                     لم نجد أي قاعات متاحة مطابقة لشروط البحث.
-                   </div>
-                 )}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* 16-Week Fixed Lecture Modal */}

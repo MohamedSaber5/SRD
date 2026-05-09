@@ -14,62 +14,65 @@ import './index.css';
 import BranchManagerDashboard from './pages/BranchManagerDashboard';
 import AdminStatistics from './pages/AdminStatistics';
 import { AuthProvider } from './contexts/AuthContext';
+import { PopupProvider } from './contexts/PopupContext';
 import RoleRouteGuard from './components/auth/RoleRouteGuard';
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LoginScreen />} />
-          <Route path="/login" element={<LoginScreen />} />
-          <Route path="/register" element={<RegisterScreen />} />
-          
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={
-              <RoleRouteGuard allowedRoles={['employee', 'secretary']}>
-                <UserDashboard />
-              </RoleRouteGuard>
-            } />
-            <Route path="/admin" element={
-              <RoleRouteGuard allowedRoles={['admin']}>
-                <AdminDashboard />
-              </RoleRouteGuard>
-            } />
-            <Route path="/admin/requests" element={
-              <RoleRouteGuard allowedRoles={['admin']}>
-                <AdminRequests />
-              </RoleRouteGuard>
-            } />
-            <Route path="/admin/rooms" element={
-              <RoleRouteGuard allowedRoles={['admin']}>
-                <RoomManagement />
-              </RoleRouteGuard>
-            } />
-            <Route path="/admin/rooms/search" element={
-              <RoleRouteGuard allowedRoles={['admin']}>
-                <AdvancedRoomSearch />
-              </RoleRouteGuard>
-            } />
-            <Route path="/admin/statistics" element={
-              <RoleRouteGuard allowedRoles={['admin', 'branch_manager']}>
-                <AdminStatistics />
-              </RoleRouteGuard>
-            } />
-            <Route path="/branch_manager" element={
-              <RoleRouteGuard allowedRoles={['branch_manager']}>
-                <BranchManagerDashboard />
-              </RoleRouteGuard>
-            } />
-            <Route path="/booking" element={
-              <RoleRouteGuard allowedRoles={['employee', 'secretary', 'admin', 'branch_manager']}>
-                <BookingForm />
-              </RoleRouteGuard>
-            } />
-            <Route path="/notifications" element={<NotificationsPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <PopupProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LoginScreen />} />
+            <Route path="/login" element={<LoginScreen />} />
+            <Route path="/register" element={<RegisterScreen />} />
+            
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={
+                <RoleRouteGuard allowedRoles={['employee', 'secretary']}>
+                  <UserDashboard />
+                </RoleRouteGuard>
+              } />
+              <Route path="/admin" element={
+                <RoleRouteGuard allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </RoleRouteGuard>
+              } />
+              <Route path="/admin/requests" element={
+                <RoleRouteGuard allowedRoles={['admin']}>
+                  <AdminRequests />
+                </RoleRouteGuard>
+              } />
+              <Route path="/admin/rooms" element={
+                <RoleRouteGuard allowedRoles={['admin']}>
+                  <RoomManagement />
+                </RoleRouteGuard>
+              } />
+              <Route path="/admin/rooms/search" element={
+                <RoleRouteGuard allowedRoles={['admin']}>
+                  <AdvancedRoomSearch />
+                </RoleRouteGuard>
+              } />
+              <Route path="/admin/statistics" element={
+                <RoleRouteGuard allowedRoles={['admin', 'branch_manager']}>
+                  <AdminStatistics />
+                </RoleRouteGuard>
+              } />
+              <Route path="/branch_manager" element={
+                <RoleRouteGuard allowedRoles={['branch_manager']}>
+                  <BranchManagerDashboard />
+                </RoleRouteGuard>
+              } />
+              <Route path="/booking" element={
+                <RoleRouteGuard allowedRoles={['employee', 'secretary', 'admin', 'branch_manager']}>
+                  <BookingForm />
+                </RoleRouteGuard>
+              } />
+              <Route path="/notifications" element={<NotificationsPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </PopupProvider>
     </AuthProvider>
   );
 }

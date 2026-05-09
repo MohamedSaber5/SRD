@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { roomService } from '../services/roomService';
 import { REGULAR_SLOTS, getHourOptions } from '../hooks/useBookingForm';
+import { usePopup } from '../contexts/PopupContext';
 
 // --- Strategy Pattern & Factory for Search ---
 
@@ -63,6 +64,7 @@ export default function AdvancedRoomSearch() {
   const [searchDate, setSearchDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchRoomType, setSearchRoomType] = useState('multi');
   const [searchCapacity, setSearchCapacity] = useState('');
+  const { showAlert } = usePopup();
   
   // Strategy-specific states
   const [timeFrom, setTimeFrom] = useState('');
@@ -92,7 +94,7 @@ export default function AdvancedRoomSearch() {
         
     const errorMsg = strategy.validateInput(data);
     if (errorMsg) {
-      return alert(errorMsg);
+      return showAlert(errorMsg, 'warning');
     }
 
     setIsSearching(true);
@@ -112,14 +114,14 @@ export default function AdvancedRoomSearch() {
       setEmptyRoomsResult(available);
     } catch (error) {
       console.error(error);
-      alert('خطأ أثناء البحث عن القاعات المتاحة');
+      showAlert('خطأ أثناء البحث عن القاعات المتاحة', 'error');
     } finally {
       setIsSearching(false);
     }
   };
 
   return (
-    <div className="w-full h-full pb-20 px-4 rtl pt-8 animate-in fade-in slide-in-from-right-4" dir="rtl">
+    <div className="w-full h-full pb-20 px-4 rtl pt-8 animate-in fade-in" dir="rtl">
       <div className="mb-8">
         <h1 className="text-4xl font-headline font-bold text-[#001e40] tracking-tight">البحث المتقدم للقاعات</h1>
         <p className="text-[#5a7698] mt-2 text-lg">أداة متقدمة للاستعلام الدقيق عن شغور القاعات بناءً على نوعها وسعتها والفترات الزمنية.</p>

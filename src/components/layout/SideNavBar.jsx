@@ -85,7 +85,7 @@ export default function SideNavBar({ isOpen, closeMenu }) {
         {/* Dummy links for visual completeness */}
         {userRole === 'admin' && (
           <>
-            <NavLink to="/admin/rooms" className={getNavClass} onClick={closeMenu}>
+            <NavLink to="/admin/rooms" className={getNavClass} end onClick={closeMenu}>
               <span className="material-symbols-outlined ml-2" data-icon="meeting_room">meeting_room</span>
               <span>إدارة القاعات</span>
             </NavLink>
