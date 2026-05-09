@@ -20,15 +20,6 @@ export default function RoomManagement() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
-  // Search State
-  const [searchDate, setSearchDate] = useState(new Date().toISOString().split('T')[0]);
-  const [searchTimeFrom, setSearchTimeFrom] = useState('08:00');
-  const [searchTimeTo, setSearchTimeTo] = useState('10:00');
-  const [searchRoomType, setSearchRoomType] = useState('all');
-  const [emptyRoomsResult, setEmptyRoomsResult] = useState(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const timeSlots = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'];
-
   // Load Rooms (Observer Pattern)
   useEffect(() => {
     const unsubscribe = roomService.subscribeToRooms((fetchedRooms) => {
@@ -112,44 +103,6 @@ export default function RoomManagement() {
     }
   };
 
-  const handleSearchEmptyRooms = async () => {
-    if (searchTimeFrom >= searchTimeTo) {
-      return alert("وقت البداية يجب أن يكون قبل وقت الانتهاء");
-    }
-    setIsSearching(true);
-    try {
-      const activeBookings = await roomService.getBookingsByDate(searchDate);
-      
-      const overlappingBookings = activeBookings.filter(b => {
-        const bookingStart = b.timeFrom;
-        let bookingEnd = b.timeTo;
-        if (!bookingEnd) {
-           const startIndex = timeSlots.indexOf(bookingStart);
-           bookingEnd = startIndex !== -1 && startIndex < timeSlots.length - 1 ? timeSlots[startIndex + 1] : '22:00';
-        }
-
-        // Intersect condition: StartA < EndB && EndA > StartB
-        return searchTimeFrom < bookingEnd && searchTimeTo > bookingStart;
-      });
-
-      const occupiedRoomIds = overlappingBookings.map(b => b.roomId);
-
-      const available = rooms.filter(r => {
-        if (r.status === 'unavailable') return false; 
-        if (searchRoomType !== 'all' && r.type !== searchRoomType) return false;
-        if (occupiedRoomIds.includes(r.id)) return false;
-        return true;
-      });
-
-      setEmptyRoomsResult(available);
-    } catch (error) {
-      console.error(error);
-      alert('خطأ أثناء البحث عن القاعات المتاحة');
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
   if (loading) {
     return <div className="flex justify-center items-center h-full text-[#001e40] font-bold">جاري تحميل القاعات...</div>;
   }
@@ -170,94 +123,6 @@ export default function RoomManagement() {
           <span className="material-symbols-outlined">add_circle</span>
           إضافة قاعة جديدة
         </button>
-      </div>
-
-      {/* Advanced Search for Empty Rooms */}
-      <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full mb-8">
-        <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-[28px]">search</span>
-           </div>
-           <div>
-             <h2 className="text-2xl font-headline font-black text-[#001e40]">البحث المتقدم (القاعات المتاحة)</h2>
-             <p className="text-sm font-bold text-[#5a7698]">ابحث عن القاعات المتاحة في تاريخ ووقت محدد (مفيد لقاعات متعددة الأغراض أو السكاشن الاستثنائية).</p>
-           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-           <div className="space-y-2">
-             <label className="block text-xs font-bold text-[#5a7698] uppercase">تاريخ البحث</label>
-             <input 
-               type="date" 
-               value={searchDate} 
-               onChange={(e) => setSearchDate(e.target.value)} 
-               className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none" 
-             />
-           </div>
-           <div className="space-y-2">
-             <label className="block text-xs font-bold text-[#5a7698] uppercase">من الساعة</label>
-             <select 
-               value={searchTimeFrom} 
-               onChange={(e) => setSearchTimeFrom(e.target.value)} 
-               className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none" dir="ltr"
-             >
-               {timeSlots.map(t => <option key={`from-${t}`} value={t}>{t}</option>)}
-             </select>
-           </div>
-           <div className="space-y-2">
-             <label className="block text-xs font-bold text-[#5a7698] uppercase">إلى الساعة</label>
-             <select 
-               value={searchTimeTo} 
-               onChange={(e) => setSearchTimeTo(e.target.value)} 
-               className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none" dir="ltr"
-             >
-               {timeSlots.map(t => <option key={`to-${t}`} value={t}>{t}</option>)}
-             </select>
-           </div>
-           <div className="space-y-2">
-             <label className="block text-xs font-bold text-[#5a7698] uppercase">نوع القاعة</label>
-             <select 
-               value={searchRoomType} 
-               onChange={(e) => setSearchRoomType(e.target.value)} 
-               className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none"
-             >
-               <option value="all">الجميع</option>
-               <option value="fixed">قاعات السكاشن (عادية)</option>
-               <option value="multi">متعددة الأغراض</option>
-             </select>
-           </div>
-        </div>
-
-        <button 
-          onClick={handleSearchEmptyRooms}
-          disabled={isSearching}
-          className="w-full bg-[#001e40] hover:bg-[#1e3a5f] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-md hover:-translate-y-1 flex items-center justify-center gap-2"
-        >
-           <span className="material-symbols-outlined">{isSearching ? 'hourglass_empty' : 'zoom_in'}</span>
-           {isSearching ? 'جاري البحث...' : 'عرض القاعات المتاحة'}
-        </button>
-
-        {emptyRoomsResult && (
-          <div className="mt-8 pt-8 border-t border-gray-100 animate-in fade-in slide-in-from-bottom-4">
-             <h3 className="text-xl font-headline font-black text-[#001e40] mb-4 flex items-center gap-2">
-               نتيجة البحث: <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">{emptyRoomsResult.length} قاعة متاحة</span>
-             </h3>
-             {emptyRoomsResult.length > 0 ? (
-               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                 {emptyRoomsResult.map(r => (
-                   <div key={r.id} className="bg-green-50 border border-green-200 rounded-xl p-4 text-center hover:bg-green-100 hover:border-green-300 transition-colors shadow-sm cursor-pointer" onClick={() => handleRowClick(r)}>
-                     <div className="font-black text-green-800 text-xl font-headline mb-1">{r.roomNumber}</div>
-                     <div className="text-xs font-bold text-green-600">{r.type === 'multi' ? 'متعددة الأغراض' : 'محاضرات عادية'}</div>
-                   </div>
-                 ))}
-               </div>
-             ) : (
-               <div className="bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-8 text-center text-gray-500 font-bold">
-                 لم نجد أي قاعات متاحة مطابقة لشروط البحث (في هذا الوقت).
-               </div>
-             )}
-          </div>
-        )}
       </div>
 
       {/* Main Table */}

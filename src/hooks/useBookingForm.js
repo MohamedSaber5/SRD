@@ -58,6 +58,7 @@ export function useBookingForm() {
     timeFrom: prefill.timeFrom || '',
     timeTo: prefill.timeTo || '',
     purpose: prefill.purpose || '',
+    requiredCapacity: '', // NEW
     respName: prefill.responsibleName || currentUser?.displayName || '',
     respJob: '', 
     respMobile: prefill.responsibleMobile || '',
@@ -168,6 +169,7 @@ export function useBookingForm() {
   const validateStep1 = () => {
     if (!formData.roomId || !formData.date || !formData.purpose) return false;
     if (!formData.timeFrom || !formData.timeTo) return false;
+    if (!formData.requiredCapacity || isNaN(formData.requiredCapacity) || Number(formData.requiredCapacity) <= 0) return false;
     if (isLeadTimeError) return false;
     
     // For Multi-purpose, check that start < end
@@ -189,7 +191,10 @@ export function useBookingForm() {
     // Name must NOT contain numbers
     const isNameValid = !/[0-9]/.test(formData.respName);
     
-    return isMobileValid && isNameValid;
+    // Job/Title MUST contain at least one alphabetical letter (English or Arabic)
+    const isJobValid = /[a-zA-Z\u0600-\u06FF]/.test(formData.respJob);
+    
+    return isMobileValid && isNameValid && isJobValid;
   };
 
   const validateStep3 = () => {
@@ -223,6 +228,7 @@ export function useBookingForm() {
         timeFrom: formData.timeFrom,
         timeTo: formData.timeTo,
         purpose: formData.purpose,
+        requiredCapacity: Number(formData.requiredCapacity),
         isHolidayEvent: formData.isHolidayEvent,
         isOfficialOccasion: formData.isOfficialOccasion,
         responsibleName: formData.respName,

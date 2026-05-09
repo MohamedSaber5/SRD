@@ -15,6 +15,12 @@ export default function BookingStep2Responsible({ formData, handleChange }) {
     }
   };
 
+  // Job validation wrapper to encourage letters
+  const handleJobChange = (e) => {
+    const val = e.target.value;
+    handleChange(e);
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
        <h3 className="text-xl font-headline font-bold text-primary mb-6 border-b border-surface-container-high pb-4">بيانات المسؤول عن الحدث</h3>
@@ -37,11 +43,12 @@ export default function BookingStep2Responsible({ formData, handleChange }) {
           <input 
             name="respJob" 
             value={formData.respJob} 
-            onChange={handleChange} 
+            onChange={handleJobChange} 
             required 
             className="block w-full rounded-xl border-0 py-3 pl-4 pr-4 bg-surface-container-high focus:ring-2 focus:ring-primary text-right font-body" 
             type="text"
           />
+          <p className="text-xs text-on-surface-variant mt-1">يجب أن تحتوي الوظيفة على أحرف (لا يمكن أن تكون أرقاماً فقط)</p>
         </div>
         <div className="space-y-2 relative text-right">
           <label className="block font-body text-sm font-medium text-on-surface-variant">رقم الجوال (للتواصل السريع)</label>

@@ -56,6 +56,10 @@ export default function AdminRequests() {
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [approveSelectedRequest, setApproveSelectedRequest] = useState(null);
   const [approveRoomId, setApproveRoomId] = useState('');
+  const [approvePriority, setApprovePriority] = useState('normal');
+
+  // Details View State
+  const [viewSelectedRequest, setViewSelectedRequest] = useState(null);
 
   useEffect(() => {
     // Only fetch pending and awaiting manager final
@@ -107,11 +111,12 @@ export default function AdminRequests() {
       // Filter out occupied rooms and globally unavailable rooms
       let freeRooms = roomsList.filter(r => !occupiedRoomIds.includes(r.id) && r.status !== 'unavailable');
       
-      // Filter by requested room type (lecture vs multi)
+      // Filter by requested room type (lecture vs multi) and capacity
+      const requiredCap = Number(req.requiredCapacity) || 0;
       if (req.hallCategory === 'lecture' || req.roomType === 'fixed') {
-        freeRooms = freeRooms.filter(r => r.type === 'fixed');
+        freeRooms = freeRooms.filter(r => r.type === 'fixed' && Number(r.capacity) >= requiredCap);
       } else if (req.hallCategory === 'multi' || req.roomType === 'multi') {
-        freeRooms = freeRooms.filter(r => r.type === 'multi');
+        freeRooms = freeRooms.filter(r => r.type === 'multi' && Number(r.capacity) >= requiredCap);
       }
       
       setAvailableRooms(freeRooms);
@@ -140,6 +145,7 @@ export default function AdminRequests() {
       await updateDoc(bookingRef, {
         status: targetStatus,
         roomId: approveRoomId, // Assign new room if modified
+        priority: approvePriority, // Set priority
         adminApprovedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
@@ -249,59 +255,156 @@ export default function AdminRequests() {
              <span className="material-symbols-outlined animate-spin text-4xl">sync</span>
            </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 custom-scrollbar">
+          <div className="space-y-6">
             {requests.map(req => (
-              <div key={req.id} className="bg-[#fcfdff] rounded-[1.2rem] p-5 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all relative overflow-hidden flex flex-col justify-between h-auto">
-                <div className="absolute top-0 right-0 w-[4px] h-full bg-[#1e3a5f] rounded-l-full"></div>
+              <div key={req.id} className="bg-[#fcfdff] rounded-2xl border border-gray-200 hover:border-[#1e3a5f]/30 hover:shadow-md transition-all relative overflow-hidden">
+                {/* Priority stripe */}
+                <div className={`absolute top-0 right-0 w-[5px] h-full rounded-l-full ${req.priority === 'urgent' ? 'bg-red-500' : 'bg-[#1e3a5f]'}`}></div>
                 
-                <div>
-                    <div className="flex justify-between items-start mb-4 pl-2">
-                      <div className="font-headline font-black text-[#001e40] text-xl leading-none">
-                        قاعة {req.roomId}
-                      </div>
-                      <span className={`text-[10px] px-2 py-[2px] rounded-full font-bold ${req.status === 'awaiting_manager_final' ? 'bg-[#b58b4b] text-white' : 'bg-[#eef2f6] text-[#5a7698]'}`}>
+                <div className="p-6 pr-8">
+                  {/* Top row: Room ID + Status badges */}
+                  <div className="flex justify-between items-start mb-5 flex-wrap gap-2">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="font-headline font-black text-[#001e40] text-2xl">قاعة {req.roomId}</span>
+                      <span className={`text-[10px] px-3 py-1 rounded-full font-bold ${req.status === 'awaiting_manager_final' ? 'bg-[#b58b4b] text-white' : 'bg-[#eef2f6] text-[#5a7698]'}`}>
                         {req.status === 'awaiting_manager_final' ? 'انتظار المدير' : 'طلب جديد'}
                       </span>
-                    </div>
-                    
-                    <div className="text-xs text-[#5a7698] font-bold mb-4 space-y-2 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                      <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-blue-600">person</span> {req.responsibleName}</div>
-                      <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-orange-500">schedule</span> {req.date}، {req.timeFrom}</div>
-                      <div className="flex items-start gap-2 pt-2 border-t border-gray-200 mt-2">
-                         <span className="material-symbols-outlined text-[16px] text-gray-500">edit_note</span> 
-                         <span className="italic leading-relaxed">{req.purpose || 'لا يوجد غرض محدد'}</span>
-                      </div>
-                      
-                      {(req.isHolidayEvent || req.isOfficialOccasion) && (
-                        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-200">
-                          {req.isHolidayEvent && (
-                            <div className="bg-purple-100 text-purple-700 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
-                               <span className="material-symbols-outlined text-[14px]">celebration</span>
-                               عطلة
-                            </div>
-                          )}
-                          {req.isOfficialOccasion && (
-                            <div className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
-                               <span className="material-symbols-outlined text-[14px]">stars</span>
-                               مهم
-                            </div>
-                          )}
-                        </div>
+                      <span className={`text-[10px] px-3 py-1 rounded-full font-bold ${req.roomType === 'multi' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {req.roomType === 'multi' ? 'متعددة الأغراض' : 'محاضرات'}
+                      </span>
+                      {req.priority === 'urgent' && (
+                        <span className="bg-red-100 text-red-600 border border-red-200 px-3 py-1 rounded-full text-[10px] font-black flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">local_fire_department</span>
+                          عاجل جداً
+                        </span>
                       )}
                     </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  {req.status === 'pending' ? (
-                    <>
-                      <button onClick={() => handleApproveClick(req)} className="flex-1 bg-[#1e3a5f] text-white rounded-lg py-3 text-xs font-black shadow-md hover:-translate-y-[2px] transition-transform">اعتماد وتخصيص</button>
-                      <button onClick={() => handleRejectClick(req)} className="flex-1 bg-white text-[#001e40] border border-gray-200 rounded-lg py-3 text-xs font-black hover:bg-gray-50 hover:text-red-600 transition-colors">إلغاء</button>
-                    </>
-                  ) : (
-                    <div className="flex-1 text-center py-3 bg-[#fbf0dd]/50 text-[#b58b4b] text-xs font-black rounded-lg border border-[rgba(181,139,75,0.2)]">
-                      تم التوجيه للإدارة العليا
+                    <span className="text-xs text-gray-400 font-bold">
+                      {req.createdAt ? new Date(req.createdAt.toDate()).toLocaleDateString('ar-EG') : ''}
+                    </span>
+                  </div>
+
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+                    
+                    {/* Date & Time */}
+                    <div className="bg-blue-50/60 rounded-xl p-4 border border-blue-100">
+                      <div className="text-[10px] font-bold text-blue-500 uppercase mb-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">event</span>
+                        التاريخ والوقت
+                      </div>
+                      <div className="font-black text-[#001e40] text-sm">{req.date}</div>
+                      <div className="font-bold text-blue-600 text-sm ltr" dir="ltr">{req.timeFrom} — {req.timeTo}</div>
                     </div>
-                  )}
+
+                    {/* Responsible Person */}
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <div className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">person</span>
+                        المسؤول عن الحدث
+                      </div>
+                      <div className="font-black text-[#001e40] text-sm">{req.responsibleName}</div>
+                      <div className="font-bold text-[#5a7698] text-xs mt-0.5">{req.responsibleJob || 'لا توجد صفة'}</div>
+                      <div className="font-bold text-gray-500 text-xs mt-0.5 ltr" dir="ltr">{req.responsibleMobile || '—'}</div>
+                    </div>
+
+                    {/* Capacity */}
+                    <div className="bg-orange-50/60 rounded-xl p-4 border border-orange-100">
+                      <div className="text-[10px] font-bold text-orange-500 uppercase mb-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">groups</span>
+                        السعة والنوع
+                      </div>
+                      <div className="font-black text-[#001e40] text-sm">
+                        {req.requiredCapacity ? `${req.requiredCapacity} شخص مطلوب` : 'لم تحدد السعة'}
+                      </div>
+                      <div className="font-bold text-orange-600 text-xs mt-0.5">
+                        {req.hallCategory === 'multi' ? 'قاعة متعددة الأغراض' : 'قاعة محاضرات'}
+                      </div>
+                    </div>
+
+                    {/* Purpose */}
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 md:col-span-2 lg:col-span-2">
+                      <div className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">edit_note</span>
+                        الغرض من الاستخدام
+                      </div>
+                      <div className="font-bold text-[#001e40] italic text-sm leading-relaxed">"{req.purpose || 'لم يحدد غرض'}"</div>
+                    </div>
+
+                    {/* Submitter */}
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <div className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">badge</span>
+                        مقدم الطلب
+                      </div>
+                      <div className="font-black text-[#001e40] text-sm">{req.userName}</div>
+                      <div className="font-bold text-[#5a7698] text-xs mt-0.5">{req.college || '—'}</div>
+                      <div className="font-bold text-gray-400 text-xs">{req.userRole}</div>
+                    </div>
+                  </div>
+
+                  {/* Equipment Row */}
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {req.reqMic && (
+                      <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">mic</span>
+                        مايكروفون ({req.reqMicQty})
+                      </span>
+                    )}
+                    {req.reqLaptop && (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">laptop_mac</span>
+                        لابتوب / جهاز عرض
+                      </span>
+                    )}
+                    {req.reqVideoConf && (
+                      <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">video_camera_front</span>
+                        فيديو كونفرانس
+                      </span>
+                    )}
+                    {req.reqOther && (
+                      <span className="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg">
+                        أخرى: {req.reqOtherDetails}
+                      </span>
+                    )}
+                    {req.isHolidayEvent && (
+                      <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">celebration</span>
+                        عطلة رسمية
+                      </span>
+                    )}
+                    {req.isOfficialOccasion && (
+                      <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">stars</span>
+                        مناسبة رسمية
+                      </span>
+                    )}
+                    {!req.reqMic && !req.reqLaptop && !req.reqVideoConf && !req.reqOther && !req.isHolidayEvent && !req.isOfficialOccasion && (
+                      <span className="text-xs text-gray-400 font-bold italic">لا توجد متطلبات إضافية</span>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4 border-t border-gray-100">
+                    {req.status === 'pending' ? (
+                      <>
+                        <button onClick={() => handleApproveClick(req)} className="flex-1 bg-[#1e3a5f] text-white rounded-xl py-3 text-sm font-black shadow-md hover:-translate-y-[2px] transition-transform flex items-center justify-center gap-2">
+                          <span className="material-symbols-outlined text-sm">task_alt</span>
+                          اعتماد وتخصيص قاعة
+                        </button>
+                        <button onClick={() => handleRejectClick(req)} className="flex-1 bg-white text-[#001e40] border border-gray-200 rounded-xl py-3 text-sm font-black hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors flex items-center justify-center gap-2">
+                          <span className="material-symbols-outlined text-sm">cancel</span>
+                          رفض الطلب
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex-1 text-center py-3 bg-[#fbf0dd]/50 text-[#b58b4b] text-sm font-black rounded-xl border border-[rgba(181,139,75,0.2)] flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-sm">forward</span>
+                        تم التوجيه لمدير الفرع للاعتماد النهائي
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -315,6 +418,7 @@ export default function AdminRequests() {
           </div>
         )}
       </div>
+
       
       {/* Approve & Allocate Modal */}
       {isApproveModalOpen && (
@@ -340,9 +444,29 @@ export default function AdminRequests() {
                     <span className="block text-[10px] uppercase opacity-60">المقدم</span>
                     <span className="text-[#001e40]">{approveSelectedRequest?.responsibleName}</span>
                  </div>
+                 <div className="flex-1">
+                    <span className="block text-[10px] uppercase opacity-60">السعة المطلوبة</span>
+                    <span className="text-[#001e40]">{approveSelectedRequest?.requiredCapacity || 'غير محدد'}</span>
+                 </div>
               </div>
 
               <div className="space-y-2">
+                <label className="block text-xs font-bold text-[#5a7698]">مستوى الأولوية عند التوجيه للإدارة</label>
+                <div className="flex gap-4">
+                  <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${approvePriority === 'normal' ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f]' : 'border-gray-200 text-gray-400'}`}>
+                    <input type="radio" name="priority" value="normal" checked={approvePriority === 'normal'} onChange={() => setApprovePriority('normal')} className="hidden" />
+                    <span className="material-symbols-outlined text-sm">schedule</span>
+                    <span className="font-bold text-sm">عادي (افتراضي)</span>
+                  </label>
+                  <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${approvePriority === 'urgent' ? 'border-red-500 bg-red-50 text-red-600' : 'border-gray-200 text-gray-400'}`}>
+                    <input type="radio" name="priority" value="urgent" checked={approvePriority === 'urgent'} onChange={() => setApprovePriority('urgent')} className="hidden" />
+                    <span className="material-symbols-outlined text-sm">local_fire_department</span>
+                    <span className="font-bold text-sm">عاجل جداً</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-2 mt-4">
                 <label className="block text-xs font-bold text-[#5a7698]">القاعة النهائية المخصصة</label>
                 <select 
                    value={approveRoomId}
@@ -353,16 +477,16 @@ export default function AdminRequests() {
                    {isCheckingRooms ? (
                       <option value="">جاري فحص التوافر...</option>
                    ) : availableRooms.length === 0 ? (
-                      <option value="">لا توجد قاعات متاحة في هذا التوقيت</option>
+                      <option value="">لا توجد قاعات متاحة تسع هذا العدد في هذا التوقيت</option>
                    ) : (
                       availableRooms.map(r => (
                          <option key={r.id} value={r.id}>
-                            {r.roomNumber} ({r.type === 'multi' ? 'متعددة' : 'عادية'})
+                            {r.roomNumber} ({r.type === 'multi' ? 'متعددة' : 'عادية'}) - سعة: {r.capacity}
                          </option>
                       ))
                    )}
                 </select>
-                <p className="text-[10px] text-gray-400 mt-1">* القائمة تظهر القاعات المجانية فقط في التاريخ والوقت المستهدفين.</p>
+                <p className="text-[10px] text-gray-400 mt-1">* القائمة تظهر القاعات المجانية فقط وتستوعب العدد المطلوب.</p>
               </div>
 
               <div className="flex gap-4 mt-8 pt-6 border-t border-gray-100">
@@ -452,6 +576,64 @@ export default function AdminRequests() {
                   إرسال الرفض وإشعار الموظف
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Details View Modal */}
+      {viewSelectedRequest && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm rtl" dir="rtl" onClick={() => setViewSelectedRequest(null)}>
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setViewSelectedRequest(null)} className="absolute top-6 left-6 text-gray-400 hover:text-red-500 bg-gray-50 rounded-full w-8 h-8 flex items-center justify-center">
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
+            <h2 className="text-2xl font-headline font-black text-[#001e40] mb-6 border-b pb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-blue-600">info</span>
+              التفاصيل الكاملة لطلب الحجز
+            </h2>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                 <div className="text-xs text-gray-500 font-bold mb-1">تاريخ ووقت الفعالية</div>
+                 <div className="font-black text-[#001e40]">{viewSelectedRequest.date}</div>
+                 <div className="text-sm font-bold text-blue-600 ltr text-right" dir="ltr">{viewSelectedRequest.timeFrom} - {viewSelectedRequest.timeTo}</div>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                 <div className="text-xs text-gray-500 font-bold mb-1">المسؤول عن الحدث</div>
+                 <div className="font-black text-[#001e40]">{viewSelectedRequest.responsibleName}</div>
+                 <div className="text-sm font-bold text-[#5a7698]">{viewSelectedRequest.responsibleJob}</div>
+                 <div className="text-xs font-bold text-gray-400 mt-1" dir="ltr">{viewSelectedRequest.responsibleMobile}</div>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                 <div className="text-xs text-gray-500 font-bold mb-1">القاعة المستهدفة / السعة</div>
+                 <div className="font-black text-[#001e40]">{viewSelectedRequest.roomId} ({viewSelectedRequest.roomType === 'multi' ? 'متعددة' : 'محاضرات'})</div>
+                 <div className="text-sm font-bold text-orange-600">السعة المطلوبة: {viewSelectedRequest.requiredCapacity || 'غير محدد'} شخص</div>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                 <div className="text-xs text-gray-500 font-bold mb-1">مقدم الطلب</div>
+                 <div className="font-black text-[#001e40]">{viewSelectedRequest.userName}</div>
+                 <div className="text-sm font-bold text-[#5a7698]">{viewSelectedRequest.userRole}</div>
+                 <div className="text-xs font-bold text-gray-400">{viewSelectedRequest.college}</div>
+              </div>
+              <div className="col-span-2 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                 <div className="text-xs text-blue-500 font-bold mb-1">الغرض من الاستخدام</div>
+                 <div className="font-bold text-[#001e40] italic">"{viewSelectedRequest.purpose}"</div>
+              </div>
+              <div className="col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                 <div className="text-xs text-gray-500 font-bold mb-2">التجهيزات الفنية المطلوبة</div>
+                 <div className="flex flex-wrap gap-2">
+                    {viewSelectedRequest.reqMic && <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">mic</span> مايكروفون ({viewSelectedRequest.reqMicQty})</span>}
+                    {viewSelectedRequest.reqLaptop && <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-lg flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">laptop_mac</span> لابتوب / جهاز عرض</span>}
+                    {viewSelectedRequest.reqVideoConf && <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-lg flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">video_camera_front</span> فيديو كونفرانس</span>}
+                    {viewSelectedRequest.reqOther && <span className="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg">أخرى: {viewSelectedRequest.reqOtherDetails}</span>}
+                    {!viewSelectedRequest.reqMic && !viewSelectedRequest.reqLaptop && !viewSelectedRequest.reqVideoConf && !viewSelectedRequest.reqOther && <span className="text-sm font-bold text-gray-400">لا توجد تجهيزات خاصة مطلوبة.</span>}
+                 </div>
+              </div>
+            </div>
+            
+            <div className="mt-8 text-center">
+              <button onClick={() => setViewSelectedRequest(null)} className="px-8 py-3 bg-[#001e40] text-white rounded-xl font-bold hover:bg-[#1e3a5f] transition-all">إغلاق التفاصيل</button>
             </div>
           </div>
         </div>

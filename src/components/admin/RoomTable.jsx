@@ -4,39 +4,57 @@ export default function RoomTable({ rooms, onEditClick, onDeleteClick, onRowClic
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [minCapacity, setMinCapacity] = useState('');
 
-  // Filter and Search Logic
   const filteredRooms = useMemo(() => {
     return rooms.filter(room => {
       const matchesSearch = room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || room.status === statusFilter;
       const matchesType = typeFilter === 'all' || room.type === typeFilter;
-      
-      return matchesSearch && matchesStatus && matchesType;
+      const matchesCapacity = !minCapacity || Number(room.capacity) >= Number(minCapacity);
+      return matchesSearch && matchesStatus && matchesType && matchesCapacity;
     });
-  }, [rooms, searchTerm, statusFilter, typeFilter]);
+  }, [rooms, searchTerm, statusFilter, typeFilter, minCapacity]);
+
+  const hasFilters = searchTerm || minCapacity || typeFilter !== 'all' || statusFilter !== 'all';
 
   return (
     <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full rtl" dir="rtl">
       
-      {/* Search and Filters Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <div className="relative w-full md:w-1/3">
-          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-          <input 
-            type="text" 
-            placeholder="ابحث برقم أو اسم القاعة..." 
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-[#001e40] font-bold focus:ring-2 focus:ring-[#1e3a5f] outline-none"
-          />
+      {/* Search and Filters */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col md:flex-row gap-3">
+          {/* Text Search */}
+          <div className="relative flex-1">
+            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+            <input 
+              type="text" 
+              placeholder="ابحث برقم أو اسم القاعة..." 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-[#001e40] font-bold focus:ring-2 focus:ring-[#1e3a5f] outline-none"
+            />
+          </div>
+
+          {/* Capacity Filter */}
+          <div className="relative w-full md:w-52">
+            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">groups</span>
+            <input 
+              type="number" 
+              min="1"
+              placeholder="أدنى سعة (مثال: 50)"
+              value={minCapacity}
+              onChange={e => setMinCapacity(e.target.value)}
+              className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-[#001e40] font-bold focus:ring-2 focus:ring-[#1e3a5f] outline-none text-right"
+            />
+          </div>
         </div>
-        
-        <div className="flex gap-4 w-full md:w-auto">
+
+        <div className="flex gap-3 flex-wrap items-center">
           <select 
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value)}
-            className="bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 font-bold text-[#5a7698] outline-none cursor-pointer flex-1 md:flex-none"
+            className="bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-2.5 font-bold text-[#5a7698] outline-none cursor-pointer"
           >
             <option value="all">كل الأنواع</option>
             <option value="fixed">قاعات محاضرات</option>
@@ -46,16 +64,26 @@ export default function RoomTable({ rooms, onEditClick, onDeleteClick, onRowClic
           <select 
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 font-bold text-[#5a7698] outline-none cursor-pointer flex-1 md:flex-none"
+            className="bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-2.5 font-bold text-[#5a7698] outline-none cursor-pointer"
           >
             <option value="all">كل الحالات</option>
             <option value="available">متاحة</option>
             <option value="unavailable">مغلقة للصيانة</option>
           </select>
+
+          {hasFilters && (
+            <button
+              onClick={() => { setSearchTerm(''); setMinCapacity(''); setTypeFilter('all'); setStatusFilter('all'); }}
+              className="px-4 py-2.5 bg-red-50 text-red-500 border border-red-200 rounded-xl font-bold text-sm hover:bg-red-100 transition-colors flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-sm">filter_alt_off</span>
+              مسح الفلاتر
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Table Section */}
+      {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-gray-100">
         <table className="w-full text-right border-collapse">
           <thead>
@@ -124,7 +152,7 @@ export default function RoomTable({ rooms, onEditClick, onDeleteClick, onRowClic
         </table>
       </div>
       <div className="mt-4 text-sm font-bold text-gray-500">
-        إجمالي القاعات المعروضة: {filteredRooms.length}
+        إجمالي القاعات المعروضة: {filteredRooms.length} من {rooms.length}
       </div>
     </div>
   );

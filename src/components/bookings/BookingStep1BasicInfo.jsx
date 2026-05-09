@@ -247,6 +247,21 @@ export default function BookingStep1BasicInfo({
           ></textarea>
         </div>
         
+        {/* Required Capacity */}
+        <div className="col-span-1 md:col-span-2 space-y-2">
+          <label className="block text-sm font-label font-bold text-on-surface-variant">السعة المطلوبة (عدد الحضور المتوقع)</label>
+          <input 
+            type="number"
+            name="requiredCapacity"
+            min="1"
+            value={formData.requiredCapacity}
+            onChange={handleChange}
+            required
+            className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary text-right" 
+            placeholder="مثال: 50" 
+          />
+        </div>
+        
         {/* Extra options for secretary */}
         {userRole === 'secretary' && (
           <div className="col-span-1 md:col-span-2 mt-2 bg-surface-container-highest p-4 rounded-xl space-y-3">
