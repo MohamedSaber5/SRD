@@ -377,7 +377,7 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-headline font-bold text-[#001e40] tracking-tight">لوحة تحكم المسؤول</h1>
             <p className="text-[#5a7698] mt-2 text-lg">إدارة الجداول الأسبوعية ومتابعة العمليات</p>
           </div>
-          <div className="flex gap-3 mt-4 md:mt-0">
+          <div className="flex flex-wrap gap-3 mt-4 md:mt-0 justify-end">
             <button 
               onClick={() => navigate('/admin/requests')}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-400 to-orange-600 text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2 relative"
@@ -395,7 +395,7 @@ export default function AdminDashboard() {
               className="px-5 py-2.5 rounded-xl bg-[#001e40] text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[18px]">summarize</span>
-              التقرير الصباحي اليومي
+              التقرير الصباحي 
             </button>
           </div>
         </div>

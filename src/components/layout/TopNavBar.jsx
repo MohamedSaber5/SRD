@@ -13,9 +13,7 @@ export default function TopNavBar({ onMenuToggle }) {
           </div>
         </div>
         <div className="flex flex-row-reverse gap-4">
-          <Link to="/notifications" className="scale-95 active:scale-90 transition-transform hover:bg-[#e0e3e5] dark:hover:bg-slate-800 transition-all duration-300 p-2 rounded-full">
-            <span className="material-symbols-outlined" data-icon="notifications">notifications</span>
-          </Link>
+
           <button className="scale-95 active:scale-90 transition-transform hover:bg-[#e0e3e5] dark:hover:bg-slate-800 transition-all duration-300 p-2 rounded-full">
             <span className="material-symbols-outlined" data-icon="person">person</span>
           </button>

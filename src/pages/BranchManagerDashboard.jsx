@@ -12,9 +12,11 @@ import {
   orderBy,
   addDoc
 } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 import EditBookingModal from '../components/bookings/EditBookingModal';
 
 export default function BranchManagerDashboard() {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);

@@ -12,6 +12,7 @@ import AdvancedRoomSearch from './pages/AdvancedRoomSearch';
 import './index.css';
 
 import BranchManagerDashboard from './pages/BranchManagerDashboard';
+import AdminStatistics from './pages/AdminStatistics';
 import { AuthProvider } from './contexts/AuthContext';
 import RoleRouteGuard from './components/auth/RoleRouteGuard';
 
@@ -48,6 +49,11 @@ function App() {
             <Route path="/admin/rooms/search" element={
               <RoleRouteGuard allowedRoles={['admin']}>
                 <AdvancedRoomSearch />
+              </RoleRouteGuard>
+            } />
+            <Route path="/admin/statistics" element={
+              <RoleRouteGuard allowedRoles={['admin', 'branch_manager']}>
+                <AdminStatistics />
               </RoleRouteGuard>
             } />
             <Route path="/branch_manager" element={

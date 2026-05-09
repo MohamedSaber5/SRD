@@ -75,11 +75,6 @@ export default function SideNavBar({ isOpen, closeMenu }) {
           </NavLink>
         )}
 
-        <NavLink to="/notifications" className={getNavClass} onClick={closeMenu}>
-          <span className="material-symbols-outlined ml-2" data-icon="notifications">notifications</span>
-          <span>الإشعارات</span>
-        </NavLink>
-
         {userRole !== 'branch_manager' && (
           <NavLink to="/booking" className={getNavClass} onClick={closeMenu}>
             <span className="material-symbols-outlined ml-2" data-icon="add_circle">add_circle</span>
@@ -103,6 +98,13 @@ export default function SideNavBar({ isOpen, closeMenu }) {
               <span>الإعدادات</span>
             </div>
           </>
+        )}
+
+        {(userRole === 'admin' || userRole === 'branch_manager') && (
+          <NavLink to="/admin/statistics" className={getNavClass} onClick={closeMenu}>
+            <span className="material-symbols-outlined ml-2" data-icon="query_stats">query_stats</span>
+            <span>الإحصائيات والتقارير</span>
+          </NavLink>
         )}
       </nav>
       <div className="mt-auto pt-6 flex flex-col gap-2">
