@@ -90,10 +90,10 @@ export default function SideNavBar({ isOpen, closeMenu }) {
         {/* Dummy links for visual completeness */}
         {userRole === 'admin' && (
           <>
-            <div className="flex items-center gap-3 text-on-surface dark:text-slate-400 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-slate-800 rounded-xl transition-colors hover:translate-x-[-4px] transition-transform duration-200 cursor-not-allowed opacity-50">
+            <NavLink to="/admin/rooms" className={getNavClass} onClick={closeMenu}>
               <span className="material-symbols-outlined ml-2" data-icon="meeting_room">meeting_room</span>
               <span>إدارة القاعات</span>
-            </div>
+            </NavLink>
             <div className="flex items-center gap-3 text-on-surface dark:text-slate-400 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-slate-800 rounded-xl transition-colors hover:translate-x-[-4px] transition-transform duration-200 cursor-not-allowed opacity-50">
               <span className="material-symbols-outlined ml-2" data-icon="settings">settings</span>
               <span>الإعدادات</span>

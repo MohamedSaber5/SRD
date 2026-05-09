@@ -7,6 +7,7 @@ import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
 import BookingForm from './pages/BookingForm';
 import NotificationsPage from './pages/NotificationsPage';
+import RoomManagement from './pages/RoomManagement';
 import './index.css';
 
 import BranchManagerDashboard from './pages/BranchManagerDashboard';
@@ -36,6 +37,11 @@ function App() {
             <Route path="/admin/requests" element={
               <RoleRouteGuard allowedRoles={['admin']}>
                 <AdminRequests />
+              </RoleRouteGuard>
+            } />
+            <Route path="/admin/rooms" element={
+              <RoleRouteGuard allowedRoles={['admin']}>
+                <RoomManagement />
               </RoleRouteGuard>
             } />
             <Route path="/branch_manager" element={
