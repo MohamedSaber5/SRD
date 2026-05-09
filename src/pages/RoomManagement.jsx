@@ -49,13 +49,25 @@ export default function RoomManagement() {
   };
 
   const handleFormSubmit = async (formData) => {
+    // Uniqueness check for room name
+    const trimmedName = (formData.roomNumber || '').trim().toLowerCase();
+    const duplicate = rooms.find(r => {
+      if (editingRoom && r.id === editingRoom.id) return false; // skip self when editing
+      return (r.roomNumber || '').trim().toLowerCase() === trimmedName;
+    });
+    if (duplicate) {
+      showAlert(`اسم القاعة "${formData.roomNumber}" مستخدم بالفعل. يرجى اختيار اسم مختلف.`, 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (editingRoom) {
         await roomService.updateRoom(editingRoom.id, formData, currentUser);
         showAlert('تم تحديث القاعة بنجاح', 'success');
       } else {
-        await roomService.addRoom(formData, currentUser);
+        // Force status to available on add
+        await roomService.addRoom({ ...formData, status: 'available' }, currentUser);
         showAlert('تم إضافة القاعة بنجاح', 'success');
       }
       setIsFormModalOpen(false);

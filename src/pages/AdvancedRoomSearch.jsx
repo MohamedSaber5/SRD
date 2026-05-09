@@ -1,56 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { roomService } from '../services/roomService';
-import { REGULAR_SLOTS, getHourOptions } from '../hooks/useBookingForm';
+import { REGULAR_SLOTS, RAMADAN_SLOTS, getHourOptions } from '../hooks/useBookingForm';
 import { usePopup } from '../contexts/PopupContext';
+import { db } from '../firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { formatTime } from '../utils/timeUtils';
 
 // --- Strategy Pattern & Factory for Search ---
-
-// Base Strategy
 class SearchStrategy {
   validateInput(data) { throw new Error('Not implemented'); }
   filterBookings(activeBookings, data) { throw new Error('Not implemented'); }
 }
 
-// Multi-Room Strategy
 class MultiRoomSearchStrategy extends SearchStrategy {
   validateInput({ timeFrom, timeTo }) {
     if (!timeFrom || !timeTo) return "يرجى تحديد وقت البداية والنهاية.";
-    const startH = parseInt(timeFrom.split(':')[0]);
-    const endH = parseInt(timeTo.split(':')[0]);
-    if (endH <= startH) return "وقت النهاية يجب أن يكون بعد وقت البداية.";
-    return null; // Valid
+    if (timeTo <= timeFrom) return "وقت النهاية يجب أن يكون بعد وقت البداية.";
+    return null;
   }
-
   filterBookings(activeBookings, { timeFrom, timeTo }) {
     return activeBookings.filter(b => {
-      const bookingStart = b.timeFrom;
-      let bookingEnd = b.timeTo;
-      if (!bookingEnd) {
-         // Fallback if booking lacks timeTo
-         bookingEnd = '22:00'; 
-      }
-      // Intersect condition
-      return timeFrom < bookingEnd && timeTo > bookingStart;
+      const bookingEnd = b.timeTo || '23:00';
+      return timeFrom < bookingEnd && timeTo > b.timeFrom;
     });
   }
 }
 
-// Fixed-Room Strategy (Lecture)
 class FixedRoomSearchStrategy extends SearchStrategy {
   validateInput({ selectedSlot }) {
     if (!selectedSlot) return "يرجى اختيار فترة المحاضرة.";
-    return null; // Valid
+    return null;
   }
-
   filterBookings(activeBookings, { selectedSlot }) {
-    return activeBookings.filter(b => {
-      // Direct match for lecture slots
-      return b.timeFrom === selectedSlot.from && b.timeTo === selectedSlot.to;
-    });
+    return activeBookings.filter(b => b.timeFrom === selectedSlot.from && b.timeTo === selectedSlot.to);
   }
 }
 
-// Factory
 class SearchStrategyFactory {
   static createStrategy(roomType) {
     if (roomType === 'multi') return new MultiRoomSearchStrategy();
@@ -61,12 +46,12 @@ class SearchStrategyFactory {
 
 export default function AdvancedRoomSearch() {
   const [rooms, setRooms] = useState([]);
+  const [isRamadanMode, setIsRamadanMode] = useState(false);
   const [searchDate, setSearchDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchRoomType, setSearchRoomType] = useState('multi');
   const [searchCapacity, setSearchCapacity] = useState('');
   const { showAlert } = usePopup();
   
-  // Strategy-specific states
   const [timeFrom, setTimeFrom] = useState('');
   const [timeTo, setTimeTo] = useState('');
   const [selectedSlotIdx, setSelectedSlotIdx] = useState('');
@@ -74,34 +59,41 @@ export default function AdvancedRoomSearch() {
   const [emptyRoomsResult, setEmptyRoomsResult] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  const hourOptions = getHourOptions();
+  // Determine max end time based on mode
+  const multiMaxTime = isRamadanMode ? '17:00' : '23:00';
+  const hourOptionsFrom = getHourOptions('23:00');
+  const hourOptionsTo   = getHourOptions(multiMaxTime);
+  const activeSlots = isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
 
-  // Observer Pattern to keep rooms in sync
   useEffect(() => {
-    const unsubscribe = roomService.subscribeToRooms((fetchedRooms) => {
-      setRooms(fetchedRooms);
+    const unsubscribeRooms = roomService.subscribeToRooms(setRooms);
+    const unsubscribeSettings = onSnapshot(doc(db, 'settings', 'system'), (snap) => {
+      if (snap.exists()) setIsRamadanMode(!!snap.data().isRamadanMode);
     });
-    return () => unsubscribe();
+    return () => { unsubscribeRooms(); unsubscribeSettings(); };
   }, []);
+
+  // When Ramadan mode changes, reset time selections if they're out of range
+  useEffect(() => {
+    setTimeFrom('');
+    setTimeTo('');
+    setSelectedSlotIdx('');
+    setEmptyRoomsResult(null);
+  }, [isRamadanMode]);
 
   const handleSearch = async () => {
     const strategy = SearchStrategyFactory.createStrategy(searchRoomType);
-    
-    // Validate
     const data = searchRoomType === 'multi' 
         ? { timeFrom, timeTo } 
-        : { selectedSlot: selectedSlotIdx !== '' ? REGULAR_SLOTS[selectedSlotIdx] : null };
+        : { selectedSlot: selectedSlotIdx !== '' ? activeSlots[Number(selectedSlotIdx)] : null };
         
     const errorMsg = strategy.validateInput(data);
-    if (errorMsg) {
-      return showAlert(errorMsg, 'warning');
-    }
+    if (errorMsg) return showAlert(errorMsg, 'warning');
 
     setIsSearching(true);
     try {
       const activeBookings = await roomService.getBookingsByDate(searchDate);
-      const overlappingBookings = strategy.filterBookings(activeBookings, data);
-      const occupiedRoomIds = overlappingBookings.map(b => b.roomId);
+      const occupiedRoomIds = strategy.filterBookings(activeBookings, data).map(b => b.roomId);
 
       const available = rooms.filter(r => {
         if (r.status === 'unavailable') return false; 
@@ -122,9 +114,18 @@ export default function AdvancedRoomSearch() {
 
   return (
     <div className="w-full h-full pb-20 px-4 rtl pt-8 animate-in fade-in" dir="rtl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-headline font-bold text-[#001e40] tracking-tight">البحث المتقدم للقاعات</h1>
-        <p className="text-[#5a7698] mt-2 text-lg">أداة متقدمة للاستعلام الدقيق عن شغور القاعات بناءً على نوعها وسعتها والفترات الزمنية.</p>
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <h1 className="text-4xl font-headline font-bold text-[#001e40] tracking-tight">البحث المتقدم للقاعات</h1>
+          <p className="text-[#5a7698] mt-2 text-lg">أداة متقدمة للاستعلام الدقيق عن شغور القاعات بناءً على نوعها وسعتها والفترات الزمنية.</p>
+        </div>
+        {/* Ramadan mode badge (read-only indicator) */}
+        {isRamadanMode && (
+          <div className="flex items-center gap-2 px-4 py-2 bg-orange-100 border border-orange-300 rounded-xl text-orange-700 font-bold text-sm">
+            <span className="material-symbols-outlined text-[18px]">brightness_high</span>
+            وضع رمضان مفعّل — مواعيد المحاضرات مُحدَّثة
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full mb-8">
@@ -133,10 +134,7 @@ export default function AdvancedRoomSearch() {
              <label className="block text-xs font-bold text-[#5a7698] uppercase">نوع القاعة</label>
              <select 
                value={searchRoomType} 
-               onChange={(e) => {
-                 setSearchRoomType(e.target.value);
-                 setEmptyRoomsResult(null); // Reset results on type change
-               }} 
+               onChange={(e) => { setSearchRoomType(e.target.value); setEmptyRoomsResult(null); setSelectedSlotIdx(''); setTimeFrom(''); setTimeTo(''); }} 
                className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none"
              >
                <option value="multi">متعددة الأغراض</option>
@@ -176,22 +174,24 @@ export default function AdvancedRoomSearch() {
                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none" dir="ltr"
                  >
                    <option value="">اختر وقت البداية...</option>
-                   {hourOptions.map(opt => <option key={`from-${opt.value}`} value={opt.value}>{opt.label}</option>)}
+                   {hourOptionsFrom.map(opt => <option key={`from-${opt.value}`} value={opt.value}>{opt.label}</option>)}
                  </select>
                </div>
                <div className="space-y-2">
-                 <label className="block text-xs font-bold text-[#5a7698] uppercase">إلى الساعة</label>
+                 <label className="block text-xs font-bold text-[#5a7698] uppercase">
+                   إلى الساعة {isRamadanMode && <span className="text-orange-500 normal-case">(حد رمضان: {formatTime(multiMaxTime)})</span>}
+                 </label>
                  <select 
                    value={timeTo} 
                    onChange={(e) => setTimeTo(e.target.value)} 
                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none" dir="ltr"
                  >
                    <option value="">اختر وقت النهاية...</option>
-                   {hourOptions.map(opt => (
+                   {hourOptionsTo.map(opt => (
                      <option 
                        key={`to-${opt.value}`} 
                        value={opt.value}
-                       disabled={timeFrom && parseInt(opt.value.split(':')[0]) <= parseInt(timeFrom.split(':')[0])}
+                       disabled={timeFrom && opt.value <= timeFrom}
                      >
                        {opt.label}
                      </option>
@@ -201,14 +201,16 @@ export default function AdvancedRoomSearch() {
              </>
            ) : (
              <div className="space-y-2 md:col-span-2">
-               <label className="block text-xs font-bold text-[#5a7698] uppercase">فترة المحاضرة</label>
+               <label className="block text-xs font-bold text-[#5a7698] uppercase">
+                 فترة المحاضرة {isRamadanMode && <span className="text-orange-500 normal-case">(جدول رمضان)</span>}
+               </label>
                <select 
                  value={selectedSlotIdx} 
                  onChange={(e) => setSelectedSlotIdx(e.target.value)} 
                  className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] font-black focus:ring-2 focus:ring-[#1e3a5f] outline-none"
                >
                  <option value="">اختر فترة المحاضرة...</option>
-                 {REGULAR_SLOTS.map((s, idx) => (
+                 {activeSlots.map((s, idx) => (
                    <option key={idx} value={idx}>{s.label}</option>
                  ))}
                </select>

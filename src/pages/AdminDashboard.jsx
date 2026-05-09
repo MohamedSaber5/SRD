@@ -12,7 +12,8 @@ import {
   getDocs,
   setDoc,
   addDoc,
-  deleteDoc
+  deleteDoc,
+  updateDoc
 } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +26,8 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isRamadanMode, setIsRamadanMode] = useState(false);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
   const { showAlert, showConfirm } = usePopup();
 
   // 16-Week Fixed Lecture State
@@ -94,6 +97,17 @@ export default function AdminDashboard() {
     setIsFixedLectureModalOpen(true);
   };
 
+  const toggleRamadanMode = async () => {
+    try {
+      const newMode = !isRamadanMode;
+      await setDoc(doc(db, 'settings', 'system'), { isRamadanMode: newMode }, { merge: true });
+      showAlert(newMode ? 'تم تفعيل وضع رمضان للنظام بالكامل' : 'تم العودة للمواعيد العادية', 'success');
+    } catch (e) {
+      console.error(e);
+      showAlert('حدث خطأ أثناء تحديث الإعدادات', 'error');
+    }
+  };
+
   const handlePrintMorningReport = () => {
     window.print();
   };
@@ -156,7 +170,11 @@ export default function AdminDashboard() {
     const unsubRooms = onSnapshot(qRooms, (snapshot) => {
       setRoomsList(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
     });
-    return () => { unsubBookings(); unsubRooms(); };
+    const unsubSettings = onSnapshot(doc(db, 'settings', 'system'), (docSnap) => {
+      if (docSnap.exists()) setIsRamadanMode(!!docSnap.data().isRamadanMode);
+      setIsSettingsLoading(false);
+    });
+    return () => { unsubBookings(); unsubRooms(); unsubSettings(); };
   }, []);
 
   const todayDateStr = new Date().toISOString().split('T')[0];
@@ -179,6 +197,19 @@ export default function AdminDashboard() {
             <p className="text-[#5a7698] mt-2 text-lg">إدارة الجداول الأسبوعية ومتابعة العمليات</p>
           </div>
           <div className="flex flex-wrap gap-3 mt-4 md:mt-0 justify-end">
+            {/* Ramadan Mode Toggle */}
+            <button 
+              onClick={toggleRamadanMode}
+              disabled={isSettingsLoading}
+              className={`px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-sm border transition-all hover:-translate-y-1 ${
+                isRamadanMode 
+                  ? 'bg-orange-500 text-white border-orange-600 shadow-orange-200' 
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">{isRamadanMode ? 'brightness_high' : 'schedule'}</span>
+              {isRamadanMode ? 'وضع رمضان: مفعّل' : 'تفعيل وضع رمضان'}
+            </button>
             <button 
               onClick={() => navigate('/admin/requests')}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-400 to-orange-600 text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2 relative"

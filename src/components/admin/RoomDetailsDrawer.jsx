@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { roomService } from '../../services/roomService';
+import { formatTime } from '../../utils/timeUtils';
 
 export default function RoomDetailsDrawer({ room, isOpen, onClose }) {
   const [bookings, setBookings] = useState([]);
@@ -29,65 +28,98 @@ export default function RoomDetailsDrawer({ room, isOpen, onClose }) {
   const activeBookingsCount = bookings.filter(b => ['pending', 'awaiting_manager_final', 'approved', 'approved_by_branch'].includes(b.status)).length;
   const historyBookingsCount = bookings.length - activeBookingsCount;
 
-  // Factory Method Pattern logic inside the PDF generation based on room type
   const handleDownloadPDF = () => {
-    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-    
-    // Add custom font for Arabic if needed (requires base64 font registration, using default for now, which may not support full Arabic, 
-    // ideally in a real app we'd load an Arabic font, but we'll stick to a simple clean layout).
-    
-    // Title
-    doc.setFontSize(22);
-    doc.setTextColor(0, 30, 64);
-    doc.text(`Room Report: ${room.roomNumber}`, 14, 22);
-    
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
-    
-    // Room Details Section
-    doc.setDrawColor(200);
-    doc.line(14, 35, 196, 35);
-    
-    doc.setFontSize(12);
-    doc.setTextColor(50);
-    doc.text(`Type: ${room.type === 'multi' ? 'Multi-purpose' : 'Fixed Lecture'}`, 14, 45);
-    doc.text(`Building: ${room.building} | Floor: ${room.floor}`, 14, 52);
-    doc.text(`Capacity: ${room.capacity} students`, 14, 59);
-    doc.text(`Status: ${room.status === 'available' ? 'Available' : 'Unavailable'}`, 14, 66);
-    
-    doc.text(`Total Active Bookings: ${activeBookingsCount}`, 120, 45);
-    doc.text(`Total History Bookings: ${historyBookingsCount}`, 120, 52);
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert("الرجاء السماح بالنوافذ المنبثقة (Pop-ups) لطباعة التقرير");
+      return;
+    }
 
-    // Bookings Table
-    const tableColumn = ["Date", "Time", "Responsible", "Course/Event", "Status"];
-    const tableRows = [];
+    const getStatusArabic = (status) => {
+      switch(status) {
+        case 'approved': return 'معتمد';
+        case 'pending': return 'قيد الانتظار';
+        case 'awaiting_manager_final': return 'انتظار المدير';
+        case 'rejected': return 'مرفوض';
+        case 'approved_by_branch': return 'معتمد فرعياً';
+        default: return status;
+      }
+    };
 
-    // Sort bookings by date descending
-    const sortedBookings = [...bookings].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const htmlContent = `
+      <html dir="rtl" lang="ar">
+        <head>
+          <title>تقرير قاعة ${room.roomNumber}</title>
+          <style>
+            body { font-family: Tahoma, Arial, sans-serif; padding: 40px; color: #001e40; background: #fff; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #001e40; padding-bottom: 20px; }
+            .header h1 { margin: 0 0 10px 0; font-size: 28px; }
+            .header p { color: #5a7698; margin: 0; font-size: 14px; }
+            .info-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; }
+            .info-item { background: #f8fafc; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px; border: 1px solid #e2e8f0; text-align: center; }
+            .info-item b { display: block; color: #5a7698; font-size: 12px; margin-bottom: 5px; }
+            .info-item span { font-size: 18px; font-weight: bold; color: #001e40; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+            th, td { padding: 12px 15px; text-align: right; border-bottom: 1px solid #e2e8f0; }
+            th { background-color: #001e40; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            .stats { display: flex; justify-content: space-between; background: #eef2f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>تقرير تفصيلي - قاعة ${room.roomNumber}</h1>
+            <p>تاريخ استخراج التقرير: ${new Date().toLocaleString('ar-EG')}</p>
+          </div>
+          
+          <div class="info-grid">
+            <div class="info-item"><b>نوع القاعة</b><span>${room.type === 'multi' ? 'متعددة الأغراض' : 'محاضرات عادية'}</span></div>
+            <div class="info-item"><b>المبنى</b><span>${room.building}</span></div>
+            <div class="info-item"><b>الدور</b><span>${room.floor}</span></div>
+            <div class="info-item"><b>السعة</b><span>${room.capacity} فرد</span></div>
+            <div class="info-item"><b>الحالة</b><span>${room.status === 'available' ? 'متاحة' : 'مغلقة للصيانة'}</span></div>
+          </div>
 
-    sortedBookings.forEach(booking => {
-      const bookingData = [
-        booking.date,
-        `${booking.timeFrom} - ${booking.timeTo || 'N/A'}`,
-        booking.responsibleName || 'N/A',
-        booking.courseName || (room.type === 'multi' ? 'Event' : 'Lecture'),
-        booking.status
-      ];
-      tableRows.push(bookingData);
-    });
+          <div class="stats">
+            <span>إجمالي الحجوزات: ${bookings.length}</span>
+            <span>نشطة: ${activeBookingsCount}</span>
+            <span>سابقة: ${historyBookingsCount}</span>
+          </div>
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 75,
-      theme: 'grid',
-      styles: { fontSize: 9, cellPadding: 3 },
-      headStyles: { fillColor: [0, 30, 64], textColor: 255 },
-      alternateRowStyles: { fillColor: [248, 250, 252] },
-    });
+          <h2>سجل الحجوزات</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>المسؤول</th>
+                <th>الغرض / المادة</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${[...bookings].sort((a, b) => new Date(b.date) - new Date(a.date)).map(b => `
+                <tr>
+                  <td>${b.date}</td>
+                  <td dir="ltr" style="text-align: left;">${formatTime(b.timeFrom)} - ${formatTime(b.timeTo)}</td>
+                  <td>${b.responsibleName || '—'}</td>
+                  <td>${b.courseName || b.purpose || (room.type === 'multi' ? 'حدث' : 'محاضرة')}</td>
+                  <td>${getStatusArabic(b.status)}</td>
+                </tr>
+              `).join('')}
+              ${bookings.length === 0 ? '<tr><td colspan="5" style="text-align: center; color: #5a7698;">لا توجد حجوزات مسجلة لهذه القاعة.</td></tr>' : ''}
+            </tbody>
+          </table>
+          <script>
+            window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); }
+          </script>
+        </body>
+      </html>
+    `;
 
-    doc.save(`Room_${room.roomNumber}_Report.pdf`);
+    printWindow.document.open();
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   };
 
   return (

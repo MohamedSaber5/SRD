@@ -13,28 +13,8 @@ import {
 } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { usePopup } from '../contexts/PopupContext';
-
-const REGULAR_SLOTS = [
-  { from: '08:30', to: '10:10', label: 'المحاضرة الأولى (08:30 - 10:10)' },
-  { from: '10:30', to: '12:10', label: 'المحاضرة الثانية (10:30 - 12:10)' },
-  { from: '12:30', to: '14:10', label: 'المحاضرة الثالثة (12:30 - 14:10)' },
-  { from: '14:30', to: '16:10', label: 'المحاضرة الرابعة (14:30 - 16:10)' },
-  { from: '16:30', to: '18:10', label: 'المحاضرة الخامسة (16:30 - 18:10)' },
-  { from: '18:30', to: '20:10', label: 'المحاضرة السادسة (18:30 - 20:10)' },
-  { from: '20:30', to: '22:10', label: 'المحاضرة السابعة (20:30 - 22:10)' },
-  { from: '22:30', to: '00:10', label: 'المحاضرة الثامنة (22:30 - 00:10)' },
-];
-
-const RAMADAN_SLOTS = [
-  { from: '09:30', to: '10:25', label: 'الفترة الأولى (09:30 - 10:25)' },
-  { from: '10:30', to: '11:25', label: 'الفترة الثانية (10:30 - 11:25)' },
-  { from: '11:30', to: '12:25', label: 'الفترة الثالثة (11:30 - 12:25)' },
-  { from: '12:30', to: '13:25', label: 'الفترة الرابعة (12:30 - 13:25)' },
-  { from: '13:30', to: '14:25', label: 'الفترة الخامسة (13:30 - 14:25)' },
-  { from: '14:30', to: '15:25', label: 'الفترة السادسة (14:30 - 15:25)' },
-  { from: '15:30', to: '16:25', label: 'الفترة السابعة (15:30 - 16:25)' },
-  { from: '16:30', to: '17:25', label: 'الفترة الثامنة (16:30 - 17:25)' },
-];
+import { REGULAR_SLOTS, RAMADAN_SLOTS } from '../hooks/useBookingForm';
+import { formatTime } from '../utils/timeUtils';
 
 export default function AdminRequests() {
   const navigate = useNavigate();
@@ -297,7 +277,7 @@ export default function AdminRequests() {
                         التاريخ والوقت
                       </div>
                       <div className="font-black text-[#001e40] text-sm">{req.date}</div>
-                      <div className="font-bold text-blue-600 text-sm ltr" dir="ltr">{req.timeFrom} — {req.timeTo}</div>
+                      <div className="font-bold text-blue-600 text-sm ltr" dir="ltr">{formatTime(req.timeFrom)} — {formatTime(req.timeTo)}</div>
                     </div>
 
                     {/* Responsible Person */}

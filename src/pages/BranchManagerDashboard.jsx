@@ -10,11 +10,13 @@ import {
   serverTimestamp,
   getDocs,
   orderBy,
-  addDoc
+  addDoc,
+  setDoc
 } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import EditBookingModal from '../components/bookings/EditBookingModal';
 import { usePopup } from '../contexts/PopupContext';
+import { formatTime } from '../utils/timeUtils';
 
 export default function BranchManagerDashboard() {
   const navigate = useNavigate();
@@ -89,7 +91,7 @@ export default function BranchManagerDashboard() {
     try {
       const newMode = !isRamadanMode;
       const docRef = doc(db, 'settings', 'system');
-      await updateDoc(docRef, { isRamadanMode: newMode });
+      await setDoc(docRef, { isRamadanMode: newMode }, { merge: true });
       showAlert(newMode ? 'تم تفعيل وضع رمضان للنظام بالكامل' : 'تم العودة للمواعيد العادية', 'success');
     } catch (e) {
       console.error(e);
@@ -219,7 +221,7 @@ export default function BranchManagerDashboard() {
                     </div>
                     <div>
                       <div className="text-[10px] font-bold opacity-50 uppercase">الوقت</div>
-                      <div className="text-sm font-black ltr" dir="ltr">{req.timeFrom} - {req.timeTo}</div>
+                      <div className="text-sm font-black ltr" dir="ltr">{formatTime(req.timeFrom)} - {formatTime(req.timeTo)}</div>
                     </div>
                   </div>
                   <div className="col-span-2 bg-surface-container-low p-3 rounded-xl flex items-center gap-3">

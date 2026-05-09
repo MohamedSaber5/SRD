@@ -3,40 +3,40 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
 import { collection, getDocs, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc } from 'firebase/firestore';
+import { formatTime } from '../utils/timeUtils';
 
 export const REGULAR_SLOTS = [
-  { from: '08:30', to: '10:10', label: 'المحاضرة الأولى (08:30 - 10:10)' },
-  { from: '10:30', to: '12:10', label: 'المحاضرة الثانية (10:30 - 12:10)' },
-  { from: '12:30', to: '14:10', label: 'المحاضرة الثالثة (12:30 - 14:10)' },
-  { from: '14:30', to: '16:10', label: 'المحاضرة الرابعة (14:30 - 16:10)' },
-  { from: '16:30', to: '18:10', label: 'المحاضرة الخامسة (16:30 - 18:10)' },
-  { from: '18:30', to: '20:10', label: 'المحاضرة السادسة (18:30 - 20:10)' },
-  { from: '20:30', to: '22:10', label: 'المحاضرة السابعة (20:30 - 22:10)' },
-  { from: '22:30', to: '00:10', label: 'المحاضرة الثامنة (22:30 - 00:10)' },
+  { from: '08:30', to: '10:10', label: `المحاضرة الأولى (${formatTime('08:30')} - ${formatTime('10:10')})` },
+  { from: '10:30', to: '12:10', label: `المحاضرة الثانية (${formatTime('10:30')} - ${formatTime('12:10')})` },
+  { from: '12:30', to: '14:10', label: `المحاضرة الثالثة (${formatTime('12:30')} - ${formatTime('14:10')})` },
+  { from: '14:30', to: '16:10', label: `المحاضرة الرابعة (${formatTime('14:30')} - ${formatTime('16:10')})` },
+  { from: '16:30', to: '18:10', label: `المحاضرة الخامسة (${formatTime('16:30')} - ${formatTime('18:10')})` },
+  { from: '18:30', to: '20:10', label: `المحاضرة السادسة (${formatTime('18:30')} - ${formatTime('20:10')})` },
+  { from: '20:30', to: '22:10', label: `المحاضرة السابعة (${formatTime('20:30')} - ${formatTime('22:10')})` },
+  { from: '22:30', to: '00:10', label: `المحاضرة الثامنة (${formatTime('22:30')} - ${formatTime('00:10')})` },
 ];
 
 export const RAMADAN_SLOTS = [
-  { from: '09:30', to: '10:25', label: 'الفترة الأولى (09:30 - 10:25)' },
-  { from: '10:30', to: '11:25', label: 'الفترة الثانية (10:30 - 11:25)' },
-  { from: '11:30', to: '12:25', label: 'الفترة الثالثة (11:30 - 12:25)' },
-  { from: '12:30', to: '13:25', label: 'الفترة الرابعة (12:30 - 13:25)' },
-  { from: '13:30', to: '14:25', label: 'الفترة الخامسة (13:30 - 14:25)' },
-  { from: '14:30', to: '15:25', label: 'الفترة السادسة (14:30 - 15:25)' },
-  { from: '15:30', to: '16:25', label: 'الفترة السابعة (15:30 - 16:25)' },
-  { from: '16:30', to: '17:25', label: 'الفترة الثامنة (16:30 - 17:25)' },
+  { from: '09:30', to: '10:25', label: `الفترة الأولى (${formatTime('09:30')} - ${formatTime('10:25')})` },
+  { from: '10:30', to: '11:25', label: `الفترة الثانية (${formatTime('10:30')} - ${formatTime('11:25')})` },
+  { from: '11:30', to: '12:25', label: `الفترة الثالثة (${formatTime('11:30')} - ${formatTime('12:25')})` },
+  { from: '12:30', to: '13:25', label: `الفترة الرابعة (${formatTime('12:30')} - ${formatTime('13:25')})` },
+  { from: '13:30', to: '14:25', label: `الفترة الخامسة (${formatTime('13:30')} - ${formatTime('14:25')})` },
+  { from: '14:30', to: '15:25', label: `الفترة السادسة (${formatTime('14:30')} - ${formatTime('15:25')})` },
+  { from: '15:30', to: '16:25', label: `الفترة السابعة (${formatTime('15:30')} - ${formatTime('16:25')})` },
+  { from: '16:30', to: '17:25', label: `الفترة الثامنة (${formatTime('16:30')} - ${formatTime('17:25')})` },
 ];
 
-export const getHourOptions = () => {
+export const getHourOptions = (maxTime = '23:00') => {
   const options = [];
-  for (let i = 8; i <= 20; i++) {
+  const [maxH] = maxTime.split(':').map(Number);
+  for (let i = 8; i <= maxH; i++) {
     const value = `${i.toString().padStart(2, '0')}:00`;
-    const ampm = i >= 12 ? 'م' : 'ص';
-    const displayHour = i > 12 ? i - 12 : i;
-    const label = `${displayHour.toString().padStart(2, '0')}:00 ${ampm}`;
-    options.push({ value, label });
+    options.push({ value, label: formatTime(value) });
   }
   return options;
 };
+
 
 export function useBookingForm({ showAlert } = {}) {
   const _showAlert = showAlert || ((msg) => alert(msg));
