@@ -105,7 +105,14 @@ export default function AdminRequests() {
       const occupiedRoomIds = overlapSnap.docs.map(d => d.data().roomId);
       
       // Filter out occupied rooms and globally unavailable rooms
-      const freeRooms = roomsList.filter(r => !occupiedRoomIds.includes(r.id) && r.status !== 'unavailable');
+      let freeRooms = roomsList.filter(r => !occupiedRoomIds.includes(r.id) && r.status !== 'unavailable');
+      
+      // Filter by requested room type (lecture vs multi)
+      if (req.hallCategory === 'lecture' || req.roomType === 'fixed') {
+        freeRooms = freeRooms.filter(r => r.type === 'fixed');
+      } else if (req.hallCategory === 'multi' || req.roomType === 'multi') {
+        freeRooms = freeRooms.filter(r => r.type === 'multi');
+      }
       
       setAvailableRooms(freeRooms);
       

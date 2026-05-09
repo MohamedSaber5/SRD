@@ -11,6 +11,7 @@ import {
   serverTimestamp,
   onSnapshot
 } from 'firebase/firestore';
+import { getHourOptions } from '../../hooks/useBookingForm';
 
 const REGULAR_SLOTS = [
   { from: '08:30', to: '10:10', label: 'المحاضرة الأولى (08:30 - 10:10)' },
@@ -44,6 +45,8 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
     reqMicQty: 1,
     reqLaptop: false,
     reqVideoConf: false,
+    reqOther: false,
+    reqOtherDetails: '',
     roomId: '',
     roomType: ''
   });
@@ -62,6 +65,8 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
         reqMicQty: booking.reqMicQty || 1,
         reqLaptop: booking.reqLaptop || false,
         reqVideoConf: booking.reqVideoConf || false,
+        reqOther: booking.reqOther || false,
+        reqOtherDetails: booking.reqOtherDetails || '',
         roomId: booking.roomId || '',
         roomType: booking.roomType || 'multi'
       });
@@ -185,23 +190,38 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
 
             <div className="col-span-1 space-y-2">
               <label className="block text-sm font-bold text-on-surface-variant">اختيار الفترة الزمنية</label>
-              <select 
-                className="w-full bg-surface-container-high rounded-xl px-4 py-3 border-none appearance-none cursor-pointer"
-                onChange={(e) => {
-                   const slot = currentSlots[e.target.value];
-                   setFormData(p => ({
-                     ...p,
-                     timeFrom: slot.from,
-                     timeTo: slot.to
-                   }));
-                }}
-                value={currentSlots.findIndex(s => s.from === formData.timeFrom)}
-              >
-                <option value="-1">اختر فترة معدلة...</option>
-                {currentSlots.map((s, idx) => (
-                  <option key={idx} value={idx}>{s.label}</option>
-                ))}
-              </select>
+              <div className="flex gap-4">
+                <select 
+                  name="timeFrom"
+                  className="w-full bg-surface-container-high rounded-xl px-4 py-3 border-none appearance-none cursor-pointer flex-1"
+                  value={formData.timeFrom}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">من الساعة...</option>
+                  {getHourOptions().map((opt, i) => i < getHourOptions().length - 1 && (
+                    <option key={`from-${opt.value}`} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <select 
+                  name="timeTo"
+                  className="w-full bg-surface-container-high rounded-xl px-4 py-3 border-none appearance-none cursor-pointer flex-1"
+                  value={formData.timeTo}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">إلى الساعة...</option>
+                  {getHourOptions().map((opt, i) => i > 0 && (
+                    <option 
+                       key={`to-${opt.value}`} 
+                       value={opt.value}
+                       disabled={formData.timeFrom && parseInt(opt.value.split(':')[0]) <= parseInt(formData.timeFrom.split(':')[0])}
+                    >
+                       {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Purpose */}
@@ -239,6 +259,23 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
                       <span className="text-xs font-bold">العدد:</span>
                       <input type="number" name="reqMicQty" min="1" max="10" value={formData.reqMicQty} onChange={handleChange} className="w-16 bg-surface-container-high rounded px-2 py-1 text-center" />
                     </div>
+                  )}
+                </div>
+                <div className="col-span-full flex flex-col gap-3 p-3 border rounded-xl">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="reqOther" checked={formData.reqOther} onChange={handleChange} className="w-5 h-5 text-primary rounded" />
+                    <span className="text-sm font-medium">متطلبات أخرى</span>
+                  </label>
+                  {formData.reqOther && (
+                    <textarea 
+                      name="reqOtherDetails"
+                      value={formData.reqOtherDetails}
+                      onChange={handleChange}
+                      required={formData.reqOther}
+                      rows="2"
+                      className="w-full bg-surface-container-high rounded-xl px-4 py-3 border-none resize-none mt-2" 
+                      placeholder="يرجى كتابة المتطلبات الأخرى بالتفصيل هنا..." 
+                    />
                   )}
                 </div>
               </div>
