@@ -74,6 +74,7 @@ export function useBookingForm({ showAlert } = {}) {
   });
 
   const [isRamadanMode, setIsRamadanMode] = useState(false);
+  const [minAdvanceBookingHours, setMinAdvanceBookingHours] = useState(24);
   const [isLeadTimeError, setIsLeadTimeError] = useState(false);
 
   // Fetch rooms and setup mode/date constraints
@@ -115,9 +116,11 @@ export function useBookingForm({ showAlert } = {}) {
     const minAllowed = new Date(today.getTime() + hoursToAdd * 60 * 60 * 1000);
     setMinDate(minAllowed.toISOString().split('T')[0]);
 
-    const settingsUnsubscribe = onSnapshot(doc(db, 'settings', 'system'), (docSnapshot) => {
+    const settingsUnsubscribe = onSnapshot(doc(db, 'settings', 'general'), (docSnapshot) => {
       if (docSnapshot.exists()) {
-        setIsRamadanMode(docSnapshot.data().isRamadanMode);
+        const data = docSnapshot.data();
+        if (data.ramadanMode !== undefined) setIsRamadanMode(data.ramadanMode);
+        if (data.minAdvanceBookingHours !== undefined) setMinAdvanceBookingHours(Number(data.minAdvanceBookingHours));
       }
     });
 
@@ -137,10 +140,8 @@ export function useBookingForm({ showAlert } = {}) {
      
      const diffHours = (selectedDate - now) / (1000 * 60 * 60);
      
-     if (userRole === 'employee') {
-        return diffHours < 24;
-     } else if (userRole === 'secretary') {
-        return diffHours < 48;
+     if (userRole === 'employee' || userRole === 'secretary') {
+        return diffHours < minAdvanceBookingHours;
      }
      return false;
   }, [userRole]);

@@ -18,8 +18,10 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { usePopup } from '../contexts/PopupContext';
+import { useTranslation } from 'react-i18next';
 
 export default function AdminDashboard() {
+  const { t, i18n } = useTranslation();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
@@ -52,7 +54,15 @@ export default function AdminDashboard() {
 
 
 
-  const weekDays = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+  const weekDays = [
+    t('common.days.saturday'), 
+    t('common.days.sunday'), 
+    t('common.days.monday'), 
+    t('common.days.tuesday'), 
+    t('common.days.wednesday'), 
+    t('common.days.thursday'), 
+    t('common.days.friday')
+  ];
   const timeSlots = ['08:00', '10:00', '12:00', '14:00', '16:00'];
 
   const cardThemes = [
@@ -64,12 +74,32 @@ export default function AdminDashboard() {
   const getDayName = (dateString) => {
     const date = new Date(dateString);
     const dayIndex = date.getDay();
-    const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    // In JS, 0=Sunday, 1=Monday...
+    // The weekDays array starts with Saturday? No, let's look at weekDays.
+    // weekDays = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    // 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
+    const days = [
+      t('common.days.sunday', 'الأحد'), 
+      t('common.days.monday', 'الإثنين'), 
+      t('common.days.tuesday', 'الثلاثاء'), 
+      t('common.days.wednesday', 'الأربعاء'), 
+      t('common.days.thursday', 'الخميس'), 
+      t('common.days.friday', 'الجمعة'), 
+      t('common.days.saturday', 'السبت')
+    ];
     return days[dayIndex];
   };
 
   const getDayIndexFromName = (dayName) => {
-    const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const days = [
+      t('common.days.sunday', 'الأحد'), 
+      t('common.days.monday', 'الإثنين'), 
+      t('common.days.tuesday', 'الثلاثاء'), 
+      t('common.days.wednesday', 'الأربعاء'), 
+      t('common.days.thursday', 'الخميس'), 
+      t('common.days.friday', 'الجمعة'), 
+      t('common.days.saturday', 'السبت')
+    ];
     return days.indexOf(dayName);
   };
 
@@ -101,10 +131,10 @@ export default function AdminDashboard() {
     try {
       const newMode = !isRamadanMode;
       await setDoc(doc(db, 'settings', 'system'), { isRamadanMode: newMode }, { merge: true });
-      showAlert(newMode ? 'تم تفعيل وضع رمضان للنظام بالكامل' : 'تم العودة للمواعيد العادية', 'success');
+      showAlert(newMode ? t('settings.ramadanEnabled') : t('settings.ramadanDisabled'), 'success');
     } catch (e) {
       console.error(e);
-      showAlert('حدث خطأ أثناء تحديث الإعدادات', 'error');
+      showAlert(t('common.errorOccurred'), 'error');
     }
   };
 
@@ -115,10 +145,10 @@ export default function AdminDashboard() {
   const submitFixedLecture = async (e) => {
     e.preventDefault();
     if (!fixedLectureData.roomId || !fixedLectureData.startDate || !fixedLectureData.responsibleName || !fixedLectureData.courseName) {
-      showAlert('الرجاء تعبئة جميع الحقول المطلوبة (القاعة، الدكتور، المادة)', 'warning');
+      showAlert(t('admin.fillRequiredFields'), 'warning');
       return;
     }
-    showConfirm(`سيتم الآن إنشاء 16 حجزاً ثابتاً متتالياً لقاعة ${fixedLectureData.roomId}. هل أنت متأكد؟`, async () => {
+    showConfirm(t('admin.confirmBatchCreation', { roomId: fixedLectureData.roomId }), async () => {
       try {
         setIsSyncing(true);
         const batch = writeBatch(db);
@@ -149,10 +179,10 @@ export default function AdminDashboard() {
         await batch.commit();
         setIsFixedLectureModalOpen(false);
         setFixedLectureData({ roomId: '', responsibleName: '', courseName: '', startDate: new Date().toISOString().split('T')[0], timeFrom: '08:00', timeTo: '10:00', dayOfWeek: 0 });
-        showAlert('تم إدراج 16 أسبوعاً بنجاح!', 'success');
+        showAlert(t('admin.batchSuccess'), 'success');
       } catch (err) {
         console.error(err);
-        showAlert('خطأ أثناء إنشاء المحاضرات الثابتة', 'error');
+        showAlert(t('common.errorOccurred'), 'error');
       } finally {
         setIsSyncing(false);
       }
@@ -191,31 +221,19 @@ export default function AdminDashboard() {
   return (
     <>
       <div className="print-hidden w-full h-full pb-20">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 rtl pt-8 px-4" dir="rtl">
-          <div>
-            <h1 className="text-4xl font-headline font-bold text-[#001e40] tracking-tight">لوحة تحكم المسؤول</h1>
-            <p className="text-[#5a7698] mt-2 text-lg">إدارة الجداول الأسبوعية ومتابعة العمليات</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 rtl pt-8 px-4">
+          <div className="text-right rtl:text-right ltr:text-left">
+            <h1 className="text-4xl font-headline font-bold text-[#001e40] dark:text-blue-300 tracking-tight">{t('admin.title')}</h1>
+            <p className="text-[#5a7698] dark:text-slate-400 mt-2 text-lg">{t('admin.subtitle')}</p>
           </div>
           <div className="flex flex-wrap gap-3 mt-4 md:mt-0 justify-end">
-            {/* Ramadan Mode Toggle */}
-            <button 
-              onClick={toggleRamadanMode}
-              disabled={isSettingsLoading}
-              className={`px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-sm border transition-all hover:-translate-y-1 ${
-                isRamadanMode 
-                  ? 'bg-orange-500 text-white border-orange-600 shadow-orange-200' 
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">{isRamadanMode ? 'brightness_high' : 'schedule'}</span>
-              {isRamadanMode ? 'وضع رمضان: مفعّل' : 'تفعيل وضع رمضان'}
-            </button>
+
             <button 
               onClick={() => navigate('/admin/requests')}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-400 to-orange-600 text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2 relative"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-400 to-orange-600 dark:from-orange-600 dark:to-orange-800 text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2 relative"
             >
               <span className="material-symbols-outlined text-[18px]">receipt_long</span>
-              إدارة الطلبات المعلقة
+              {t('admin.pendingRequests')}
               {pendingCount > 0 && (
                  <span className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs animate-bounce shadow-md">
                    {pendingCount}
@@ -224,37 +242,37 @@ export default function AdminDashboard() {
             </button>
             <button 
               onClick={handlePrintMorningReport}
-              className="px-5 py-2.5 rounded-xl bg-[#001e40] text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-[#001e40] dark:bg-blue-800 text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[18px]">summarize</span>
-              التقرير الصباحي 
+              {t('admin.morningReport')}
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 px-4" dir="rtl">
-          <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-gray-100 relative overflow-hidden group">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 px-4 text-right rtl:text-right ltr:text-left">
+          <div className="bg-white dark:bg-slate-900 rounded-[1.5rem] p-6 shadow-sm border border-gray-100 dark:border-slate-800 relative overflow-hidden group">
             <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="p-3 bg-[#eef2f6] text-[#1e3a5f] rounded-xl flex items-center justify-center">
+              <div className="p-3 bg-[#eef2f6] dark:bg-blue-900/30 text-[#1e3a5f] dark:text-blue-300 rounded-xl flex items-center justify-center">
                 <span className="material-symbols-outlined text-[24px]">book_online</span>
               </div>
-              <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold font-headline">مكتمل</span>
+              <span className="bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-400 px-3 py-1 rounded-full text-xs font-bold font-headline">{t('dashboard.status.approved')}</span>
             </div>
             <div className="relative z-10">
-              <div className="text-gray-500 text-sm font-bold mb-1">الطلبات المقبولة اليوم</div>
-              <div className="text-4xl font-headline font-black text-[#001e40]">{acceptedTodayCount}</div>
+              <div className="text-gray-500 dark:text-slate-400 text-sm font-bold mb-1">{t('admin.acceptedToday')}</div>
+              <div className="text-4xl font-headline font-black text-[#001e40] dark:text-slate-100">{acceptedTodayCount}</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-gray-100 relative overflow-hidden group">
+          <div className="bg-white dark:bg-slate-900 rounded-[1.5rem] p-6 shadow-sm border border-gray-100 dark:border-slate-800 relative overflow-hidden group">
             <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="p-3 bg-[#fbf0dd] text-[#b58b4b] rounded-xl flex items-center justify-center">
+              <div className="p-3 bg-[#fbf0dd] dark:bg-[#b58b4b]/20 text-[#b58b4b] dark:text-[#d4af37] rounded-xl flex items-center justify-center">
                 <span className="material-symbols-outlined text-[24px]">pending_actions</span>
               </div>
             </div>
             <div className="relative z-10">
-              <div className="text-gray-500 text-sm font-bold mb-1">الطلبات قيد الانتظار</div>
-              <div className="text-4xl font-headline font-black text-[#5a7698]">{pendingCount}</div>
+              <div className="text-gray-500 dark:text-slate-400 text-sm font-bold mb-1">{t('admin.waitingRequests')}</div>
+              <div className="text-4xl font-headline font-black text-[#5a7698] dark:text-slate-300">{pendingCount}</div>
             </div>
           </div>
         </div>
@@ -262,13 +280,13 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 gap-8 px-4 rtl" dir="rtl">
           
           {/* Weekly View - Beautiful CSS Grid Implementation mapping 7 Days */}
-          <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full">
-            <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
-              <h2 className="text-3xl font-headline font-black text-[#001e40]">الجدول الأسبوعي</h2>
-              <div className="flex items-center gap-4 text-[#5a7698] font-bold">
-                <span className="material-symbols-outlined cursor-pointer hover:text-black">chevron_right</span>
-                <span>أكتوبر 2026</span>
-                <span className="material-symbols-outlined cursor-pointer hover:text-black">chevron_left</span>
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 dark:border-slate-800 p-8 w-full">
+            <div className="flex justify-between items-center mb-8 border-b border-gray-100 dark:border-slate-800 pb-4">
+              <h2 className="text-3xl font-headline font-black text-[#001e40] dark:text-blue-300">{t('admin.weeklySchedule')}</h2>
+              <div className="flex items-center gap-4 text-[#5a7698] dark:text-slate-400 font-bold">
+                <span className="material-symbols-outlined cursor-pointer hover:text-black dark:hover:text-white">chevron_right</span>
+                <span>{new Date().toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : 'en-US', { month: 'long', year: 'numeric' })}</span>
+                <span className="material-symbols-outlined cursor-pointer hover:text-black dark:hover:text-white">chevron_left</span>
               </div>
             </div>
             
@@ -276,21 +294,23 @@ export default function AdminDashboard() {
               <div className="min-w-[1000px]">
                 
                 {/* Header Row (Days) */}
-                <div className="grid grid-cols-8 text-center text-sm font-bold text-[#5a7698] mb-6">
-                  <div /* Placeholder for Time Col */>الوقت</div>
-                  {weekDays.map(day => (
-                    <div key={day} className="pb-4 border-b border-gray-200">{day}</div>
+                <div className="grid grid-cols-8 text-center text-sm font-bold text-[#5a7698] dark:text-slate-400 mb-6">
+                  <div /* Placeholder for Time Col */>{t('common.time', 'الوقت')}</div>
+                  {weekDays.map((day, idx) => (
+                    <div key={day} className="pb-4 border-b border-gray-200 dark:border-slate-700">
+                      {t(`common.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][(idx + 6) % 7]}`, day)}
+                    </div>
                   ))}
                 </div>
 
                 {/* Time Rows */}
                 <div className="space-y-0 relative">
                   {timeSlots.map((time, rowIdx) => (
-                    <div key={time} className="grid grid-cols-8 text-center h-[100px] border-b border-gray-100 relative group">
+                    <div key={time} className="grid grid-cols-8 text-center h-[100px] border-b border-gray-100 dark:border-slate-800 relative group">
                       
                       {/* Time cell on the right */}
-                      <div className="flex items-center justify-center text-sm font-bold text-[#5a7698] px-2 h-full border-l border-gray-100">
-                        {time} {parseInt(time) < 12 ? 'ص' : 'م'}
+                      <div className="flex items-center justify-center text-sm font-bold text-[#5a7698] dark:text-slate-400 px-2 h-full border-l border-gray-100 dark:border-slate-800">
+                        {time} {parseInt(time) < 12 ? t('common.am', 'ص') : t('common.pm', 'م')}
                       </div>
 
                       {/* Day Cells mapping */}
@@ -301,20 +321,20 @@ export default function AdminDashboard() {
                         else if (booking?.roomType === 'multi') theme = cardThemes[1];
 
                         return (
-                          <div key={`${day}-${time}`} className="relative h-full flex items-center justify-center p-[6px] border-l border-dashed border-gray-100 last:border-l-0">
+                          <div key={`${day}-${time}`} className="relative h-full flex items-center justify-center p-[6px] border-l border-dashed border-gray-100 dark:border-slate-800 last:border-l-0">
                             {booking ? (
-                              <div className={`w-full h-full rounded-[0.7rem] ${theme.bg} ${theme.border} border-r-[6px] flex flex-col justify-center items-center shadow-sm hover:scale-[1.02] hover:shadow-lg transition-all cursor-pointer relative`}>
-                                <div className={`font-headline font-black text-[15px] ${theme.textP} leading-tight`}>
-                                  {booking.roomType === 'multi' ? '' : 'قاعة'} {booking.roomId}
+                              <div className={`w-full h-full rounded-[0.7rem] ${theme.bg} ${theme.border} dark:bg-slate-800 dark:border-slate-700 border-r-[6px] flex flex-col justify-center items-center shadow-sm hover:scale-[1.02] hover:shadow-lg transition-all cursor-pointer relative`}>
+                                <div className={`font-headline font-black text-[15px] ${theme.textP} dark:text-slate-100 leading-tight`}>
+                                  {booking.roomType === 'multi' ? '' : t('admin.room', 'قاعة')} {booking.roomId}
                                 </div>
-                                <div className={`text-[11px] font-bold mt-1 ${theme.textS} text-center leading-tight px-1`}>
-                                  {booking.courseName || (booking.is16WeekFixed ? 'محاضرة ثابتة' : 'حجز اعتيادي')}
+                                <div className={`text-[11px] font-bold mt-1 ${theme.textS} dark:text-slate-400 text-center leading-tight px-1`}>
+                                  {booking.courseName || (booking.is16WeekFixed ? t('admin.fixedLecture', 'محاضرة ثابتة') : t('admin.normalBooking', 'حجز اعتيادي'))}
                                 </div>
                               </div>
                             ) : (
                               <div 
                                 onClick={() => openModalForCell(day, time)} 
-                                className="w-full h-full rounded-[0.7rem] hover:bg-blue-50 border-2 border-transparent hover:border-dashed hover:border-blue-200 cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100 transition-all text-blue-400 group"
+                                className="w-full h-full rounded-[0.7rem] hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-transparent hover:border-dashed hover:border-blue-200 dark:hover:border-blue-800 cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100 transition-all text-blue-400 group"
                               >
                                 <span className="material-symbols-outlined transform group-hover:scale-125 transition-transform text-[32px]">add_circle</span>
                               </div>
@@ -337,80 +357,80 @@ export default function AdminDashboard() {
         {/* 16-Week Fixed Lecture Modal */}
         {isFixedLectureModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm rtl" dir="rtl">
-            <form onSubmit={submitFixedLecture} className="bg-white rounded-[2.5rem] p-10 w-full max-w-2xl shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
-              <button type="button" onClick={() => setIsFixedLectureModalOpen(false)} className="absolute top-6 left-6 text-gray-400 hover:text-red-500 transition-colors bg-gray-50 rounded-full w-8 h-8 flex items-center justify-center">
+            <form onSubmit={submitFixedLecture} className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 w-full max-w-2xl shadow-2xl relative border border-gray-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+              <button type="button" onClick={() => setIsFixedLectureModalOpen(false)} className="absolute top-6 left-6 text-gray-400 hover:text-red-500 transition-colors bg-gray-50 dark:bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center">
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
-              <h2 className="text-3xl font-headline font-black text-[#001e40] mb-3 flex items-center gap-3">
-                <span className="material-symbols-outlined text-[32px] text-blue-600 bg-blue-50 p-2 rounded-2xl">event_repeat</span> 
-                تسجيل جدول ثابت
+              <h2 className="text-3xl font-headline font-black text-[#001e40] dark:text-blue-300 mb-3 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[32px] text-blue-600 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-2xl">event_repeat</span> 
+                {t('admin.fixedLectureModalTitle')}
               </h2>
-              <p className="text-sm text-gray-500 font-bold mb-8 pr-1 leading-relaxed">
-                هذه النافذة مخصصة لإضافة المحاضرات الثابتة أو الأنشطة المستمرة من خلال ضخ البيانات مباشرة على هذا المفصل الزمني.
+              <p className="text-sm text-gray-500 dark:text-slate-400 font-bold mb-8 pr-1 leading-relaxed">
+                {t('admin.fixedLectureModalDesc')}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-[#5a7698] uppercase">القاعة المتاحة</label>
+                  <label className="block text-xs font-bold text-[#5a7698] dark:text-slate-400 uppercase">{t('admin.availableRoom')}</label>
                   <select 
                     required 
                     value={fixedLectureData.roomId} 
                     onChange={e => setFixedLectureData({...fixedLectureData, roomId: e.target.value})} 
-                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] focus:ring-2 focus:ring-[#1e3a5f] focus:outline-none font-bold"
+                    className="w-full bg-[#f8fafc] dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-100 focus:ring-2 focus:ring-[#1e3a5f] focus:outline-none font-bold"
                   >
-                    <option value="" disabled>-- اختر قاعة --</option>
+                    <option value="" disabled>{t('admin.chooseRoom')}</option>
                     {roomsList.map(r => (
-                      <option key={r.id} value={r.id}>{r.roomNumber} ({r.type === 'multi' ? 'متعددة' : 'عادية'})</option>
+                      <option key={r.id} value={r.id}>{r.roomNumber} ({r.type === 'multi' ? t('admin.multi') : t('admin.normal')})</option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-[#5a7698] uppercase">اسم المادة</label>
-                  <input required value={fixedLectureData.courseName} onChange={e => setFixedLectureData({...fixedLectureData, courseName: e.target.value})} type="text" className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] focus:ring-2 focus:ring-[#1e3a5f] focus:outline-none font-bold" placeholder="رياضيات 1" />
+                  <label className="block text-xs font-bold text-[#5a7698] dark:text-slate-400 uppercase">{t('admin.courseName')}</label>
+                  <input required value={fixedLectureData.courseName} onChange={e => setFixedLectureData({...fixedLectureData, courseName: e.target.value})} type="text" className="w-full bg-[#f8fafc] dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-100 focus:ring-2 focus:ring-[#1e3a5f] focus:outline-none font-bold" placeholder="math 1" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-[#5a7698] uppercase">المشرف / الدكتور</label>
-                  <input required value={fixedLectureData.responsibleName} onChange={e => setFixedLectureData({...fixedLectureData, responsibleName: e.target.value})} type="text" className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] focus:ring-2 focus:ring-[#1e3a5f] focus:outline-none font-bold" placeholder="د. محمد خالد" />
+                  <label className="block text-xs font-bold text-[#5a7698] dark:text-slate-400 uppercase">{t('admin.supervisor')}</label>
+                  <input required value={fixedLectureData.responsibleName} onChange={e => setFixedLectureData({...fixedLectureData, responsibleName: e.target.value})} type="text" className="w-full bg-[#f8fafc] dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-100 focus:ring-2 focus:ring-[#1e3a5f] focus:outline-none font-bold" placeholder="Dr. Name" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-[#fdfdfd] p-6 rounded-2xl border border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-[#fdfdfd] dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700">
                 <div className="space-y-2 relative">
-                    <label className="block text-xs font-bold text-[#5a7698]">تاريخ الانطلاق</label>
-                    <input required value={fixedLectureData.startDate} onChange={e => setFixedLectureData({...fixedLectureData, startDate: e.target.value})} type="date" className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] focus:ring-2 focus:ring-[#1e3a5f] font-bold outline-none" />
+                    <label className="block text-xs font-bold text-[#5a7698] dark:text-slate-400">{t('admin.startLaunchDate')}</label>
+                    <input required value={fixedLectureData.startDate} onChange={e => setFixedLectureData({...fixedLectureData, startDate: e.target.value})} type="date" className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-100 focus:ring-2 focus:ring-[#1e3a5f] font-bold outline-none" />
                 </div>
                 <div className="space-y-2 relative">
-                  <label className="block text-xs font-bold text-[#5a7698]">اليوم المكرر المستهدف</label>
-                  <select value={fixedLectureData.dayOfWeek} onChange={e => setFixedLectureData({...fixedLectureData, dayOfWeek: parseInt(e.target.value)})} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] focus:ring-2 focus:ring-[#1e3a5f] font-bold outline-none font-headline">
-                    <option value={0}>الأحد</option>
-                    <option value={1}>الإثنين</option>
-                    <option value={2}>الثلاثاء</option>
-                    <option value={3}>الأربعاء</option>
-                    <option value={4}>الخميس</option>
-                    <option value={5}>الجمعة</option>
-                    <option value={6}>السبت</option>
+                  <label className="block text-xs font-bold text-[#5a7698] dark:text-slate-400">{t('admin.targetDay')}</label>
+                  <select value={fixedLectureData.dayOfWeek} onChange={e => setFixedLectureData({...fixedLectureData, dayOfWeek: parseInt(e.target.value)})} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-100 focus:ring-2 focus:ring-[#1e3a5f] font-bold outline-none font-headline">
+                    <option value={0}>{t('common.days.sunday')}</option>
+                    <option value={1}>{t('common.days.monday')}</option>
+                    <option value={2}>{t('common.days.tuesday')}</option>
+                    <option value={3}>{t('common.days.wednesday')}</option>
+                    <option value={4}>{t('common.days.thursday')}</option>
+                    <option value={5}>{t('common.days.friday')}</option>
+                    <option value={6}>{t('common.days.saturday')}</option>
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6 mb-10 bg-[#f8fafc] p-6 rounded-2xl">
+              <div className="grid grid-cols-2 gap-6 mb-10 bg-[#f8fafc] dark:bg-slate-800/50 p-6 rounded-2xl">
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-[#5a7698] text-center">وقت البداية</label>
-                  <select value={fixedLectureData.timeFrom} onChange={e => setFixedLectureData({...fixedLectureData, timeFrom: e.target.value})} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] focus:ring-2 focus:ring-[#1e3a5f] font-black text-center outline-none" dir="ltr">
+                  <label className="block text-xs font-bold text-[#5a7698] dark:text-slate-400 text-center">{t('admin.startTime')}</label>
+                  <select value={fixedLectureData.timeFrom} onChange={e => setFixedLectureData({...fixedLectureData, timeFrom: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-100 focus:ring-2 focus:ring-[#1e3a5f] font-black text-center outline-none" dir="ltr">
                       {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="space-y-2 border-r border-gray-200 pr-6">
-                  <label className="block text-xs font-bold text-[#5a7698] text-center">وقت الانتهاء</label>
-                  <select value={fixedLectureData.timeTo} onChange={e => setFixedLectureData({...fixedLectureData, timeTo: e.target.value})} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[#001e40] focus:ring-2 focus:ring-[#1e3a5f] font-black text-center outline-none" dir="ltr">
+                <div className="space-y-2 border-r border-gray-200 dark:border-slate-700 pr-6">
+                  <label className="block text-xs font-bold text-[#5a7698] dark:text-slate-400 text-center">{t('admin.endTime')}</label>
+                  <select value={fixedLectureData.timeTo} onChange={e => setFixedLectureData({...fixedLectureData, timeTo: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-100 focus:ring-2 focus:ring-[#1e3a5f] font-black text-center outline-none" dir="ltr">
                       {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
 
-              <button type="submit" disabled={isSyncing} className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-black text-lg transition-all ${isSyncing ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#001e40] text-white hover:bg-[#1e3a5f] hover:shadow-xl hover:-translate-y-1'}`}>
+              <button type="submit" disabled={isSyncing} className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-black text-lg transition-all ${isSyncing ? 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-slate-400 cursor-not-allowed' : 'bg-[#001e40] dark:bg-blue-600 text-white hover:bg-[#1e3a5f] dark:hover:bg-blue-700 hover:shadow-xl hover:-translate-y-1'}`}>
                 <span className="material-symbols-outlined text-[20px]">{isSyncing ? 'hourglass_top' : 'check_circle'}</span>
-                {isSyncing ? 'جاري ضخ البيانات للـ 16 أسبوع...' : 'حجز واكتتاب الفصول المتكررة'}
+                {isSyncing ? t('admin.pumpingData') : t('admin.submitFixedBtn')}
               </button>
             </form>
           </div>
@@ -426,11 +446,11 @@ export default function AdminDashboard() {
          {/* Professional Header */}
          <div className="flex justify-between items-center border-b-4 border-[#001e40] pb-6 mb-8">
             <div className="text-right">
-              <h1 className="text-4xl font-headline font-black text-[#001e40]">التقرير الصباحي اليومي</h1>
+              <h1 className="text-4xl font-headline font-black text-[#001e40]">{t('admin.morningReportTitle')}</h1>
               <h2 className="text-xl font-bold text-gray-500 tracking-wide">Daily Morning Report</h2>
             </div>
             <div className="text-left bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <p className="text-gray-500 font-bold mb-1">تاريخ اليوم:</p>
+              <p className="text-gray-500 font-bold mb-1">{t('admin.todayDate', 'تاريخ اليوم')}:</p>
               <div className="text-2xl font-black text-[#001e40]">{todayDateStr}</div>
             </div>
          </div>
@@ -438,14 +458,14 @@ export default function AdminDashboard() {
          <div className="mb-8 bg-[#fdfdfd] p-6 border-l-8 border-[#b58b4b] rounded shadow-sm">
             <h3 className="font-black text-xl mb-3 text-[#001e40] flex items-center gap-2">
               <span className="material-symbols-outlined text-[#b58b4b]">library_books</span>
-              محتوى التقرير الشامل:
+              {t('admin.morningReportContent')}
             </h3>
             <p className="font-bold text-gray-700 leading-relaxed max-w-3xl mb-4">
-              يحتوي هذا التقرير المنبثق على قائمة بكافة الأحداث خارج الجدول الثابت لهذا اليوم لتوجيه العمال والمختصين لتجهيزها، وتشمل:
+              {t('admin.morningReportDesc')}
             </p>
             <ul className="list-disc pr-8 text-gray-600 font-medium space-y-2">
-               <li>التعديلات أو المحاضرات الاستثنائية / المتغيرة.</li>
-               <li>حجوزات القاعات متعددة الأغراض والمؤتمرات المعتمدة.</li>
+               <li>{t('admin.morningReportList1')}</li>
+               <li>{t('admin.morningReportList2')}</li>
             </ul>
          </div>
 
@@ -453,11 +473,11 @@ export default function AdminDashboard() {
          <table className="w-full border-collapse rounded-lg overflow-hidden shadow-sm border border-gray-300 text-right mt-10">
             <thead>
                <tr className="bg-[#001e40] text-white">
-                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40] w-1/5 whitespace-nowrap">اسم القاعة</th>
-                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40] w-1/5">نوع الحدث</th>
-                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40] w-1/5">الأستاذ / المستخدم</th>
-                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40] w-[15%] text-center">وقت الاستخدام</th>
-                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40]">التجهيزات المطلوبة</th>
+                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40] w-1/5 whitespace-nowrap">{t('admin.roomName')}</th>
+                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40] w-1/5">{t('admin.eventType')}</th>
+                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40] w-1/5">{t('admin.responsible')}</th>
+                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40] w-[15%] text-center">{t('admin.useTime')}</th>
+                  <th className="py-4 px-6 text-sm font-bold border-b border-[#001e40]">{t('admin.requiredEquip')}</th>
                </tr>
             </thead>
             <tbody className="bg-white">
@@ -468,7 +488,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="py-5 px-6 border-l border-gray-100">
                       <span className={`inline-block px-3 py-1 rounded-lg text-xs font-bold ${evt.roomType === 'multi' ? 'bg-[#b58b4b]/10 text-[#8b6a37]' : 'bg-blue-100 text-blue-800'}`}>
-                        {evt.roomType === 'multi' ? 'قاعة متعددة الأغراض' : 'استثنائية / متغيرة'}
+                        {evt.roomType === 'multi' ? t('admin.multiPurpose') : t('admin.exceptional')}
                       </span>
                     </td>
                     <td className="py-5 px-6 font-bold text-gray-800 border-l border-gray-100">
@@ -478,10 +498,10 @@ export default function AdminDashboard() {
                       {evt.timeFrom}
                     </td>
                     <td className="py-5 px-6 text-sm leading-relaxed text-gray-700 font-semibold space-y-1">
-                       {evt.reqLaptop && <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gray-400">laptop_mac</span> حاسب آلي</div>}
-                       {evt.reqVideoConf && <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gray-400">video_camera_front</span> فيديو كونفرنس</div>}
-                       {evt.reqMic && <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gray-400">mic</span> ميكروفونات (عدد: {evt.reqMicQty || 1})</div>}
-                       {!evt.reqLaptop && !evt.reqVideoConf && !evt.reqMic && <span className="text-gray-400 italic">بدون تجهيزات إضافية</span>}
+                       {evt.reqLaptop && <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gray-400">laptop_mac</span> {t('booking.requirementsLaptop')}</div>}
+                       {evt.reqVideoConf && <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gray-400">video_camera_front</span> {t('booking.requirementsVideo')}</div>}
+                       {evt.reqMic && <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gray-400">mic</span> {t('booking.requirementsMic')} ({t('booking.qty')}: {evt.reqMicQty || 1})</div>}
+                       {!evt.reqLaptop && !evt.reqVideoConf && !evt.reqMic && <span className="text-gray-400 italic">{t('admin.noEquip')}</span>}
                     </td>
                  </tr>
                ))}
@@ -489,7 +509,7 @@ export default function AdminDashboard() {
                  <tr>
                     <td colSpan="5" className="py-16 text-center text-gray-400 font-bold bg-gray-50">
                        <span className="material-symbols-outlined text-4xl block mb-2 opacity-50">event_available</span>
-                       لا توجد حجوزات استثنائية ضمن نطاق التقرير لهذا اليوم.
+                       {t('admin.noEvents')}
                     </td>
                  </tr>
                )}
@@ -499,17 +519,17 @@ export default function AdminDashboard() {
          {/* Signatures Area */}
          <div className="mt-24 grid grid-cols-2 gap-20 px-16 text-sm font-bold text-[#001e40]">
             <div className="text-center bg-gray-50 p-6 rounded-2xl border border-gray-200">
-               <p className="text-lg">توقيع مدير الشؤون الأكاديمية</p>
+               <p className="text-lg">{t('admin.academicManagerSign')}</p>
                <div className="border-b-2 border-dashed border-[#001e40] mt-16 mx-auto w-3/4"></div>
             </div>
             <div className="text-center bg-gray-50 p-6 rounded-2xl border border-gray-200">
-               <p className="text-lg">توقيع الإدارة الهندسيـة</p>
+               <p className="text-lg">{t('admin.engineeringManagerSign')}</p>
                <div className="border-b-2 border-dashed border-[#001e40] mt-16 mx-auto w-3/4"></div>
             </div>
          </div>
          
          <div className="mt-12 text-center text-gray-400 text-xs font-bold w-full uppercase tracking-widest">
-           -- نظام إدارة القاعات الأكاديمية | التقرير مطبوع إلكترونيا في {new Date().toLocaleTimeString()} --
+           -- {t('admin.printedAt')} {new Date().toLocaleTimeString()} --
          </div>
       </div>
     </>

@@ -9,21 +9,21 @@ import { usePopup } from '../../contexts/PopupContext';
 export default function DashboardLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { userRole } = useAuth();
-  const { showPopup } = usePopup();
+  const { showAlert } = usePopup();
   const notifiedTempAdmin = useRef(false);
 
   useEffect(() => {
     if (userRole === 'temp_admin' && !notifiedTempAdmin.current) {
       // Small timeout to allow render completion
       setTimeout(() => {
-         showPopup("أنت الآن تعمل بصلاحيات مدير النظام المؤقتة", "info");
+         showAlert("أنت الآن تعمل بصلاحيات مدير النظام المؤقتة", "info");
       }, 500);
       notifiedTempAdmin.current = true;
     }
-  }, [userRole, showPopup]);
+  }, [userRole, showAlert]);
 
   return (
-    <div className="bg-background text-on-background min-h-screen rtl relative" dir="rtl">
+    <div className="bg-background dark:bg-slate-950 text-on-background dark:text-slate-100 min-h-screen rtl relative">
       <NotificationBell />
       <TopNavBar onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
       <div className="flex min-h-screen pt-20 md:pt-0">

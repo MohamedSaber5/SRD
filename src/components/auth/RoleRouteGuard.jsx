@@ -2,8 +2,8 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
-const RoleRouteGuard = ({ children, allowedRoles }) => {
-  const { currentUser, userRole, loading } = useAuth();
+const RoleRouteGuard = ({ children, allowedRoles, requiredPermission }) => {
+  const { currentUser, userRole, userData, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -34,7 +34,14 @@ const RoleRouteGuard = ({ children, allowedRoles }) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return children;
+  // Specific Permission Check for Temp Admins
+  if (activeRole === 'temp_admin' && requiredPermission) {
+    const userPermissions = userData?.permissions || [];
+    if (!userPermissions.includes(requiredPermission)) {
+      console.warn(`Temp Admin missing required permission: ${requiredPermission}. Redirecting...`);
+      return <Navigate to="/admin" replace />;
+    }
+  }
 
   return children;
 };

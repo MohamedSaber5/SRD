@@ -14,14 +14,6 @@ export default function LoginScreen() {
   const { login, currentUser, userRole, loading } = useAuth();
   const { showAlert } = usePopup();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-primary">
-        <div className="w-12 h-12 border-4 border-on-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   // Auto-redirect if already logged in
   useEffect(() => {
     if (currentUser && userRole) {
@@ -30,6 +22,14 @@ export default function LoginScreen() {
       else navigate('/dashboard');
     }
   }, [currentUser, userRole, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-primary">
+        <div className="w-12 h-12 border-4 border-on-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

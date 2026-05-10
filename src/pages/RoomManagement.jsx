@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { roomService } from '../services/roomService';
 import RoomTable from '../components/admin/RoomTable';
@@ -7,6 +8,7 @@ import RoomDetailsDrawer from '../components/admin/RoomDetailsDrawer';
 import { usePopup } from '../contexts/PopupContext';
 
 export default function RoomManagement() {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { showAlert, showConfirm, showPrompt } = usePopup();
   
@@ -129,7 +131,7 @@ export default function RoomManagement() {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-full text-[#001e40] font-bold">جاري تحميل القاعات...</div>;
+    return <div className="flex justify-center items-center h-full text-[#001e40] dark:text-slate-200 font-bold">{t('common.loading')}</div>;
   }
 
   return (
@@ -138,15 +140,15 @@ export default function RoomManagement() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8">
         <div>
-          <h1 className="text-4xl font-headline font-bold text-[#001e40] tracking-tight">إدارة القاعات والمدرجات</h1>
-          <p className="text-[#5a7698] mt-2 text-lg">التحكم الشامل في قواعد البيانات وإضافة وإزالة القاعات وتوليد التقارير.</p>
+          <h1 className="text-4xl font-headline font-bold text-[#001e40] dark:text-white tracking-tight">{t('roomManagement.title')}</h1>
+          <p className="text-[#5a7698] dark:text-slate-400 mt-2 text-lg">{t('roomManagement.subtitle')}</p>
         </div>
         <button 
           onClick={handleAddNewClick}
-          className="mt-4 md:mt-0 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2"
+          className="mt-4 md:mt-0 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 dark:from-emerald-600 dark:to-emerald-800 text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add_circle</span>
-          إضافة قاعة جديدة
+          {t('roomManagement.addBtn')}
         </button>
       </div>
 

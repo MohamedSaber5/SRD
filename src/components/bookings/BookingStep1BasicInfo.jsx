@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { getHourOptions } from '../../hooks/useBookingForm';
 
 export default function BookingStep1BasicInfo({ 
@@ -12,17 +13,18 @@ export default function BookingStep1BasicInfo({
   currentSlots,
   isMultiPurpose 
 }) {
+  const { t } = useTranslation();
   const hourOptions = getHourOptions();
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-      <h3 className="text-xl font-headline font-bold text-primary mb-6 border-b border-surface-container-high pb-4">المعلومات الأساسية</h3>
+      <h3 className="text-xl font-headline font-bold text-[#001e40] dark:text-white mb-6 border-b border-gray-100 dark:border-slate-800 pb-4">{t('booking.steps.details')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Room Type & Selection */}
         <div className="col-span-1 md:col-span-2 space-y-2">
-          <label className="block text-sm font-label font-bold text-on-surface-variant">
-            {userRole === 'admin' ? 'اختر نوع وتسمية القاعة' : 'اختر نوع القاعة المطلوبة'}
+          <label className="block text-sm font-bold text-[#5a7698] dark:text-slate-400">
+            {t('booking.roomType')}
           </label>
           
           {userRole !== 'admin' ? (
@@ -39,17 +41,17 @@ export default function BookingStep1BasicInfo({
                     timeTo: '',
                     selectedSlot: null
                   }))}
-                  className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${formData.hallCategory === 'lecture' ? 'border-primary bg-primary/5 shadow-md' : 'border-surface-container-high hover:border-primary/30 hover:bg-surface-container'}`}
+                  className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${formData.hallCategory === 'lecture' ? 'border-[#1e3a5f] dark:border-blue-600 bg-[#1e3a5f]/5 dark:bg-blue-600/5 shadow-md' : 'border-gray-100 dark:border-slate-800 hover:border-[#1e3a5f]/30 dark:hover:border-blue-600/30 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                 >
-                    <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'lecture' ? 'bg-primary text-white' : 'bg-surface-container-highest text-primary'}`}>
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'lecture' ? 'bg-[#1e3a5f] dark:bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-800 text-[#1e3a5f] dark:text-blue-400'}`}>
                       <span className="material-symbols-outlined text-3xl">school</span>
                     </div>
                     <div className="text-center">
-                      <div className={`font-bold text-lg ${formData.hallCategory === 'lecture' ? 'text-primary' : 'text-on-surface'}`}>قاعة محاضرات</div>
-                      <div className="text-xs text-on-surface-variant">للمحاضرات الاستثنائية والتعويضية</div>
+                      <div className={`font-bold text-lg ${formData.hallCategory === 'lecture' ? 'text-[#1e3a5f] dark:text-blue-400' : 'text-[#001e40] dark:text-white'}`}>{t('requests.hallLectures')}</div>
+                      <div className="text-xs text-[#5a7698] dark:text-slate-400">للمحاضرات الاستثنائية والتعويضية</div>
                     </div>
                     {formData.hallCategory === 'lecture' && (
-                      <div className="absolute top-3 right-3 text-primary animate-in zoom-in">
+                      <div className="absolute top-3 right-3 text-[#1e3a5f] dark:text-blue-400 animate-in zoom-in">
                         <span className="material-symbols-outlined fill-1">check_circle</span>
                       </div>
                     )}
@@ -67,17 +69,17 @@ export default function BookingStep1BasicInfo({
                   timeTo: '',
                   selectedSlot: null
                 }))}
-                className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 relative flex-1 ${formData.hallCategory === 'multi' ? 'border-secondary bg-secondary/5 shadow-md' : 'border-surface-container-high hover:border-secondary/30 hover:bg-surface-container'} ${userRole === 'secretary' ? 'col-span-2' : ''}`}
+                className={`group p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 relative flex-1 ${formData.hallCategory === 'multi' ? 'border-[#b58b4b] dark:border-amber-600 bg-[#b58b4b]/5 dark:bg-amber-600/5 shadow-md' : 'border-gray-100 dark:border-slate-800 hover:border-[#b58b4b]/30 dark:hover:border-amber-600/30 hover:bg-gray-50 dark:hover:bg-slate-800'} ${userRole === 'secretary' ? 'col-span-2' : ''}`}
               >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'multi' ? 'bg-secondary text-white' : 'bg-surface-container-highest text-secondary'}`}>
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${formData.hallCategory === 'multi' ? 'bg-[#b58b4b] dark:bg-amber-600 text-white' : 'bg-gray-100 dark:bg-slate-800 text-[#b58b4b] dark:text-amber-500'}`}>
                     <span className="material-symbols-outlined text-3xl">event_seat</span>
                   </div>
                   <div className="text-center">
-                    <div className={`font-bold text-lg ${formData.hallCategory === 'multi' ? 'text-secondary' : 'text-on-surface'}`}>قاعة متعددة الأغراض</div>
-                    <div className="text-xs text-on-surface-variant">للندوات، الاجتماعات، والفعاليات الرسمية</div>
+                    <div className={`font-bold text-lg ${formData.hallCategory === 'multi' ? 'text-[#b58b4b] dark:text-amber-500' : 'text-[#001e40] dark:text-white'}`}>{t('requests.hallMulti')}</div>
+                    <div className="text-xs text-[#5a7698] dark:text-slate-400">للندوات، الاجتماعات، والفعاليات الرسمية</div>
                   </div>
                   {formData.hallCategory === 'multi' && (
-                    <div className="absolute top-3 right-3 text-secondary animate-in zoom-in">
+                    <div className="absolute top-3 right-3 text-[#b58b4b] dark:text-amber-500 animate-in zoom-in">
                       <span className="material-symbols-outlined fill-1">check_circle</span>
                     </div>
                   )}
@@ -139,14 +141,14 @@ export default function BookingStep1BasicInfo({
 
         {/* Date */}
         <div className="col-span-1 space-y-2">
-          <label className="block text-sm font-label font-bold text-on-surface-variant">تاريخ الفعالية</label>
+          <label className="block text-sm font-bold text-[#5a7698] dark:text-slate-400">{t('booking.date')}</label>
           <div className="relative">
             <input 
               name="date"
               value={formData.date}
               onChange={handleChange}
               min={minDate}
-              className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary cursor-pointer text-right" 
+              className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-200 focus:ring-2 focus:ring-[#1e3a5f] cursor-pointer text-right" 
               type="date"
               required
             />
@@ -155,14 +157,14 @@ export default function BookingStep1BasicInfo({
 
         {/* Time Selection */}
         <div className="col-span-1 space-y-2">
-          <label className="block text-sm font-label font-bold text-on-surface-variant">الفترة الزمنية المتاحة</label>
+          <label className="block text-sm font-bold text-[#5a7698] dark:text-slate-400">{t('booking.time')}</label>
           
           {isMultiPurpose ? (
             <div className="flex gap-4">
               <div className="relative flex-1">
                  <select 
                    name="timeFrom"
-                   className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                   className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-200 focus:ring-2 focus:ring-[#1e3a5f] appearance-none cursor-pointer"
                    value={formData.timeFrom}
                    onChange={handleChange}
                    required
@@ -177,7 +179,7 @@ export default function BookingStep1BasicInfo({
               <div className="relative flex-1">
                  <select 
                    name="timeTo"
-                   className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                   className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-200 focus:ring-2 focus:ring-[#1e3a5f] appearance-none cursor-pointer"
                    value={formData.timeTo}
                    onChange={handleChange}
                    required
@@ -199,7 +201,7 @@ export default function BookingStep1BasicInfo({
           ) : (
             <div className="relative">
               <select 
-                className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-200 focus:ring-2 focus:ring-[#1e3a5f] appearance-none cursor-pointer"
                 value={formData.timeFrom ? currentSlots.findIndex(s => s.from === formData.timeFrom && s.to === formData.timeTo) : ""}
                 onChange={(e) => {
                   if (e.target.value === "") {
@@ -226,7 +228,7 @@ export default function BookingStep1BasicInfo({
           )}
 
           {isLeadTimeError && (
-            <p className="text-xs text-error font-bold mt-1 px-1 flex items-center gap-1 animate-pulse">
+            <p className="text-xs text-red-600 dark:text-red-400 font-bold mt-1 px-1 flex items-center gap-1 animate-pulse">
               <span className="material-symbols-outlined text-sm">warning</span> 
               عفواً، يجب أن يكون الحجز قبل الموعد بـ {userRole === 'secretary' ? '48' : '24'} ساعة على الأقل.
             </p>
@@ -235,13 +237,13 @@ export default function BookingStep1BasicInfo({
 
         {/* Purpose */}
         <div className="col-span-1 md:col-span-2 space-y-2">
-          <label className="block text-sm font-label font-bold text-on-surface-variant">الغرض من الاستخدام</label>
+          <label className="block text-sm font-bold text-[#5a7698] dark:text-slate-400">{t('booking.purpose')}</label>
           <textarea 
             name="purpose"
             value={formData.purpose}
             onChange={handleChange}
             required
-            className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary resize-none" 
+            className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-200 focus:ring-2 focus:ring-[#1e3a5f] resize-none outline-none" 
             placeholder="وصف موجز لطبيعة الفعالية أو الاجتماع..." 
             rows={4}
           ></textarea>
@@ -249,7 +251,7 @@ export default function BookingStep1BasicInfo({
         
         {/* Required Capacity */}
         <div className="col-span-1 md:col-span-2 space-y-2">
-          <label className="block text-sm font-label font-bold text-on-surface-variant">السعة المطلوبة (عدد الحضور المتوقع)</label>
+          <label className="block text-sm font-bold text-[#5a7698] dark:text-slate-400">{t('booking.capacity')}</label>
           <input 
             type="number"
             name="requiredCapacity"
@@ -257,27 +259,27 @@ export default function BookingStep1BasicInfo({
             value={formData.requiredCapacity}
             onChange={handleChange}
             required
-            className="w-full bg-surface-container-high border-none rounded-xl px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary text-right" 
+            className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl px-4 py-3 text-[#001e40] dark:text-slate-200 focus:ring-2 focus:ring-[#1e3a5f] text-right" 
             placeholder="مثال: 50" 
           />
         </div>
         
         {/* Extra options for secretary */}
         {userRole === 'secretary' && (
-          <div className="col-span-1 md:col-span-2 mt-2 bg-surface-container-highest p-4 rounded-xl space-y-3">
-            <label className="block text-sm font-label font-bold text-on-surface-variant mb-2">امتيازات إضافية للطلب (يرجى التحديد إن وجد)</label>
+          <div className="col-span-1 md:col-span-2 mt-2 bg-gray-50 dark:bg-slate-800 p-4 rounded-xl space-y-3 border border-gray-100 dark:border-slate-700">
+            <label className="block text-sm font-bold text-[#5a7698] dark:text-slate-400 mb-2">امتيازات إضافية للطلب (يرجى التحديد إن وجد)</label>
             <label className="flex items-start gap-4 cursor-pointer">
-              <input type="checkbox" name="isHolidayEvent" checked={formData.isHolidayEvent} onChange={handleChange} className="mt-1 w-5 h-5 text-secondary rounded focus:ring-secondary border-outline-variant" />
+              <input type="checkbox" name="isHolidayEvent" checked={formData.isHolidayEvent} onChange={handleChange} className="mt-1 w-5 h-5 accent-[#b58b4b] rounded focus:ring-[#b58b4b]" />
               <div>
-                <div className="font-bold text-on-surface">حدث خلال عطلة رسمية أو إجازة نهاية الأسبوع</div>
-                <div className="text-xs text-on-surface-variant">يضيف نقاط أولوية للطلب عند مدير الفرع</div>
+                <div className="font-bold text-[#001e40] dark:text-white">حدث خلال عطلة رسمية أو إجازة نهاية الأسبوع</div>
+                <div className="text-xs text-[#5a7698] dark:text-slate-400">يضيف نقاط أولوية للطلب عند مدير الفرع</div>
               </div>
             </label>
             <label className="flex items-start gap-4 cursor-pointer">
-              <input type="checkbox" name="isOfficialOccasion" checked={formData.isOfficialOccasion} onChange={handleChange} className="mt-1 w-5 h-5 text-secondary rounded focus:ring-secondary border-outline-variant" />
+              <input type="checkbox" name="isOfficialOccasion" checked={formData.isOfficialOccasion} onChange={handleChange} className="mt-1 w-5 h-5 accent-[#b58b4b] rounded focus:ring-[#b58b4b]" />
               <div>
-                <div className="font-bold text-on-surface">مناسبة رسمية للكلية (مؤتمر مسجل، ندوة عامة)</div>
-                <div className="text-xs text-on-surface-variant">يرجى توضيح التفاصيل في خانة "الغرض من الاستخدام"</div>
+                <div className="font-bold text-[#001e40] dark:text-white">مناسبة رسمية للكلية (مؤتمر مسجل، ندوة عامة)</div>
+                <div className="text-xs text-[#5a7698] dark:text-slate-400">يرجى توضيح التفاصيل في خانة "الغرض من الاستخدام"</div>
               </div>
             </label>
           </div>
