@@ -1,4 +1,4 @@
-# EL 3adela Team و اخرون
+# EL 3adela Team w el finalist 
 
 ### 1. Admin (المسؤول العام)
 - **Username**: admin
