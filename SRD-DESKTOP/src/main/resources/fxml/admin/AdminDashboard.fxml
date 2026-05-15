@@ -1,13 +1,202 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.*?>
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.aast.booking.admin.AdminDashboardController"
-      alignment="CENTER" spacing="20" style="-fx-background-color:#F5F7FA;">
-    <padding><Insets top="60" bottom="60" left="60" right="60"/></padding>
-    <Label fx:id="welcomeLabel" style="-fx-font-size:28px;-fx-font-weight:bold;-fx-text-fill:#003087;"/>
-    <Label text="لوحة تحكم المسؤول العام - قيد الإنشاء" style="-fx-font-size:16px;-fx-text-fill:#6B7280;"/>
-    <Button text="تسجيل الخروج" onAction="#handleLogout"
-            style="-fx-background-color:#003087;-fx-text-fill:white;-fx-font-size:14px;-fx-padding:10 30;-fx-background-radius:8;-fx-cursor:hand;"/>
-</VBox>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane nodeOrientation="RIGHT_TO_LEFT"
+            style="-fx-background-color: #f2f4f6;"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.aast.booking.admin.AdminDashboardController">
+
+    <stylesheets>
+        <java.lang.String fx:value="/css/styles.css" />
+        <java.lang.String fx:value="/css/admin.css" />
+    </stylesheets>
+
+    <!-- SIDEBAR (left in code = RIGHT visually in RTL) -->
+    <left>
+        <VBox spacing="6" styleClass="admin-sidebar">
+            <padding><Insets bottom="20" left="16" right="16" top="24" /></padding>
+
+            <!-- Brand -->
+            <VBox spacing="4" style="-fx-padding: 0 0 16 0;">
+                <Label styleClass="admin-sidebar-title" text="نظام حجز القاعات" wrapText="true" />
+                <Label styleClass="admin-sidebar-subtitle" text="الأكاديمية العربية للعلوم والتكنولوجيا" wrapText="true" />
+                <Label fx:id="roleLabel" styleClass="admin-role-badge" text="المسؤول العام" />
+            </VBox>
+
+            <Region maxWidth="Infinity" styleClass="admin-divider" />
+
+            <Label fx:id="welcomeLabel" style="-fx-padding: 8 4 4 4; -fx-font-style:italic;" styleClass="admin-sidebar-subtitle" text="" wrapText="true" />
+
+            <!-- Navigation -->
+            <Button fx:id="btnDashboard" maxWidth="Infinity" onAction="#showDashboard" styleClass="admin-nav-btn-active" text="🏛  مدير النظام" />
+            <Button fx:id="btnRequests" maxWidth="Infinity" onAction="#showPendingRequests" styleClass="admin-nav-btn" text="📋  الطلبات المعلقة" />
+            <Button fx:id="btnNewBooking" maxWidth="Infinity" onAction="#showNewBooking" styleClass="admin-nav-btn" text="➕  طلب حجز جديد" />
+            <Button fx:id="btnRoomMgmt" maxWidth="Infinity" onAction="#showRoomManagement" styleClass="admin-nav-btn" text="🏢  إدارة القاعات" />
+            <Button fx:id="btnSearch" maxWidth="Infinity" onAction="#showSearch" styleClass="admin-nav-btn" text="🔍  البحث المتقدم" />
+            <Button fx:id="btnDelegation" maxWidth="Infinity" onAction="#showDelegation" styleClass="admin-nav-btn" text="👥  الصلاحيات والتفويض" />
+            <Button fx:id="btnSettings" maxWidth="Infinity" onAction="#showSettings" styleClass="admin-nav-btn" text="⚙  الإعدادات" />
+            <Button fx:id="btnStats" maxWidth="Infinity" onAction="#showStatistics" styleClass="admin-nav-btn" text="📊  الإحصائيات والتقارير" />
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <Region maxWidth="Infinity" styleClass="admin-divider" />
+            <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="admin-logout-btn" text="🚪  تسجيل الخروج" />
+        </VBox>
+    </left>
+
+    <!-- CENTER CONTENT -->
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="admin-main-scroll"
+                    hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+            <VBox spacing="0" style="-fx-background-color: #f2f4f6;">
+
+                <!-- Top Header -->
+                <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="admin-header">
+                    <VBox spacing="3" HBox.hgrow="ALWAYS">
+                        <Label fx:id="pageTitle" styleClass="admin-header-title" text="لوحة تحكم المسؤول" />
+                        <Label fx:id="pageSubtitle" styleClass="admin-header-subtitle" text="إدارة الجداول الأسبوعية ومتابعة العمليات" />
+                    </VBox>
+                    <Button fx:id="ramadanBtn" onAction="#toggleRamadanMode" styleClass="admin-ramadan-off" text="🌙  تفعيل وضع رمضان" />
+                </HBox>
+
+                <!-- Page Stack -->
+                <StackPane VBox.vgrow="ALWAYS" style="-fx-min-height: 650;">
+
+                    <!-- HOME / DASHBOARD VIEW -->
+                    <VBox fx:id="dashboardView" spacing="28" visible="true">
+                        <padding><Insets bottom="30" left="30" right="30" top="28" /></padding>
+
+                        <!-- Stats Row -->
+                        <HBox spacing="16">
+                            <!-- Card 1: Accepted Today -->
+                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                                <HBox alignment="CENTER_RIGHT" spacing="10">
+                                    <Label styleClass="admin-stat-icon, admin-stat-icon-blue" text="📋" style="-fx-font-size: 18px;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label styleClass="admin-stat-badge-green" text="اليوم" />
+                                </HBox>
+                                <Label styleClass="admin-stat-label" text="الطلبات المقبولة اليوم" />
+                                <Label fx:id="statAcceptedToday" styleClass="admin-stat-value" text="0" />
+                            </VBox>
+                            <!-- Card 2: Pending -->
+                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                                <HBox alignment="CENTER_RIGHT">
+                                    <Label styleClass="admin-stat-icon, admin-stat-icon-gold" text="⏳" style="-fx-font-size: 18px;" />
+                                </HBox>
+                                <Label styleClass="admin-stat-label" text="الطلبات قيد الانتظار" />
+                                <Label fx:id="statPendingCount" styleClass="admin-stat-value-gold" text="0" />
+                            </VBox>
+                            <!-- Card 3: Total Bookings -->
+                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                                <HBox alignment="CENTER_RIGHT">
+                                    <Label styleClass="admin-stat-icon, admin-stat-icon-green" text="✓" style="-fx-font-size: 18px;" />
+                                </HBox>
+                                <Label styleClass="admin-stat-label" text="إجمالي الحجوزات" />
+                                <Label fx:id="statTotalBookings" styleClass="admin-stat-value-green" text="0" />
+                            </VBox>
+                            <!-- Card 4: Total Rooms -->
+                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                                <HBox alignment="CENTER_RIGHT">
+                                    <Label styleClass="admin-stat-icon, admin-stat-icon-blue" text="🏢" style="-fx-font-size: 18px;" />
+                                </HBox>
+                                <Label styleClass="admin-stat-label" text="القاعات المسجلة" />
+                                <Label fx:id="statTotalRooms" styleClass="admin-stat-value" text="0" />
+                            </VBox>
+                        </HBox>
+
+                        <!-- Today's Events Section -->
+                        <VBox spacing="16" styleClass="admin-section-card">
+                            <HBox alignment="CENTER_RIGHT" spacing="12">
+                                <Label styleClass="admin-section-title" text="📅  أحداث اليوم" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="todayDateLabel" style="-fx-font-size: 13px; -fx-text-fill: #737780; -fx-font-weight: bold;" text="" />
+                            </HBox>
+                            <Label styleClass="admin-section-subtitle" text="حجوزات اليوم الاستثنائية والقاعات متعددة الأغراض" />
+
+                            <TableView fx:id="todayEventsTable" styleClass="admin-table"
+                                       prefHeight="280" style="-fx-min-height: 200;">
+                                <columns>
+                                    <TableColumn fx:id="evColRoom"    prefWidth="140" text="القاعة" />
+                                    <TableColumn fx:id="evColType"    prefWidth="160" text="نوع الحدث" />
+                                    <TableColumn fx:id="evColUser"    prefWidth="170" text="المسؤول" />
+                                    <TableColumn fx:id="evColTime"    prefWidth="130" text="الوقت" />
+                                    <TableColumn fx:id="evColPurpose" prefWidth="220" text="الغرض / المادة" />
+                                </columns>
+                                <placeholder>
+                                    <Label styleClass="admin-empty-label" text="لا توجد حجوزات استثنائية لهذا اليوم" />
+                                </placeholder>
+                            </TableView>
+                        </VBox>
+
+                        <!-- Quick Actions -->
+                        <HBox spacing="14">
+                            <Button onAction="#showPendingRequests" styleClass="admin-action-btn" text="📋  إدارة الطلبات المعلقة" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                            <Button onAction="#showNewBooking" styleClass="admin-primary-btn" text="➕  طلب حجز جديد" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                            <Button onAction="#showStatistics" styleClass="admin-primary-btn" text="📊  الإحصائيات" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- PLACEHOLDER VIEWS (will be filled in future) -->
+                    <VBox fx:id="pendingView" spacing="20" visible="false" alignment="CENTER">
+                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
+                        <Label style="-fx-font-size: 28px;" text="📋" />
+                        <Label styleClass="admin-section-title" text="الطلبات المعلقة" />
+                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    </VBox>
+                    <VBox fx:id="newBookingView" spacing="20" visible="false" alignment="CENTER">
+                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
+                        <Label style="-fx-font-size: 28px;" text="➕" />
+                        <Label styleClass="admin-section-title" text="طلب حجز جديد" />
+                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    </VBox>
+                    <VBox fx:id="roomMgmtView" spacing="20" visible="false" alignment="CENTER">
+                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
+                        <Label style="-fx-font-size: 28px;" text="🏢" />
+                        <Label styleClass="admin-section-title" text="إدارة القاعات" />
+                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    </VBox>
+                    <VBox fx:id="searchView" spacing="20" visible="false" alignment="CENTER">
+                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
+                        <Label style="-fx-font-size: 28px;" text="🔍" />
+                        <Label styleClass="admin-section-title" text="البحث المتقدم" />
+                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    </VBox>
+                    <VBox fx:id="delegationView" spacing="20" visible="false" alignment="CENTER">
+                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
+                        <Label style="-fx-font-size: 28px;" text="👥" />
+                        <Label styleClass="admin-section-title" text="الصلاحيات والتفويض" />
+                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    </VBox>
+                    <VBox fx:id="settingsView" spacing="20" visible="false" alignment="CENTER">
+                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
+                        <Label style="-fx-font-size: 28px;" text="⚙" />
+                        <Label styleClass="admin-section-title" text="الإعدادات" />
+                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    </VBox>
+                    <VBox fx:id="statsView" spacing="20" visible="false" alignment="CENTER">
+                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
+                        <Label style="-fx-font-size: 28px;" text="📊" />
+                        <Label styleClass="admin-section-title" text="الإحصائيات والتقارير" />
+                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    </VBox>
+
+                </StackPane>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>
