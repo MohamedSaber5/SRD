@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<!-- Booking List = Main Dashboard Content View -->
+<!-- Mirrors UserDashboard.jsx -->
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.aast.booking.employee.BookingListController"
+      styleClass="booking-list-root"
+      spacing="0">
+
+    <ScrollPane fitToWidth="true" styleClass="main-scroll" VBox.vgrow="ALWAYS">
+        <padding><Insets top="0" right="0" bottom="0" left="0"/></padding>
+
+        <VBox spacing="28">
+            <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+
+            <!-- ══ Header ══ -->
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label fx:id="welcomeLabel" text="مرحباً" styleClass="page-title"/>
+                    <Label fx:id="subtitleLabel" text="نظرة عامة على طلبات الحجز" styleClass="page-subtitle"/>
+                </VBox>
+            </HBox>
+
+            <!-- ══ Stats Cards (3 columns) ══ -->
+            <HBox spacing="16">
+                <!-- Approved -->
+                <VBox styleClass="stat-card, stat-approved" HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER">
+                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                    <Label text="✅" style="-fx-font-size: 28px;"/>
+                    <Label fx:id="approvedCountLabel" text="0" styleClass="stat-number, stat-number-approved"/>
+                    <Label text="طلبات مقبولة" styleClass="stat-label"/>
+                </VBox>
+                <!-- Pending -->
+                <VBox styleClass="stat-card, stat-pending" HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER">
+                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                    <Label text="⏳" style="-fx-font-size: 28px;"/>
+                    <Label fx:id="pendingCountLabel" text="0" styleClass="stat-number, stat-number-pending"/>
+                    <Label text="قيد الانتظار" styleClass="stat-label"/>
+                </VBox>
+                <!-- Rejected -->
+                <VBox styleClass="stat-card, stat-rejected" HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER">
+                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                    <Label text="❌" style="-fx-font-size: 28px;"/>
+                    <Label fx:id="rejectedCountLabel" text="0" styleClass="stat-number, stat-number-rejected"/>
+                    <Label text="طلبات مرفوضة" styleClass="stat-label"/>
+                </VBox>
+            </HBox>
+
+            <!-- ══ Bookings Section ══ -->
+            <VBox spacing="12">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="📋  حالة الطلبات الأخيرة" styleClass="section-title"/>
+                </HBox>
+
+                <!-- Loading indicator -->
+                <ProgressIndicator fx:id="loadingIndicator" maxWidth="48" maxHeight="48"
+                                   visible="true" styleClass="spinner"/>
+
+                <!-- Empty state -->
+                <VBox fx:id="emptyStateLabel" visible="false" alignment="CENTER" spacing="12"
+                      style="-fx-padding: 60 0;  -fx-opacity: 0.45;">
+                    <Label text="📭" style="-fx-font-size: 56px;"/>
+                    <Label text="لا توجد طلبات حجز حتى الآن"
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                    <Label text="اضغط على «طلب حجز جديد» في الشريط الجانبي للبدء"
+                           style="-fx-font-size: 12px; -fx-text-fill: #9CA3AF;"/>
+                </VBox>
+
+                <!-- Booking cards injected here by controller -->
+                <VBox fx:id="bookingsContainer" spacing="12"/>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+
+</VBox>
