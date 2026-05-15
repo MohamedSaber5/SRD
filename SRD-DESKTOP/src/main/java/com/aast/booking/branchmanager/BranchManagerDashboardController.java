@@ -1,11 +1,11 @@
 package com.aast.booking.branchmanager;
 
 import com.aast.booking.auth.AuthService;
-import com.aast.booking.core.FirebaseService;
 import com.aast.booking.core.SessionManager;
 import com.aast.booking.models.Booking;
 import com.aast.booking.services.BookingService;
-import com.google.cloud.firestore.*;
+import com.aast.booking.services.BranchManagerService;
+import com.aast.booking.patterns.command.*;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -23,6 +23,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BranchManagerDashboardController implements Initializable {
 
@@ -136,23 +137,17 @@ public class BranchManagerDashboardController implements Initializable {
 
     // ─── Data Fetching ────────────────────────────────────────────────────
 
-    private void fetchRoomsAndBookings() {
-        Firestore db = FirebaseService.getInstance().getFirestore();
-        if (db == null) return;
-        new Thread(() -> {
-            try {
-                // Fetch rooms
-                QuerySnapshot rSnap = db.collection("rooms").whereEqualTo("type", "multi").get().get();
-                Map<String, Map<String, Object>> rooms = new HashMap<>();
-                for (DocumentSnapshot d : rSnap.getDocuments()) rooms.put(d.getId(), d.getData());
+    private final BranchManagerService managerService = BranchManagerService.getInstance();
 
-                // Fetch pending bookings
-                QuerySnapshot bSnap = db.collection("bookings")
-                    .whereEqualTo("roomType", "multi")
-                    .whereEqualTo("status", "awaiting_manager_final")
-                    .get().get();
-                List<Booking> pending = new ArrayList<>();
-                for (DocumentSnapshot d : bSnap.getDocuments()) pending.add(Booking.fromDocument(d));
+    private void fetchRoomsAndBookings() {
+        managerService.fetchMultiPurposeRooms()
+            .thenCombine(managerService.fetchPendingBookings(), (rooms, pending) -> {
+                Map<String, Map<String, Object>> roomMap = new HashMap<>();
+                for (Map<String, Object> r : rooms) {
+                    roomMap.put((String) r.get("id"), r);
+                }
+                
+                // Sort pending
                 pending.sort((a, b) -> {
                     boolean aUrgent = "urgent".equals(a.getStatus());
                     boolean bUrgent = "urgent".equals(b.getStatus());
@@ -163,62 +158,58 @@ public class BranchManagerDashboardController implements Initializable {
                     return db2.compareTo(da);
                 });
 
-                // Fetch stats
-                QuerySnapshot histSnap = db.collection("bookings")
-                    .whereEqualTo("roomType", "multi")
-                    .whereIn("status", Arrays.asList("approved", "rejected")).get().get();
-                int approved = 0, rejected = 0;
-                List<Booking> histList = new ArrayList<>();
-                for (DocumentSnapshot d : histSnap.getDocuments()) {
-                    Booking b = Booking.fromDocument(d);
-                    histList.add(b);
-                    if ("approved".equals(b.getStatus())) approved++;
-                    else rejected++;
-                }
-
-                final int fApp = approved, fRej = rejected;
-                final List<Booking> fPending = pending;
-                final List<Booking> fHist = histList;
-                final Map<String, Map<String, Object>> fRooms = rooms;
-
                 Platform.runLater(() -> {
-                    roomsCache.putAll(fRooms);
+                    roomsCache.clear();
+                    roomsCache.putAll(roomMap);
                     allPendingBookings.clear();
-                    allPendingBookings.addAll(fPending);
-                    historyBookings.setAll(fHist);
-
-                    if (statPending != null) statPending.setText(String.valueOf(fPending.size()));
-                    if (statApproved != null) statApproved.setText(String.valueOf(fApp));
-                    if (statRejected != null) statRejected.setText(String.valueOf(fRej));
-                    if (statTotal != null) statTotal.setText(String.valueOf(fPending.size() + fApp + fRej));
-                    String count = String.valueOf(fPending.size());
-                    if (pendingCountBadge != null) pendingCountBadge.setText(count);
-                    if (pendingCountBadge2 != null) pendingCountBadge2.setText(count);
-
-                    if (cardsContainer != null) renderCards(cardsContainer, fPending);
-
-                    if (bookHallCombo != null) {
-                        bookHallCombo.getItems().clear();
-                        fRooms.forEach((id, data) -> {
-                            String name = data.get("roomNumber") != null ? (String) data.get("roomNumber") : id;
-                            bookHallCombo.getItems().add(name + " | " + id);
-                        });
-                    }
+                    allPendingBookings.addAll(pending);
                 });
-            } catch (Exception e) { e.printStackTrace(); }
-        }).start();
+                return rooms;
+            })
+            .thenCombine(managerService.fetchHistoryBookings(), (rooms, history) -> {
+                Platform.runLater(() -> {
+                    historyBookings.setAll(history);
+                    updateStats();
+                    renderCards(pendingCardsContainer, allPendingBookings);
+                    updateRoomCombo(rooms);
+                });
+                return null;
+            })
+            .exceptionally(ex -> {
+                ex.printStackTrace();
+                return null;
+            });
+    }
+
+    private void updateStats() {
+        int pending = allPendingBookings.size();
+        int approved = (int) historyBookings.stream().filter(b -> "approved".equals(b.getStatus())).count();
+        int rejected = (int) historyBookings.stream().filter(b -> "rejected".equals(b.getStatus())).count();
+
+        if (statPending != null) statPending.setText(String.valueOf(pending));
+        if (statApproved != null) statApproved.setText(String.valueOf(approved));
+        if (statRejected != null) statRejected.setText(String.valueOf(rejected));
+        if (statTotal != null) statTotal.setText(String.valueOf(pending + approved + rejected));
+        
+        String countStr = String.valueOf(pending);
+        if (pendingCountBadge != null) pendingCountBadge.setText(countStr);
+        if (pendingCountBadge2 != null) pendingCountBadge2.setText(countStr);
+    }
+
+    private void updateRoomCombo(List<Map<String, Object>> rooms) {
+        if (bookHallCombo != null) {
+            bookHallCombo.getItems().clear();
+            for (Map<String, Object> r : rooms) {
+                String name = r.get("roomNumber") != null ? (String) r.get("roomNumber") : (String) r.get("id");
+                bookHallCombo.getItems().add(name + " | " + r.get("id"));
+            }
+        }
     }
 
     private void fetchRamadanMode() {
-        Firestore db = FirebaseService.getInstance().getFirestore();
-        if (db == null) return;
-        new Thread(() -> {
-            try {
-                DocumentSnapshot d = db.collection("settings").document("system").get().get();
-                boolean ramadan = d.exists() && Boolean.TRUE.equals(d.getBoolean("isRamadanMode"));
-                Platform.runLater(() -> applyRamadanState(ramadan));
-            } catch (Exception e) { e.printStackTrace(); }
-        }).start();
+        managerService.fetchRamadanMode().thenAccept(mode -> {
+            Platform.runLater(() -> applyRamadanState(mode));
+        });
     }
 
     // ─── Card Builder ───────────────────────────────────────────────────
@@ -348,24 +339,20 @@ public class BranchManagerDashboardController implements Initializable {
 
     private void handleApprove(Booking b) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "تأكيد اعتماد الحجز؟", ButtonType.YES, ButtonType.NO);
-        confirm.showAndWait().ifPresent(btn -> { if (btn == ButtonType.YES) updateStatus(b.getId(), "approved"); });
+        confirm.showAndWait().ifPresent(btn -> { 
+            if (btn == ButtonType.YES) {
+                new ApproveBookingCommand(b.getId(), this::fetchRoomsAndBookings).execute();
+            }
+        });
     }
 
     private void handleReject(Booking b) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "تأكيد رفض الحجز؟", ButtonType.YES, ButtonType.NO);
-        confirm.showAndWait().ifPresent(btn -> { if (btn == ButtonType.YES) updateStatus(b.getId(), "rejected"); });
-    }
-
-    private void updateStatus(String id, String status) {
-        Firestore db = FirebaseService.getInstance().getFirestore();
-        if (db == null) return;
-        new Thread(() -> {
-            try {
-                db.collection("bookings").document(id)
-                  .update("status", status, "updatedAt", FieldValue.serverTimestamp()).get();
-                Platform.runLater(this::fetchRoomsAndBookings);
-            } catch (Exception e) { e.printStackTrace(); }
-        }).start();
+        confirm.showAndWait().ifPresent(btn -> { 
+            if (btn == ButtonType.YES) {
+                new RejectBookingCommand(b.getId(), this::fetchRoomsAndBookings).execute();
+            }
+        });
     }
 
     @FXML private void refreshAll() { fetchRoomsAndBookings(); }
@@ -409,15 +396,9 @@ public class BranchManagerDashboardController implements Initializable {
 
     @FXML private void toggleRamadanMode() {
         boolean newMode = !isRamadanMode;
-        Firestore db = FirebaseService.getInstance().getFirestore();
-        if (db == null) return;
-        new Thread(() -> {
-            try {
-                db.collection("settings").document("system")
-                  .set(Collections.singletonMap("isRamadanMode", newMode), SetOptions.merge()).get();
-                Platform.runLater(() -> applyRamadanState(newMode));
-            } catch (Exception e) { e.printStackTrace(); }
-        }).start();
+        managerService.setRamadanMode(newMode).thenRun(() -> {
+            Platform.runLater(() -> applyRamadanState(newMode));
+        });
     }
 
     private void applyRamadanState(boolean on) {
@@ -461,21 +442,15 @@ public class BranchManagerDashboardController implements Initializable {
     }
 
     @FXML private void refreshHistory() {
-        Firestore db = FirebaseService.getInstance().getFirestore();
-        if (db == null) return;
-        new Thread(() -> {
-            try {
-                QuerySnapshot snap = db.collection("bookings")
-                    .whereEqualTo("roomType", "multi")
-                    .whereIn("status", Arrays.asList("approved", "rejected")).get().get();
-                List<Booking> list = new ArrayList<>();
-                for (DocumentSnapshot d : snap.getDocuments()) list.add(Booking.fromDocument(d));
-                Platform.runLater(() -> {
-                    historyBookings.setAll(list);
-                    applyHistoryFilter();
-                });
-            } catch (Exception e) { e.printStackTrace(); }
-        }).start();
+        managerService.fetchHistoryBookings().thenAccept(list -> {
+            Platform.runLater(() -> {
+                historyBookings.setAll(list);
+                applyHistoryFilter();
+            });
+        }).exceptionally(ex -> {
+            ex.printStackTrace();
+            return null;
+        });
     }
 
     private void applyHistoryFilter() {
