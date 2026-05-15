@@ -84,7 +84,7 @@ export default function SideNavBar({ isOpen, closeMenu }) {
 
         <NavLink to="/booking" className={getNavClass} onClick={closeMenu}>
           <span className="material-symbols-outlined ml-2" data-icon="add_circle">add_circle</span>
-          <span>طلب حجز جديد</span>
+          <span>{userRole === 'branch_manager' ? 'حجز فوري' : 'طلب حجز جديد'}</span>
         </NavLink>
         
         {/* Dummy links for visual completeness */}
@@ -122,7 +122,7 @@ export default function SideNavBar({ isOpen, closeMenu }) {
         {(userRole === 'employee' || userRole === 'secretary') && (
           <NavLink to="/booking" className="w-full py-3 px-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white font-headline font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-[0_12px_32px_-12px_rgba(0,30,64,0.3)]" onClick={closeMenu}>
             <span className="material-symbols-outlined">add</span>
-            طلب حجز جديد
+            {userRole === 'branch_manager' ? 'حجز فوري' : 'طلب حجز جديد'}
           </NavLink>
         )}
         <button onClick={handleLogout} className="w-full py-3 px-4 rounded-xl text-error font-headline font-bold flex items-center justify-center gap-2 hover:bg-error-container/50 transition-colors">

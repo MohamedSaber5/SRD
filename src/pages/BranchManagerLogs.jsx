@@ -6,6 +6,7 @@ export default function BranchManagerLogs() {
   const [auditLogs, setAuditLogs] = useState([]);
   const [selectedLog, setSelectedLog] = useState(null);
   const [userMap, setUserMap] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     // Fetch users for mapping
@@ -48,9 +49,35 @@ export default function BranchManagerLogs() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-surface-container-high mb-6">
+        <div className="relative">
+          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+          <input 
+            type="text" 
+            placeholder="البحث في سجل النشاط (بالاسم، الإجراء، أو التفاصيل)..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-surface-container-highest border-none rounded-2xl py-4 pr-12 pl-4 text-on-surface focus:ring-2 focus:ring-primary outline-none transition-all"
+          />
+        </div>
+      </div>
+
       <div className="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-surface-container-high min-h-[500px]">
         <div className="space-y-4">
-          {auditLogs.length > 0 ? auditLogs.map((log) => {
+          {auditLogs.length > 0 ? auditLogs.filter(log => {
+            if (!searchQuery) return true;
+            const q = searchQuery.toLowerCase();
+            const actionByLower = log.actionBy?.toLowerCase() || '';
+            const userDetails = userMap[actionByLower] || userMap[actionByLower.split('@')[0]] || null;
+            const displayName = userDetails?.displayName || log.actionByName || '';
+            
+            return (
+              displayName.toLowerCase().includes(q) ||
+              (log.details && log.details.toLowerCase().includes(q)) ||
+              (log.actionType && log.actionType.toLowerCase().includes(q))
+            );
+          }).map((log) => {
             const actionByLower = log.actionBy?.toLowerCase() || '';
             const userDetails = userMap[actionByLower] || userMap[actionByLower.split('@')[0]] || null;
             
