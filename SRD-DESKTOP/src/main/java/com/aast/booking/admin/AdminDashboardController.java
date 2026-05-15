@@ -165,11 +165,11 @@ public class AdminDashboardController implements Initializable {
     private void fetchAllData() {
         CompletableFuture.supplyAsync(() -> {
             try {
-                Firestore db = com.google.firebase.cloud.FirestoreClient.getFirestore();
+                Firestore db = com.aast.booking.core.FirebaseService.getInstance().getFirestore();
+                if (db == null) return new Object[]{new ArrayList<>(), 0};
 
                 // Fetch all bookings
-                ApiFuture<QuerySnapshot> bookingsFuture = db.collection("bookings")
-                        .orderBy("createdAt", Query.Direction.DESCENDING).get();
+                ApiFuture<QuerySnapshot> bookingsFuture = db.collection("bookings").get();
 
                 // Fetch all rooms
                 ApiFuture<QuerySnapshot> roomsFuture = db.collection("rooms").get();

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane nodeOrientation="RIGHT_TO_LEFT"
+           xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.aast.booking.admin.RoomManagementController">
+
+    <!-- MAIN CONTENT -->
+    <VBox spacing="20" style="-fx-background-color: transparent;">
+        <padding><Insets bottom="20" left="30" right="30" top="20" /></padding>
+
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="20">
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #001e40;" text="إدارة القاعات والمدرجات" />
+                <Label style="-fx-font-size: 14px; -fx-text-fill: #5a7698;" text="التحكم الشامل في قواعد البيانات وإضافة وإزالة القاعات وتوليد التقارير." />
+            </VBox>
+            <Button onAction="#showAddForm" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8;" text="➕  إضافة قاعة جديدة" />
+        </HBox>
+
+        <!-- Filters -->
+        <VBox spacing="15" styleClass="admin-section-card">
+            <HBox spacing="15">
+                <TextField fx:id="searchField" promptText="ابحث برقم أو اسم القاعة..." HBox.hgrow="ALWAYS" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 10;" />
+                <TextField fx:id="capacityField" promptText="أدنى سعة (مثال: 50)" prefWidth="150" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 10;" />
+            </HBox>
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <ComboBox fx:id="typeFilter" prefWidth="180" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 4;" />
+                <ComboBox fx:id="statusFilter" prefWidth="180" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 4;" />
+                <Button fx:id="clearFilterBtn" onAction="#clearFilters" text="مسح الفلاتر" visible="false" style="-fx-background-color: #fef2f2; -fx-text-fill: #ef4444; -fx-border-color: #fca5a5; -fx-border-radius: 8; -fx-padding: 6 15; -fx-font-weight: bold;" />
+            </HBox>
+        </VBox>
+
+        <!-- Table -->
+        <VBox styleClass="admin-section-card" VBox.vgrow="ALWAYS">
+            <TableView fx:id="roomTable" styleClass="admin-table" VBox.vgrow="ALWAYS" prefHeight="400">
+                <columns>
+                    <TableColumn fx:id="colName" prefWidth="150" text="اسم / رقم القاعة" />
+                    <TableColumn fx:id="colType" prefWidth="150" text="النوع" />
+                    <TableColumn fx:id="colBuilding" prefWidth="150" text="المبنى والدور" />
+                    <TableColumn fx:id="colCapacity" prefWidth="100" text="السعة" />
+                    <TableColumn fx:id="colStatus" prefWidth="150" text="الحالة" />
+                    <TableColumn fx:id="colActions" prefWidth="120" text="الإجراءات" />
+                </columns>
+                <placeholder>
+                    <Label styleClass="admin-empty-label" text="لم يتم العثور على قاعات تطابق شروط البحث." />
+                </placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <!-- FORM MODAL OVERLAY -->
+    <StackPane fx:id="formModalOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.4);">
+        <VBox alignment="CENTER" maxWidth="500" maxHeight="500" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 30;" spacing="20">
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="formTitle" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #001e40;" text="إضافة قاعة جديدة" HBox.hgrow="ALWAYS" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button onAction="#closeForm" text="✖" style="-fx-background-color: transparent; -fx-text-fill: #9ca3af; -fx-font-weight: bold;" />
+            </HBox>
+            
+            <VBox spacing="15">
+                <VBox spacing="5">
+                    <Label text="الاسم / الرقم التعريفي" style="-fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                    <TextField fx:id="formName" promptText="مثال: A-402" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 10;" />
+                </VBox>
+                <HBox spacing="15">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="نوع القاعة" style="-fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                        <ComboBox fx:id="formType" maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 4;" />
+                    </VBox>
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="المبنى" style="-fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                        <ComboBox fx:id="formBuilding" maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 4;" />
+                    </VBox>
+                </HBox>
+                <HBox spacing="15">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="الدور" style="-fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                        <ComboBox fx:id="formFloor" maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 4;" />
+                    </VBox>
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="سعة القاعة (أفراد)" style="-fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                        <TextField fx:id="formCapacity" promptText="20" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 10;" />
+                    </VBox>
+                </HBox>
+                <!-- Only for edit -->
+                <VBox fx:id="formStatusContainer" spacing="5" visible="false" managed="false">
+                    <Label text="الحالة" style="-fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                    <ComboBox fx:id="formStatus" maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 4;" />
+                </VBox>
+            </VBox>
+
+            <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 20 0 0 0;">
+                <Button onAction="#closeForm" text="إلغاء" prefWidth="120" style="-fx-background-color: #f2f4f6; -fx-text-fill: #43474f; -fx-font-weight: bold; -fx-padding: 10; -fx-background-radius: 8;" />
+                <Button fx:id="submitFormBtn" onAction="#submitForm" text="➕  إضافة القاعة" prefWidth="150" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10; -fx-background-radius: 8;" />
+            </HBox>
+        </VBox>
+    </StackPane>
+
+    <!-- DETAILS MODAL OVERLAY -->
+    <StackPane fx:id="detailsModalOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.4);">
+        <VBox alignment="CENTER" maxWidth="550" maxHeight="600" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 0;">
+            <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 30; -fx-background-color: #f8fafc; -fx-background-radius: 16 16 0 0; -fx-border-color: #e0e3e5; -fx-border-width: 0 0 1 0;">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label fx:id="detTitle" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #001e40;" text="قاعة A-101" />
+                    <Label fx:id="detSubtitle" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" text="محاضرات عادية" />
+                </VBox>
+                <Button onAction="#closeDetails" text="✖" style="-fx-background-color: white; -fx-border-color: #e0e3e5; -fx-border-radius: 20; -fx-background-radius: 20; -fx-text-fill: #9ca3af; -fx-padding: 8 10;" />
+            </HBox>
+            
+            <VBox spacing="20" style="-fx-padding: 30;" VBox.vgrow="ALWAYS">
+                <HBox spacing="15">
+                    <VBox style="-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 15;" alignment="CENTER" HBox.hgrow="ALWAYS">
+                        <Label text="المبنى" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                        <Label fx:id="detBuilding" text="A" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #001e40;" />
+                    </VBox>
+                    <VBox style="-fx-background-color: #faf5ff; -fx-border-color: #e9d5ff; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 15;" alignment="CENTER" HBox.hgrow="ALWAYS">
+                        <Label text="الدور" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                        <Label fx:id="detFloor" text="1" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #001e40;" />
+                    </VBox>
+                    <VBox style="-fx-background-color: #fff7ed; -fx-border-color: #fed7aa; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 15;" alignment="CENTER" HBox.hgrow="ALWAYS">
+                        <Label text="السعة" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                        <Label fx:id="detCapacity" text="20 فرد" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #001e40;" />
+                    </VBox>
+                    <VBox fx:id="detStatusContainer" style="-fx-background-color: #f0fdf4; -fx-border-color: #bbf7d0; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 15;" alignment="CENTER" HBox.hgrow="ALWAYS">
+                        <Label text="الحالة" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                        <Label fx:id="detStatus" text="متاحة" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #15803d;" />
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="10" style="-fx-border-color: #e0e3e5; -fx-border-radius: 12; -fx-padding: 20;">
+                    <Label text="📊  إحصائيات الحجوزات" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #001e40;" />
+                    <HBox alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-padding: 10; -fx-border-radius: 8;">
+                        <Label text="حجوزات نشطة (قادمة أو معلقة)" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #4b5563;" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        <Label fx:id="detActiveBookings" text="0" style="-fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-weight: bold;" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-padding: 10; -fx-border-radius: 8;">
+                        <Label text="حجوزات سابقة (أرشيف)" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #4b5563;" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        <Label fx:id="detHistoryBookings" text="0" style="-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-weight: bold;" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" style="-fx-background-color: #f1f5f9; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-padding: 10;">
+                        <Label text="إجمالي الحركات على القاعة" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #001e40;" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        <Label fx:id="detTotalBookings" text="0" style="-fx-background-color: #001e40; -fx-text-fill: white; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-weight: bold;" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <VBox style="-fx-padding: 20 30; -fx-border-color: #e0e3e5; -fx-border-width: 1 0 0 0; -fx-background-color: white; -fx-background-radius: 0 0 16 16;">
+                <Button onAction="#downloadPDF" maxWidth="Infinity" text="📄  تحميل تقرير القاعة (PDF)" style="-fx-background-color: #001e40; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8;" />
+            </VBox>
+        </VBox>
+    </StackPane>
+</StackPane>

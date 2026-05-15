@@ -64,4 +64,124 @@ public class RoomService {
         t.setDaemon(true);
         t.start();
     }
+
+    public static void addRoom(Room room, Consumer<Void> onSuccess, Consumer<Exception> onError) {
+        Firestore db = FirebaseService.getInstance().getFirestore();
+        if (db == null) { onError.accept(new IllegalStateException("Firestore not available")); return; }
+        
+        Thread t = new Thread(() -> {
+            try {
+                // Ensure room status is available
+                room.setStatus("available");
+                // Check uniqueness
+                QuerySnapshot existing = db.collection("rooms")
+                    .whereEqualTo("roomNumber", room.getRoomNumber())
+                    .get().get();
+                if (!existing.isEmpty()) {
+                    Platform.runLater(() -> onError.accept(new Exception("اسم القاعة مستخدم بالفعل.")));
+                    return;
+                }
+                
+                DocumentReference docRef = db.collection("rooms").document();
+                room.setId(docRef.getId());
+                docRef.set(room).get();
+                Platform.runLater(() -> onSuccess.accept(null));
+            } catch (Exception e) {
+                Platform.runLater(() -> onError.accept(e));
+            }
+        });
+        t.setDaemon(true); t.start();
+    }
+
+    public static void updateRoom(Room room, Consumer<Void> onSuccess, Consumer<Exception> onError) {
+        Firestore db = FirebaseService.getInstance().getFirestore();
+        if (db == null) { onError.accept(new IllegalStateException("Firestore not available")); return; }
+
+        Thread t = new Thread(() -> {
+            try {
+                // Check uniqueness
+                QuerySnapshot existing = db.collection("rooms")
+                    .whereEqualTo("roomNumber", room.getRoomNumber())
+                    .get().get();
+                boolean duplicate = false;
+                for (DocumentSnapshot doc : existing.getDocuments()) {
+                    String docId = doc.getString("id") != null ? doc.getString("id") : doc.getId();
+                    if (!docId.equals(room.getId())) duplicate = true;
+                }
+                if (duplicate) {
+                    Platform.runLater(() -> onError.accept(new Exception("اسم القاعة مستخدم بالفعل.")));
+                    return;
+                }
+
+                db.collection("rooms").document(room.getId()).set(room).get();
+                Platform.runLater(() -> onSuccess.accept(null));
+            } catch (Exception e) {
+                Platform.runLater(() -> onError.accept(e));
+            }
+        });
+        t.setDaemon(true); t.start();
+    }
+
+    public static void deleteRoom(String roomId, String replacementRoomId, Consumer<Void> onSuccess, Consumer<Exception> onError) {
+        Firestore db = FirebaseService.getInstance().getFirestore();
+        if (db == null) { onError.accept(new IllegalStateException("Firestore not available")); return; }
+
+        Thread t = new Thread(() -> {
+            try {
+                WriteBatch batch = db.batch();
+                
+                if (replacementRoomId != null) {
+                    QuerySnapshot bookings = db.collection("bookings")
+                        .whereEqualTo("roomId", roomId)
+                        .get().get();
+                    for (DocumentSnapshot doc : bookings.getDocuments()) {
+                        batch.update(doc.getReference(), "roomId", replacementRoomId);
+                    }
+                }
+                
+                batch.delete(db.collection("rooms").document(roomId));
+                batch.commit().get();
+                
+                Platform.runLater(() -> onSuccess.accept(null));
+            } catch (Exception e) {
+                Platform.runLater(() -> onError.accept(e));
+            }
+        });
+        t.setDaemon(true); t.start();
+    }
+
+    public static void fetchRoomBookings(String roomId, Consumer<List<com.aast.booking.models.Booking>> onSuccess, Consumer<Exception> onError) {
+        Firestore db = FirebaseService.getInstance().getFirestore();
+        if (db == null) { onError.accept(new IllegalStateException("Firestore not available")); return; }
+
+        Thread t = new Thread(() -> {
+            try {
+                QuerySnapshot snapshot = db.collection("bookings")
+                    .whereEqualTo("roomId", roomId)
+                    .get().get();
+
+                List<com.aast.booking.models.Booking> bookings = new ArrayList<>();
+                for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                    com.aast.booking.models.Booking b = new com.aast.booking.models.Booking();
+                    b.setId(doc.getId());
+                    b.setRoomId(doc.getString("roomId"));
+                    b.setRoomType(doc.getString("roomType"));
+                    b.setDate(doc.getString("date"));
+                    b.setTimeFrom(doc.getString("timeFrom"));
+                    b.setTimeTo(doc.getString("timeTo"));
+                    b.setStatus(doc.getString("status"));
+                    b.setPurpose(doc.getString("purpose"));
+                    b.setResponsibleName(doc.getString("responsibleName"));
+                    b.setUserName(doc.getString("userName"));
+                    String courseName = doc.getString("courseName");
+                    b.setPurpose(courseName != null ? courseName : b.getPurpose());
+                    bookings.add(b);
+                }
+                Platform.runLater(() -> onSuccess.accept(bookings));
+            } catch (Exception e) {
+                Platform.runLater(() -> onError.accept(e));
+            }
+        });
+        t.setDaemon(true); t.start();
+    }
 }
