@@ -6,11 +6,13 @@ import com.aast.booking.core.FirebaseService;
 import com.aast.booking.core.SessionManager;
 import com.aast.booking.core.observer.BookingNotifierSubject;
 import com.aast.booking.core.observer.NotificationObserver;
+import com.aast.booking.models.BookingNotification;
 import com.aast.booking.models.BookingRequest;
 import com.aast.booking.secretary.form.*;
 import com.aast.booking.secretary.notification.*;
 import com.aast.booking.secretary.ui.CardFactory;
 import com.aast.booking.secretary.ui.DashboardNavigationMediator;
+import com.aast.booking.services.NotificationService;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
@@ -19,6 +21,7 @@ import com.google.cloud.firestore.WriteResult;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -42,6 +45,10 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     @FXML private StackPane mainContentArea;
     @FXML private VBox dashboardView;
     @FXML private javafx.scene.control.ScrollPane newBookingView;
+    private Node notificationsNode;
+    
+    @FXML private ProgressIndicator loadingIndicator;
+    @FXML private VBox emptyStateLabel;
     
     @FXML private HBox statsHBox;
     @FXML private VBox recentRequestsList;
@@ -52,6 +59,7 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     
     @FXML private Button btnDashboard;
     @FXML private Button btnNewBookingMenu;
+    @FXML private Button btnNotifications;
 
     // Form inputs
     @FXML private DatePicker datePicker;
@@ -69,6 +77,17 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     @FXML private CheckBox cbLaptop;
     @FXML private CheckBox cbVideoConf;
     @FXML private CheckBox cbMic;
+
+    // Multi-step form variables
+    @FXML private VBox step1Box;
+    @FXML private VBox step2Box;
+    @FXML private VBox step3Box;
+    @FXML private StackPane step1Circle;
+    @FXML private StackPane step2Circle;
+    @FXML private StackPane step3Circle;
+    @FXML private Label step1Label;
+    @FXML private Label step2Label;
+    @FXML private Label step3Label;
 
     private DashboardNavigationMediator mediator;
     private List<BookingRequest> myRequests = new ArrayList<>();
@@ -103,7 +122,48 @@ public class SecretaryDashboardController extends BaseDashboardController implem
             timeToCombo.getItems().addAll(times);
         }
         
+        if (datePicker != null) {
+            datePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    if (newValue.isBefore(java.time.LocalDate.now().plusDays(2))) {
+                        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING);
+                        alert.setTitle("تاريخ غير صالح");
+                        alert.setHeaderText("قواعد الحجز المسبق");
+                        alert.setContentText("عذراً، لا يمكن حجز القاعة قبل 48 ساعة من موعد الفعالية (وفقاً للوائح). الرجاء اختيار تاريخ أبعد.");
+                        alert.showAndWait();
+                        datePicker.setValue(null);
+                    }
+                }
+            });
+        }
+        
+        // Load Notifications View
+        try {
+            FXMLLoader notifLoader = new FXMLLoader(getClass().getResource("/fxml/employee/Notifications.fxml"));
+            notificationsNode = notifLoader.load();
+        } catch (IOException e) {
+            System.err.println("[SecretaryDashboard] Failed to load notifications content: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Subscribe to notifications for badge count
+        NotificationService.listenToMyNotifications(
+            this::updateNotifBadge,
+            err -> System.err.println("[Dashboard] Notification error: " + err.getMessage())
+        );
+
         showDashboard();
+    }
+
+    private void updateNotifBadge(List<BookingNotification> notifications) {
+        long unreadCount = notifications.stream().filter(n -> !n.isRead()).count();
+        Platform.runLater(() -> {
+            if (btnNotifications != null && unreadCount > 0) {
+                btnNotifications.setText("🔔  الإشعارات (" + unreadCount + ")");
+            } else if (btnNotifications != null) {
+                btnNotifications.setText("🔔  الإشعارات");
+            }
+        });
     }
 
     @FXML
@@ -119,8 +179,23 @@ public class SecretaryDashboardController extends BaseDashboardController implem
             return;
         }
 
-        // Fetch asynchronously from Firestore (fetch all bookings to match web app view)
-        ApiFuture<QuerySnapshot> future = db.collection("bookings").get();
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(true);
+            loadingIndicator.setManaged(true);
+        }
+        if (emptyStateLabel != null) {
+            emptyStateLabel.setVisible(false);
+            emptyStateLabel.setManaged(false);
+        }
+
+        String currentUserId = SessionManager.getInstance().getCurrentUser() != null 
+            ? SessionManager.getInstance().getCurrentUser().getUid() 
+            : "MOCK_USER_ID";
+
+        // Fetch asynchronously from Firestore with optimized query
+        ApiFuture<QuerySnapshot> future = db.collection("bookings")
+                                            .whereEqualTo("userId", currentUserId)
+                                            .get();
 
         new Thread(() -> {
             try {
@@ -177,6 +252,10 @@ public class SecretaryDashboardController extends BaseDashboardController implem
                 });
             } catch (InterruptedException | ExecutionException e) {
                 Platform.runLater(() -> {
+                    if (loadingIndicator != null) {
+                        loadingIndicator.setVisible(false);
+                        loadingIndicator.setManaged(false);
+                    }
                     new SystemNotification(inAppNotifier, "خطأ في تحميل البيانات من قاعدة البيانات").dispatch();
                     e.printStackTrace();
                 });
@@ -185,6 +264,11 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     }
 
     private void populateDashboard() {
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(false);
+            loadingIndicator.setManaged(false);
+        }
+
         long totalCount = myRequests.size();
         long approvedCount = myRequests.stream().filter(r -> "approved".equals(r.getStatus())).count();
         long pendingCount = myRequests.stream().filter(r -> "pending".equals(r.getStatus()) || "awaiting_manager_final".equals(r.getStatus())).count();
@@ -197,14 +281,24 @@ public class SecretaryDashboardController extends BaseDashboardController implem
         statsHBox.getChildren().add(CardFactory.createStatCard("الطلبات المرفوضة", String.valueOf(rejectedCount), "#b91c1c", "cancel"));
 
         recentRequestsList.getChildren().clear();
+        if (emptyStateLabel != null) {
+            recentRequestsList.getChildren().add(emptyStateLabel);
+        }
+
         for (BookingRequest req : myRequests) {
             recentRequestsList.getChildren().add(CardFactory.createRequestListItem(req, this));
         }
         
         if (myRequests.isEmpty()) {
-            Label emptyLabel = new Label("لم تقم بإرسال أي طلبات حجز بعد");
-            emptyLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-padding: 40;");
-            recentRequestsList.getChildren().add(emptyLabel);
+            if (emptyStateLabel != null) {
+                emptyStateLabel.setVisible(true);
+                emptyStateLabel.setManaged(true);
+            }
+        } else {
+            if (emptyStateLabel != null) {
+                emptyStateLabel.setVisible(false);
+                emptyStateLabel.setManaged(false);
+            }
         }
     }
 
@@ -232,44 +326,55 @@ public class SecretaryDashboardController extends BaseDashboardController implem
 
     @FXML
     private void handleUndoForm() {
-        if (caretaker.canRestore()) {
-            BookingMemento memento = caretaker.restoreState();
-            if (!memento.getDate().isEmpty()) {
-                datePicker.setValue(LocalDate.parse(memento.getDate()));
-            } else {
-                datePicker.setValue(null);
-            }
-            if (timeFromCombo != null) timeFromCombo.setValue(memento.getTimeFrom());
-            if (timeToCombo != null) timeToCombo.setValue(memento.getTimeTo());
-            if (purposeField != null) purposeField.setText(memento.getPurpose());
-            if (capacityField != null) capacityField.setText(memento.getCapacity());
-            
-            cbHoliday.setSelected(memento.isHoliday());
-            cbOfficial.setSelected(memento.isOfficial());
-
-            if (requesterNameField != null) requesterNameField.setText(memento.getRequesterName());
-            if (requesterTitleField != null) requesterTitleField.setText(memento.getRequesterTitle());
-            if (requesterPhoneField != null) requesterPhoneField.setText(memento.getRequesterPhone());
-            
-            cbLaptop.setSelected(memento.isLaptop());
-            cbVideoConf.setSelected(memento.isVideoConf());
-            cbMic.setSelected(memento.isMic());
-        }
+        clearForm();
+        new SystemNotification(inAppNotifier, "تم تصفير محتويات النموذج بناءً على طلبك.").dispatch();
     }
 
     @FXML
     private void handleCloneLastBooking() {
-        if (lastSubmittedBooking != null) {
-            BookingRequest cloned = lastSubmittedBooking.clone();
+        BookingRequest lastBooking = lastSubmittedBooking;
+        if (lastBooking == null && !myRequests.isEmpty()) {
+            lastBooking = myRequests.get(0);
+        }
+
+        if (lastBooking != null) {
+            BookingRequest cloned = lastBooking.clone();
             datePicker.setValue(null); 
             if (timeFromCombo != null) timeFromCombo.setValue(cloned.getTimeFrom());
             if (timeToCombo != null) timeToCombo.setValue(cloned.getTimeTo());
-            if (purposeField != null) purposeField.setText(cloned.getPurpose());
             
+            // Extract capacity if exists in purpose
+            String purp = cloned.getPurpose() != null ? cloned.getPurpose() : "";
+            if (purp.contains("(السعة: ")) {
+                try {
+                    String cap = purp.substring(purp.indexOf("(السعة: ") + 8, purp.indexOf(")", purp.indexOf("(السعة: ")));
+                    if (capacityField != null) capacityField.setText(cap);
+                    purp = purp.substring(0, purp.indexOf("(السعة: ")).trim();
+                } catch (Exception e) {}
+            }
+            if (purposeField != null) purposeField.setText(purp);
+            
+            // Step 2 Fields
+            if (requesterNameField != null) requesterNameField.setText(cloned.getRequesterName() != null ? cloned.getRequesterName() : "");
+            if (requesterTitleField != null) requesterTitleField.setText(cloned.getRequesterTitle() != null ? cloned.getRequesterTitle() : "");
+            if (requesterPhoneField != null) requesterPhoneField.setText(cloned.getRequesterPhone() != null ? cloned.getRequesterPhone() : "");
+
             // Re-apply checkboxes state from previous booking based on description hints
             cbHoliday.setSelected(cloned.getDescription() != null && cloned.getDescription().contains("عطلة"));
             cbOfficial.setSelected(cloned.getDescription() != null && cloned.getDescription().contains("مناسبة رسمية"));
-            new SystemNotification(inAppNotifier, "تم استنساخ بيانات الحجز السابق بنجاح.").dispatch();
+            
+            List<String> reqs = cloned.getRequirements();
+            if (reqs != null) {
+                cbLaptop.setSelected(reqs.contains("Laptop"));
+                cbVideoConf.setSelected(reqs.contains("Video Conference"));
+                cbMic.setSelected(reqs.contains("Microphones"));
+            } else {
+                cbLaptop.setSelected(false);
+                cbVideoConf.setSelected(false);
+                cbMic.setSelected(false);
+            }
+            
+            new SystemNotification(inAppNotifier, "تم تعبئة النموذج ببيانات الحجز السابق.").dispatch();
         } else {
             new SystemNotification(inAppNotifier, "لا يوجد حجز سابق لاستنساخه.").dispatch();
         }
@@ -302,8 +407,28 @@ public class SecretaryDashboardController extends BaseDashboardController implem
         String purp = purposeField != null ? purposeField.getText() : "";
         String cap = capacityField != null ? capacityField.getText() : "";
         
-        if (date.isEmpty() || tFrom.isEmpty() || tTo.isEmpty() || purp.isEmpty()) {
-            new SystemNotification(inAppNotifier, "يرجى تعبئة كافة الحقول المطلوبة!").dispatch();
+        List<String> missingFields = new ArrayList<>();
+        if (date.isEmpty()) missingFields.add("تاريخ الفعالية");
+        if (tFrom.isEmpty()) missingFields.add("وقت البداية");
+        if (tTo.isEmpty()) missingFields.add("وقت النهاية");
+        if (purp.isEmpty()) missingFields.add("الغرض من الاستخدام");
+        if (cap.isEmpty()) missingFields.add("السعة المطلوبة");
+        
+        String reqName = requesterNameField != null ? requesterNameField.getText().trim() : "";
+        String reqTitle = requesterTitleField != null ? requesterTitleField.getText().trim() : "";
+        String reqPhone = requesterPhoneField != null ? requesterPhoneField.getText().trim() : "";
+
+        if (reqName.isEmpty()) missingFields.add("اسم المسؤول");
+        if (reqTitle.isEmpty()) missingFields.add("الصفة الأكاديمية");
+        if (reqPhone.isEmpty()) missingFields.add("رقم الجوال");
+
+        if (!missingFields.isEmpty()) {
+            String msg = "لا يمكنك الإرسال قبل تعبئة النواقص:\n- " + String.join("\n- ", missingFields);
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("حقول مطلوبة");
+            alert.setHeaderText("يرجى استكمال الحقول التالية أولاً");
+            alert.setContentText(msg);
+            alert.showAndWait();
             return;
         }
 
@@ -421,6 +546,88 @@ public class SecretaryDashboardController extends BaseDashboardController implem
         if (cbLaptop != null) cbLaptop.setSelected(false);
         if (cbVideoConf != null) cbVideoConf.setSelected(false);
         if (cbMic != null) cbMic.setSelected(false);
+        
+        goToStep1();
+    }
+
+    // --- Multi-Step Form Navigation ---
+    @FXML
+    private void goToStep1() { updateStepUI(1); }
+    @FXML
+    private void goToStep2() { updateStepUI(2); }
+    @FXML
+    private void goToStep3() { updateStepUI(3); }
+
+    @FXML
+    private void handleNextToStep2() {
+        List<String> missingFields = new ArrayList<>();
+        
+        String dateVal = datePicker.getValue() != null ? datePicker.getValue().toString() : "";
+        String tFrom = timeFromCombo != null && timeFromCombo.getValue() != null ? timeFromCombo.getValue() : "";
+        String tTo = timeToCombo != null && timeToCombo.getValue() != null ? timeToCombo.getValue() : "";
+        String purp = purposeField != null ? purposeField.getText().trim() : "";
+        String cap = capacityField != null ? capacityField.getText().trim() : "";
+        
+        if (dateVal.isEmpty()) missingFields.add("تاريخ الفعالية");
+        if (tFrom.isEmpty() || tTo.isEmpty()) missingFields.add("الفترة الزمنية");
+        if (purp.isEmpty()) missingFields.add("الغرض من الاستخدام");
+        if (cap.isEmpty()) missingFields.add("السعة المطلوبة");
+        
+        if (!missingFields.isEmpty()) {
+            String msg = "يرجى تعبئة الحقول التالية قبل الانتقال للخطوة التالية:\n- " + String.join("\n- ", missingFields);
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("حقول مطلوبة");
+            alert.setHeaderText("بيانات مفقودة في الخطوة الأولى");
+            alert.setContentText(msg);
+            alert.showAndWait();
+            return;
+        }
+        
+        goToStep2();
+    }
+
+    @FXML
+    private void handleNextToStep3() {
+        List<String> missingFields = new ArrayList<>();
+        
+        String reqName = requesterNameField != null ? requesterNameField.getText().trim() : "";
+        String reqTitle = requesterTitleField != null ? requesterTitleField.getText().trim() : "";
+        String reqPhone = requesterPhoneField != null ? requesterPhoneField.getText().trim() : "";
+
+        if (reqName.isEmpty()) missingFields.add("اسم المسؤول");
+        if (reqTitle.isEmpty()) missingFields.add("الصفة الأكاديمية");
+        if (reqPhone.isEmpty()) missingFields.add("رقم الجوال");
+        
+        if (!missingFields.isEmpty()) {
+            String msg = "يرجى تعبئة الحقول التالية قبل الانتقال للخطوة التالية:\n- " + String.join("\n- ", missingFields);
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("حقول مطلوبة");
+            alert.setHeaderText("بيانات مفقودة في الخطوة الثانية");
+            alert.setContentText(msg);
+            alert.showAndWait();
+            return;
+        }
+        
+        goToStep3();
+    }
+
+    private void updateStepUI(int step) {
+        if (step1Box == null) return; // Prevent NPE if UI isn't fully loaded
+
+        // Visibility
+        step1Box.setVisible(step == 1); step1Box.setManaged(step == 1);
+        step2Box.setVisible(step == 2); step2Box.setManaged(step == 2);
+        step3Box.setVisible(step == 3); step3Box.setManaged(step == 3);
+
+        // Progress bar styling
+        step1Circle.getStyleClass().setAll(step >= 1 ? "step-circle-active" : "step-circle-inactive");
+        step1Label.getStyleClass().setAll(step >= 1 ? "step-num-active" : "step-num-inactive");
+
+        step2Circle.getStyleClass().setAll(step >= 2 ? "step-circle-active" : "step-circle-inactive");
+        step2Label.getStyleClass().setAll(step >= 2 ? "step-num-active" : "step-num-inactive");
+
+        step3Circle.getStyleClass().setAll(step >= 3 ? "step-circle-active" : "step-circle-inactive");
+        step3Label.getStyleClass().setAll(step >= 3 ? "step-num-active" : "step-num-inactive");
     }
 
     // ==========================================
@@ -437,14 +644,25 @@ public class SecretaryDashboardController extends BaseDashboardController implem
 
     @FXML
     private void showNewBooking() {
+        goToStep1();
         mediator.navigateTo(newBookingView);
         setActiveNav(btnNewBookingMenu);
         if (pageTitle != null) pageTitle.setText("طلب حجز جديد");
         if (pageSubtitle != null) pageSubtitle.setText("تعبئة بيانات حجز قاعة متعددة الأغراض");
     }
 
+    @FXML
+    private void showNotifications() {
+        if (notificationsNode != null) {
+            mediator.navigateTo(notificationsNode);
+            setActiveNav(btnNotifications);
+            if (pageTitle != null) pageTitle.setText("الإشعارات");
+            if (pageSubtitle != null) pageSubtitle.setText("متابعة تحديثات طلبات الحجز");
+        }
+    }
+
     private void setActiveNav(Button active) {
-        for (Button btn : new Button[]{btnDashboard, btnNewBookingMenu}) {
+        for (Button btn : new Button[]{btnDashboard, btnNewBookingMenu, btnNotifications}) {
             if (btn != null) {
                 btn.getStyleClass().removeAll("bm-nav-btn-active");
                 if (!btn.getStyleClass().contains("bm-nav-btn")) btn.getStyleClass().add("bm-nav-btn");
@@ -459,6 +677,7 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     @FXML
     private void handleLogout() throws IOException {
         BookingNotifierSubject.getInstance().removeObserver(this);
+        NotificationService.stopListening();
         AuthService.logout();
         Stage stage = SessionManager.getInstance().getPrimaryStage();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
