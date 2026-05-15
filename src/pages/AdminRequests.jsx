@@ -52,7 +52,13 @@ export default function AdminRequests() {
     const unsubBookings = onSnapshot(qBookings, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       // Sort in memory
-      data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+      const toMs = (v) => {
+        if (!v) return 0;
+        if (typeof v.toMillis === 'function') return v.toMillis();       // Firestore Timestamp
+        if (typeof v.toDate === 'function') return v.toDate().getTime(); // Timestamp.toDate()
+        return new Date(v).getTime() || 0;                               // string / Date
+      };
+      data.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
       setRequests(data);
       setLoading(false);
     });
@@ -71,6 +77,15 @@ export default function AdminRequests() {
 
     return () => { unsubBookings(); unsubRooms(); settingsUnsub(); }
   }, []);
+
+  // Safe date formatter — handles Firestore Timestamp, JS Date, string, or null
+  const safeDate = (v) => {
+    if (!v) return '';
+    try {
+      const d = typeof v.toDate === 'function' ? v.toDate() : new Date(v);
+      return isNaN(d) ? '' : d.toLocaleDateString('ar-EG');
+    } catch { return ''; }
+  };
 
   const currentSlots = isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
 
@@ -263,7 +278,7 @@ export default function AdminRequests() {
                       )}
                     </div>
                     <span className="text-xs text-gray-400 font-bold">
-                      {req.createdAt ? new Date(req.createdAt.toDate()).toLocaleDateString('ar-EG') : ''}
+                      {safeDate(req.createdAt)}
                     </span>
                   </div>
 
