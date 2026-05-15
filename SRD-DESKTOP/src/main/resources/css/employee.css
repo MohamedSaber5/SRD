@@ -1,80 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════
    Employee Dashboard CSS — AAST Room Booking System
-   Primary: #003087 | Gold: #D4AF37 | Surface: #F1F4F9
+   Primary: #003087 | Gold: #D4AF37 | Surface: #F5F7FA
+   NOTE: Sidebar/Nav styles are now in dashboard-common.css
 ═══════════════════════════════════════════════════════════════ */
-
-/* ── Root ──────────────────────────────────────────────────────── */
-.dashboard-root {
-    -fx-font-family: 'Segoe UI', 'Arial', sans-serif;
-    -fx-background-color: #F1F4F9;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════════════════════════════ */
-.sidebar {
-    -fx-background-color: linear-gradient(to bottom, #002575, #003087);
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 12, 0, 3, 0);
-}
-
-.sidebar-brand {
-    -fx-padding: 20 16 16 16;
-    -fx-border-color: transparent transparent rgba(255,255,255,0.1) transparent;
-    -fx-border-width: 0 0 1 0;
-}
-.brand-icon   { -fx-font-size: 32px; }
-.brand-title  { -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; }
-.brand-subtitle { -fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 10px; }
-
-.sidebar-user-card {
-    -fx-background-color: rgba(255,255,255,0.07);
-    -fx-background-radius: 10px;
-    -fx-padding: 10 12;
-    -fx-margin: 10;
-}
-.sidebar-user-name { -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; }
-.sidebar-user-role { -fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 10px; }
-
-/* ── Nav ─────────────────────────────────────────────────────── */
-.nav-section { -fx-padding: 8 10; }
-
-.nav-item {
-    -fx-background-color: transparent;
-    -fx-background-radius: 8px;
-    -fx-cursor: hand;
-}
-.nav-item:hover { -fx-background-color: rgba(255,255,255,0.09); }
-
-.nav-active {
-    -fx-background-color: rgba(255,255,255,0.14) !important;
-    -fx-border-color: transparent transparent transparent #D4AF37;
-    -fx-border-width: 0 0 0 3;
-    -fx-border-radius: 0 8 8 0;
-}
-.nav-icon  { -fx-font-size: 15px; -fx-text-fill: rgba(255,255,255,0.75); }
-.nav-label { -fx-text-fill: rgba(255,255,255,0.8); -fx-font-size: 13px; }
-.nav-active .nav-label { -fx-text-fill: white; -fx-font-weight: bold; }
-.nav-active .nav-icon  { -fx-text-fill: white; }
-.nav-logout:hover { -fx-background-color: rgba(239,68,68,0.18) !important; }
-
-.sidebar-footer { -fx-padding: 8 10 16 10; }
-
-/* ── Notification Badge ─────────────────────────────────────── */
-.notif-badge {
-    -fx-background-color: #EF4444;
-    -fx-text-fill: white;
-    -fx-font-size: 9px;
-    -fx-font-weight: bold;
-    -fx-background-radius: 20px;
-    -fx-padding: 1 5;
-    -fx-min-width: 16px;
-    -fx-alignment: center;
-}
 
 /* ══════════════════════════════════════════════════════════════
    CONTENT AREA
 ══════════════════════════════════════════════════════════════ */
-.content-area  { -fx-background-color: #F1F4F9; }
+.content-area  { -fx-background-color: #F5F7FA; }
 .main-scroll   { -fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0; }
 .main-scroll > .viewport { -fx-background-color: transparent; }
 .scroll-pane   { -fx-background-color: transparent; -fx-background: transparent; }
@@ -115,7 +48,8 @@
 /* ══════════════════════════════════════════════════════════════
    BOOKING FORM
 ══════════════════════════════════════════════════════════════ */
-.booking-form-root { -fx-background-color: #F1F4F9; }
+.booking-form-root { -fx-background-color: #F5F7FA; }
+.booking-list-root { -fx-background-color: #F5F7FA; }
 
 .form-notice {
     -fx-text-fill: #92400E;

@@ -2,105 +2,72 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.geometry.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.aast.booking.employee.EmployeeDashboardController"
-            styleClass="dashboard-root"
-            stylesheets="@/css/employee.css"
+            style="-fx-background-color: #F5F7FA;"
+            nodeOrientation="RIGHT_TO_LEFT"
             prefWidth="1200" prefHeight="780">
+    <stylesheets>
+        <java.lang.String fx:value="/css/dashboard-common.css"/>
+        <java.lang.String fx:value="/css/employee.css"/>
+    </stylesheets>
 
-    <!-- ══════════════ SIDEBAR (Left) ══════════════ -->
+    <!-- ═══ SIDEBAR (Left) ═══════════════════════════════════════════ -->
     <left>
-        <VBox styleClass="sidebar" prefWidth="240" spacing="0">
+        <VBox styleClass="bm-sidebar" spacing="6">
+            <padding><Insets top="24" right="16" bottom="20" left="16"/></padding>
 
-            <!-- Logo / Brand -->
-            <VBox styleClass="sidebar-brand" alignment="CENTER" spacing="6">
-                <padding><Insets top="24" right="20" bottom="20" left="20"/></padding>
-                <Label text="🎓" styleClass="brand-icon"/>
-                <Label text="نظام حجز القاعات" styleClass="brand-title"/>
-                <Label text="الأكاديمية العربية" styleClass="brand-subtitle"/>
-            </VBox>
-
-            <!-- User Profile Card -->
-            <VBox styleClass="sidebar-user-card" alignment="CENTER_LEFT" spacing="4">
-                <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Label text="👤" style="-fx-font-size: 28px;
-                           -fx-background-color: #D4AF3730;
-                           -fx-background-radius: 50%;
-                           -fx-padding: 6 8;"/>
-                    <VBox spacing="2">
-                        <Label fx:id="userNameLabel" text="مستخدم" styleClass="sidebar-user-name"/>
-                        <Label fx:id="userRoleLabel" text="موظف" styleClass="sidebar-user-role"/>
-                    </VBox>
-                </HBox>
+            <!-- Logo / Title -->
+            <VBox spacing="2" style="-fx-padding: 0 0 16 0;">
+                <Label text="نظام حجز القاعات" styleClass="bm-sidebar-title" wrapText="true"/>
+                <Label text="الأكاديمية العربية" styleClass="bm-sidebar-subtitle"/>
+                <Label fx:id="userRoleLabel" text="موظف" style="-fx-font-size:11px;-fx-text-fill:#D4AF37;-fx-font-weight:bold;"/>
             </VBox>
 
             <!-- Divider -->
-            <Separator opacity="0.3">
-                <padding><Insets top="4" bottom="4"/></padding>
-            </Separator>
+            <Region styleClass="bm-divider" maxWidth="Infinity"/>
 
-            <!-- Navigation -->
-            <VBox styleClass="nav-section" spacing="4" VBox.vgrow="ALWAYS">
-                <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+            <!-- Welcome -->
+            <Label fx:id="userNameLabel" text="مستخدم" styleClass="bm-sidebar-subtitle" wrapText="true"
+                   style="-fx-padding: 8 4; -fx-font-style:italic;"/>
 
-                <!-- Dashboard -->
-                <VBox fx:id="navDashboard" styleClass="nav-item, nav-active" onMouseClicked="#showDashboard">
-                    <HBox spacing="12" alignment="CENTER_LEFT">
-                        <padding><Insets top="11" right="14" bottom="11" left="14"/></padding>
-                        <Label text="🏠" styleClass="nav-icon"/>
-                        <Label text="لوحة التحكم" styleClass="nav-label"/>
-                    </HBox>
-                </VBox>
+            <!-- Nav Buttons -->
+            <Button fx:id="btnDashboard" text="🏠  لوحة التحكم" maxWidth="Infinity"
+                    styleClass="bm-nav-btn-active" onAction="#showDashboard"/>
+            <Button fx:id="btnNewBooking" text="📋  طلب حجز جديد" maxWidth="Infinity"
+                    styleClass="bm-nav-btn" onAction="#showNewBooking"/>
+            <Button fx:id="btnNotifications" text="🔔  الإشعارات" maxWidth="Infinity"
+                    styleClass="bm-nav-btn" onAction="#showNotifications"/>
 
-                <!-- New Booking -->
-                <VBox fx:id="navNewBooking" styleClass="nav-item" onMouseClicked="#showNewBooking">
-                    <HBox spacing="12" alignment="CENTER_LEFT">
-                        <padding><Insets top="11" right="14" bottom="11" left="14"/></padding>
-                        <Label text="➕" styleClass="nav-icon"/>
-                        <Label text="طلب حجز جديد" styleClass="nav-label"/>
-                    </HBox>
-                </VBox>
-
-                <!-- Notifications -->
-                <VBox fx:id="navNotifications" styleClass="nav-item" onMouseClicked="#showNotifications">
-                    <HBox spacing="12" alignment="CENTER_LEFT">
-                        <padding><Insets top="11" right="14" bottom="11" left="14"/></padding>
-                        <Label text="🔔" styleClass="nav-icon"/>
-                        <Label text="الإشعارات" styleClass="nav-label" HBox.hgrow="ALWAYS"/>
-                        <Label fx:id="notifBadge" text="0" styleClass="notif-badge" visible="false"/>
-                    </HBox>
-                </VBox>
-
-            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
 
             <!-- Logout -->
-            <VBox styleClass="sidebar-footer">
-                <padding><Insets top="12" right="12" bottom="20" left="12"/></padding>
-                <Separator opacity="0.3">
-                    <padding><Insets bottom="12"/></padding>
-                </Separator>
-                <VBox styleClass="nav-item, nav-logout" onMouseClicked="#handleLogout">
-                    <HBox spacing="12" alignment="CENTER_LEFT">
-                        <padding><Insets top="11" right="14" bottom="11" left="14"/></padding>
-                        <Label text="🚪" styleClass="nav-icon"/>
-                        <Label text="تسجيل الخروج" styleClass="nav-label"/>
-                    </HBox>
-                </VBox>
-            </VBox>
-
+            <Region styleClass="bm-divider" maxWidth="Infinity"/>
+            <Button text="🚪  تسجيل الخروج" maxWidth="Infinity"
+                    styleClass="bm-logout-btn" onAction="#handleLogout"/>
         </VBox>
     </left>
 
-    <!-- ══════════════ CONTENT AREA (Center) ══════════════ -->
+    <!-- ═══ MAIN CONTENT ═════════════════════════════════════════════ -->
     <center>
-        <StackPane fx:id="contentArea" styleClass="content-area">
-            <!-- Content is loaded dynamically by the controller -->
-            <Label text="جاري التحميل..." styleClass="loading-placeholder"/>
-        </StackPane>
+        <VBox spacing="0">
+
+            <!-- ─── Top Header ───────────────────────────────────── -->
+            <HBox styleClass="bm-header" alignment="CENTER_LEFT" spacing="16">
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label fx:id="pageTitle" text="لوحة التحكم" styleClass="bm-header-title"/>
+                    <Label fx:id="pageSubtitle" text="نظرة عامة على طلبات الحجز" styleClass="bm-header-subtitle"/>
+                </VBox>
+            </HBox>
+
+            <!-- ─── Page Content (Stack) ─────────────────────────── -->
+            <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS">
+                <!-- Content is loaded dynamically by the controller -->
+                <Label text="جاري التحميل..." style="-fx-font-size:14px;-fx-text-fill:#9CA3AF;"/>
+            </StackPane>
+        </VBox>
     </center>
 
 </BorderPane>

@@ -9,9 +9,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 
@@ -30,12 +30,15 @@ public class EmployeeDashboardController implements Initializable {
     @FXML private Label userNameLabel;
     @FXML private Label userRoleLabel;
     @FXML private StackPane contentArea;
-    @FXML private Label notifBadge;
 
-    // Nav buttons (to highlight active)
-    @FXML private VBox navDashboard;
-    @FXML private VBox navNewBooking;
-    @FXML private VBox navNotifications;
+    // Header
+    @FXML private Label pageTitle;
+    @FXML private Label pageSubtitle;
+
+    // Nav buttons (unified BM style)
+    @FXML private Button btnDashboard;
+    @FXML private Button btnNewBooking;
+    @FXML private Button btnNotifications;
 
     private Node dashboardNode;
     private Node bookingFormNode;
@@ -48,7 +51,7 @@ public class EmployeeDashboardController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         var user = SessionManager.getInstance().getCurrentUser();
         if (user != null) {
-            userNameLabel.setText(user.getDisplayName() != null ? user.getDisplayName() : "مستخدم");
+            userNameLabel.setText("مرحباً، " + (user.getDisplayName() != null ? user.getDisplayName() : "مستخدم"));
             userRoleLabel.setText(translateRole(user.getRole()));
         }
 
@@ -95,15 +98,19 @@ public class EmployeeDashboardController implements Initializable {
 
     @FXML
     public void showDashboard() {
-        setActiveNav(navDashboard);
+        setActiveNav(btnDashboard);
         setContent(dashboardNode);
+        if (pageTitle != null) pageTitle.setText("لوحة التحكم");
+        if (pageSubtitle != null) pageSubtitle.setText("نظرة عامة على طلبات الحجز");
     }
 
     @FXML
     public void showNewBooking() {
         bookingFormController.resetForm(null); // fresh form
-        setActiveNav(navNewBooking);
+        setActiveNav(btnNewBooking);
         setContent(bookingFormNode);
+        if (pageTitle != null) pageTitle.setText("طلب حجز جديد");
+        if (pageSubtitle != null) pageSubtitle.setText("تعبئة بيانات حجز قاعة");
     }
 
     /**
@@ -112,14 +119,18 @@ public class EmployeeDashboardController implements Initializable {
      */
     public void showBookingFormWithPrefill(com.aast.booking.models.Booking prefilled) {
         bookingFormController.resetForm(prefilled);
-        setActiveNav(navNewBooking);
+        setActiveNav(btnNewBooking);
         setContent(bookingFormNode);
+        if (pageTitle != null) pageTitle.setText("طلب حجز جديد");
+        if (pageSubtitle != null) pageSubtitle.setText("تعبئة بيانات حجز قاعة");
     }
 
     @FXML
     public void showNotifications() {
-        setActiveNav(navNotifications);
+        setActiveNav(btnNotifications);
         setContent(notificationsNode);
+        if (pageTitle != null) pageTitle.setText("الإشعارات");
+        if (pageSubtitle != null) pageSubtitle.setText("متابعة تحديثات طلبات الحجز");
     }
 
     @FXML
@@ -143,21 +154,27 @@ public class EmployeeDashboardController implements Initializable {
         contentArea.getChildren().setAll(node);
     }
 
-    private void setActiveNav(VBox activeNav) {
-        for (VBox nav : new VBox[]{navDashboard, navNewBooking, navNotifications}) {
-            if (nav != null) nav.getStyleClass().remove("nav-active");
+    private void setActiveNav(Button active) {
+        for (Button btn : new Button[]{btnDashboard, btnNewBooking, btnNotifications}) {
+            if (btn != null) {
+                btn.getStyleClass().removeAll("bm-nav-btn-active");
+                if (!btn.getStyleClass().contains("bm-nav-btn")) btn.getStyleClass().add("bm-nav-btn");
+            }
         }
-        if (activeNav != null) activeNav.getStyleClass().add("nav-active");
+        if (active != null) {
+            active.getStyleClass().removeAll("bm-nav-btn");
+            if (!active.getStyleClass().contains("bm-nav-btn-active")) active.getStyleClass().add("bm-nav-btn-active");
+        }
     }
 
     private void updateNotifBadge(List<BookingNotification> notifications) {
         long unreadCount = notifications.stream().filter(n -> !n.isRead()).count();
         Platform.runLater(() -> {
-            if (unreadCount > 0) {
-                notifBadge.setText(String.valueOf(unreadCount));
-                notifBadge.setVisible(true);
-            } else {
-                notifBadge.setVisible(false);
+            // Update the notifications button text to show badge count
+            if (btnNotifications != null && unreadCount > 0) {
+                btnNotifications.setText("🔔  الإشعارات (" + unreadCount + ")");
+            } else if (btnNotifications != null) {
+                btnNotifications.setText("🔔  الإشعارات");
             }
         });
     }

@@ -12,15 +12,11 @@
 
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="main-scroll">
         <VBox spacing="16">
-            <padding><Insets top="24" right="32" bottom="24" left="32"/></padding>
+            <padding><Insets top="20" right="28" bottom="20" left="28"/></padding>
 
-            <!-- ══ Header ══ -->
-            <VBox spacing="3">
-                <Label fx:id="formTitleLabel" text="طلب حجز قاعة جديد" styleClass="page-title"/>
-                <Label text="يرجى تعبئة البيانات في الخطوات التالية" styleClass="page-subtitle"/>
-                <Label fx:id="formNoticeLabel" text="" styleClass="form-notice" wrapText="true"
-                       managed="false" visible="false"/>
-            </VBox>
+            <!-- ══ Notice (hidden by default) ══ -->
+            <Label fx:id="formNoticeLabel" text="" styleClass="form-notice" wrapText="true"
+                   managed="false" visible="false"/>
 
             <!-- ══ Step Indicator ══ -->
             <HBox alignment="CENTER" spacing="0" styleClass="step-bar">
@@ -40,29 +36,32 @@
                 </VBox>
             </HBox>
 
+            <!-- Hidden title label for controller reference -->
+            <Label fx:id="formTitleLabel" text="" visible="false" managed="false"/>
+
             <!-- ══════════════════════════════════════ -->
             <!-- STEP 1: Basic Info                     -->
             <!-- ══════════════════════════════════════ -->
-            <VBox fx:id="step1Pane" spacing="12" visible="true">
+            <VBox fx:id="step1Pane" spacing="14" visible="true">
                 <Label text="نوع القاعة والوقت" styleClass="step-section-title"/>
 
                 <!-- Hall Category -->
-                <VBox spacing="5">
+                <VBox spacing="6">
                     <Label text="نوع القاعة" styleClass="field-label"/>
                     <HBox spacing="10">
                         <Button fx:id="btnCategoryLecture" onAction="#selectLectureCategory"
                                 text="🎓  قاعة محاضرات"
                                 styleClass="category-btn" HBox.hgrow="ALWAYS"
-                                maxWidth="Infinity" prefHeight="58"/>
+                                maxWidth="Infinity" prefHeight="50"/>
                         <Button fx:id="btnCategoryMulti" onAction="#selectMultiCategory"
                                 text="🏛  متعددة الأغراض"
                                 styleClass="category-btn" HBox.hgrow="ALWAYS"
-                                maxWidth="Infinity" prefHeight="58"/>
+                                maxWidth="Infinity" prefHeight="50"/>
                     </HBox>
                 </VBox>
 
                 <!-- Date -->
-                <VBox spacing="5">
+                <VBox spacing="6">
                     <Label text="تاريخ الفعالية" styleClass="field-label"/>
                     <DatePicker fx:id="datePicker" promptText="اختر التاريخ..."
                                 maxWidth="Infinity" styleClass="form-input"
@@ -70,7 +69,7 @@
                 </VBox>
 
                 <!-- Time (Slot or Hour) -->
-                <VBox spacing="5">
+                <VBox spacing="6">
                     <Label text="الفترة الزمنية" styleClass="field-label"/>
                     <!-- Lecture slots -->
                     <HBox fx:id="slotBox">
@@ -83,7 +82,7 @@
                         <ComboBox fx:id="timeFromCombo" promptText="من..."
                                   HBox.hgrow="ALWAYS" maxWidth="Infinity"
                                   styleClass="form-combo" onAction="#onTimeFromChanged"/>
-                        <Label text="→" style="-fx-font-size: 16px; -fx-text-fill: #9CA3AF;"
+                        <Label text="←" style="-fx-font-size: 16px; -fx-text-fill: #9CA3AF;"
                                alignment="CENTER" minWidth="20"/>
                         <ComboBox fx:id="timeToCombo" promptText="إلى..."
                                   HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="form-combo"/>
@@ -94,7 +93,7 @@
                 </VBox>
 
                 <!-- Purpose -->
-                <VBox spacing="5">
+                <VBox spacing="6">
                     <Label text="الغرض من الاستخدام" styleClass="field-label"/>
                     <TextArea fx:id="purposeField"
                               promptText="وصف موجز للفعالية أو الاجتماع..."
@@ -102,7 +101,7 @@
                 </VBox>
 
                 <!-- Capacity -->
-                <VBox spacing="5">
+                <VBox spacing="6">
                     <Label text="عدد الحضور المتوقع" styleClass="field-label"/>
                     <TextField fx:id="capacityField" promptText="مثال: 50"
                                styleClass="form-input"/>
@@ -112,20 +111,20 @@
             <!-- ══════════════════════════════════════ -->
             <!-- STEP 2: Responsible Person             -->
             <!-- ══════════════════════════════════════ -->
-            <VBox fx:id="step2Pane" spacing="12" visible="false">
+            <VBox fx:id="step2Pane" spacing="14" visible="false">
                 <Label text="بيانات المسؤول عن الفعالية" styleClass="step-section-title"/>
 
-                <VBox spacing="5">
+                <VBox spacing="6">
                     <Label text="الاسم الكامل" styleClass="field-label"/>
                     <TextField fx:id="respNameField" promptText="مثال: أحمد محمد إبراهيم"
                                styleClass="form-input"/>
                 </VBox>
-                <VBox spacing="5">
+                <VBox spacing="6">
                     <Label text="المسمى الوظيفي / الدرجة العلمية" styleClass="field-label"/>
                     <TextField fx:id="respJobField" promptText="مثال: دكتور / مهندس / أستاذ"
                                styleClass="form-input"/>
                 </VBox>
-                <VBox spacing="5">
+                <VBox spacing="6">
                     <Label text="رقم المحمول" styleClass="field-label"/>
                     <TextField fx:id="respMobileField" promptText="مثال: 01012345678"
                                styleClass="form-input"/>
@@ -186,13 +185,13 @@
                 </VBox>
             </VBox>
 
-            <!-- ══ Navigation Buttons ══ -->
-            <HBox spacing="10" alignment="CENTER_RIGHT">
-                <padding><Insets top="8"/></padding>
-                <Button fx:id="prevButton" text="→ السابق" onAction="#handlePrev"
-                        styleClass="btn-secondary" visible="false"/>
+            <!-- ══ Navigation Buttons (always at bottom) ══ -->
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <padding><Insets top="12" bottom="8"/></padding>
                 <Button fx:id="nextButton" text="التالي ←" onAction="#handleNext"
                         styleClass="btn-primary" defaultButton="true"/>
+                <Button fx:id="prevButton" text="→ السابق" onAction="#handlePrev"
+                        styleClass="btn-secondary" visible="false"/>
             </HBox>
 
         </VBox>

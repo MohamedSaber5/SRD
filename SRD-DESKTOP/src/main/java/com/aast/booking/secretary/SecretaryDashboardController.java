@@ -47,6 +47,8 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     @FXML private VBox recentRequestsList;
     @FXML private Label notificationLabel;
     @FXML private Label userNameLabel;
+    @FXML private Label pageTitle;
+    @FXML private Label pageSubtitle;
     
     @FXML private Button btnDashboard;
     @FXML private Button btnNewBookingMenu;
@@ -428,18 +430,30 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     @FXML
     private void showDashboard() {
         mediator.navigateTo(dashboardView);
-        updateMenuStyles(btnDashboard, btnNewBookingMenu);
+        setActiveNav(btnDashboard);
+        if (pageTitle != null) pageTitle.setText("لوحة التحكم");
+        if (pageSubtitle != null) pageSubtitle.setText("نظرة عامة على سجل طلبات الحجز");
     }
 
     @FXML
     private void showNewBooking() {
         mediator.navigateTo(newBookingView);
-        updateMenuStyles(btnNewBookingMenu, btnDashboard);
+        setActiveNav(btnNewBookingMenu);
+        if (pageTitle != null) pageTitle.setText("طلب حجز جديد");
+        if (pageSubtitle != null) pageSubtitle.setText("تعبئة بيانات حجز قاعة متعددة الأغراض");
     }
 
-    private void updateMenuStyles(Button active, Button inactive) {
-        if (active != null) active.setStyle("-fx-background-color: linear-gradient(to left, #003087, #1565C0); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 12; -fx-cursor: hand; -fx-alignment: center-right; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 4);");
-        if (inactive != null) inactive.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12; -fx-cursor: hand; -fx-alignment: center-right;");
+    private void setActiveNav(Button active) {
+        for (Button btn : new Button[]{btnDashboard, btnNewBookingMenu}) {
+            if (btn != null) {
+                btn.getStyleClass().removeAll("bm-nav-btn-active");
+                if (!btn.getStyleClass().contains("bm-nav-btn")) btn.getStyleClass().add("bm-nav-btn");
+            }
+        }
+        if (active != null) {
+            active.getStyleClass().removeAll("bm-nav-btn");
+            if (!active.getStyleClass().contains("bm-nav-btn-active")) active.getStyleClass().add("bm-nav-btn-active");
+        }
     }
 
     @FXML
