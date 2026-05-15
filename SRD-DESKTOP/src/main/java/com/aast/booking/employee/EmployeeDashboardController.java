@@ -44,6 +44,7 @@ public class EmployeeDashboardController implements Initializable {
     private Node bookingFormNode;
     private Node notificationsNode;
 
+    private BookingListController bookingListController;
     private BookingFormController bookingFormController;
     private NotificationsController notificationsController;
 
@@ -74,8 +75,8 @@ public class EmployeeDashboardController implements Initializable {
             FXMLLoader dashLoader = new FXMLLoader(getClass().getResource("/fxml/employee/BookingList.fxml"));
             dashboardNode = dashLoader.load();
             // Store reference to BookingListController for data refresh
-            BookingListController blc = dashLoader.getController();
-            blc.setShellController(this);
+            bookingListController = dashLoader.getController();
+            bookingListController.setShellController(this);
 
             // Load Booking Form
             FXMLLoader formLoader = new FXMLLoader(getClass().getResource("/fxml/employee/BookingForm.fxml"));
@@ -98,6 +99,7 @@ public class EmployeeDashboardController implements Initializable {
 
     @FXML
     public void showDashboard() {
+        if (bookingListController != null) bookingListController.fetchBookings();
         setActiveNav(btnDashboard);
         setContent(dashboardNode);
         if (pageTitle != null) pageTitle.setText("لوحة التحكم");

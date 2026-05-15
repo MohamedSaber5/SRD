@@ -36,7 +36,14 @@ public class NotificationsController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         if (markAllReadButton != null) markAllReadButton.setVisible(false);
-        if (loadingIndicator != null) loadingIndicator.setVisible(true);
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(true);
+            loadingIndicator.setManaged(true);
+        }
+        if (emptyStateLabel != null) {
+            emptyStateLabel.setVisible(false);
+            emptyStateLabel.setManaged(false);
+        }
 
         NotificationService.listenToMyNotifications(
             this::renderNotifications,
@@ -46,7 +53,10 @@ public class NotificationsController implements Initializable {
 
     private void renderNotifications(List<BookingNotification> notifications) {
         this.currentNotifications = notifications;
-        if (loadingIndicator != null) loadingIndicator.setVisible(false);
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(false);
+            loadingIndicator.setManaged(false);
+        }
 
         boolean hasUnread = notifications.stream().anyMatch(n -> !n.isRead());
         if (markAllReadButton != null) markAllReadButton.setVisible(hasUnread);
@@ -54,10 +64,16 @@ public class NotificationsController implements Initializable {
         if (notificationsContainer != null) notificationsContainer.getChildren().clear();
 
         if (notifications.isEmpty()) {
-            if (emptyStateLabel != null) emptyStateLabel.setVisible(true);
+            if (emptyStateLabel != null) {
+                emptyStateLabel.setVisible(true);
+                emptyStateLabel.setManaged(true);
+            }
             return;
         }
-        if (emptyStateLabel != null) emptyStateLabel.setVisible(false);
+        if (emptyStateLabel != null) {
+            emptyStateLabel.setVisible(false);
+            emptyStateLabel.setManaged(false);
+        }
 
         for (BookingNotification notif : notifications) {
             if (notificationsContainer != null) {

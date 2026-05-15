@@ -156,6 +156,32 @@ public class BookingBuilder {
         return this;
     }
 
+    // ── Pre-defined Defaults (Builder Pattern enhancement) ────────────────
+    
+    /**
+     * Applies default values for Lecture rooms.
+     * Overrides responsible person and sets requirements to false/0.
+     */
+    public BookingBuilder applyLectureDefaults(String defaultResponsibleName) {
+        if (booking.getResponsibleName() == null || booking.getResponsibleName().trim().isEmpty()) {
+            booking.setResponsibleName(defaultResponsibleName != null ? defaultResponsibleName : "");
+        }
+        if (booking.getResponsibleJob() == null || booking.getResponsibleJob().trim().isEmpty()) {
+            booking.setResponsibleJob("-");
+        }
+        if (booking.getResponsibleMobile() == null || booking.getResponsibleMobile().trim().isEmpty()) {
+            booking.setResponsibleMobile("-");
+        }
+        // No technical requirements for lecture halls by default
+        booking.setReqMic(false);
+        booking.setReqMicQty(0);
+        booking.setReqLaptop(false);
+        booking.setReqVideoConf(false);
+        booking.setReqOther(false);
+        booking.setReqOtherDetails("");
+        return this;
+    }
+
     // ── Pre-fill from existing booking (used with Prototype) ──────────────
     /**
      * Pre-populates builder from a Prototype-cloned booking.

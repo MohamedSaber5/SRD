@@ -162,6 +162,7 @@ public class BookingFormController implements Initializable {
         btnCategoryLecture.getStyleClass().add("category-active");
         btnCategoryMulti.getStyleClass().remove("category-active");
         updateTimeSelection();
+        updateStepUI(); // Refresh button label & step indicators for single-step flow
     }
 
     @FXML
@@ -171,6 +172,7 @@ public class BookingFormController implements Initializable {
         btnCategoryMulti.getStyleClass().add("category-active");
         btnCategoryLecture.getStyleClass().remove("category-active");
         updateTimeSelection();
+        updateStepUI(); // Refresh button label & step indicators for multi-step flow
     }
 
     private void updateTimeSelection() {
@@ -262,11 +264,21 @@ public class BookingFormController implements Initializable {
 
     // ── Step Navigation ───────────────────────────────────────────────────
 
+    /** Returns true if the current category is lecture hall (single-step flow) */
+    private boolean isLectureMode() {
+        return "lecture".equals(selectedHallCategory);
+    }
+
+    /** Total steps: lecture = 1 step, multi-purpose = 3 steps */
+    private int totalSteps() {
+        return isLectureMode() ? 1 : 3;
+    }
+
     @FXML
     private void handleNext() {
         if (!validateCurrentStep()) return;
         collectCurrentStepData();
-        if (currentStep < 3) {
+        if (currentStep < totalSteps()) {
             currentStep++;
             updateStepUI();
         } else {
@@ -293,51 +305,47 @@ public class BookingFormController implements Initializable {
     }
 
     private boolean validateStep1() {
-        if (selectedHallCategory.isEmpty()) {
-            showAlert("يرجى اختيار نوع القاعة أولاً", Alert.AlertType.WARNING);
-            return false;
+        LocalDate date = datePicker != null ? datePicker.getValue() : null;
+        String timeFrom = null;
+        if ("lecture".equals(selectedHallCategory) && slotComboBox != null && slotComboBox.getValue() != null) {
+            timeFrom = slotComboBox.getValue().getFrom();
+        } else if (timeFromCombo != null && timeFromCombo.getValue() != null) {
+            timeFrom = timeFromCombo.getValue();
         }
-        if (datePicker == null || datePicker.getValue() == null) {
-            showAlert("يرجى اختيار تاريخ الحجز", Alert.AlertType.WARNING);
-            return false;
-        }
-        if (purposeField == null || purposeField.getText().trim().isEmpty()) {
-            showAlert("يرجى كتابة الغرض من الاستخدام", Alert.AlertType.WARNING);
-            return false;
-        }
-        if (capacityField == null || capacityField.getText().trim().isEmpty()) {
-            showAlert("يرجى إدخال السعة المطلوبة", Alert.AlertType.WARNING);
-            return false;
-        }
-        if (leadTimeErrorLabel != null && leadTimeErrorLabel.isVisible()) {
-            showAlert("الوقت المختار لا يستوفي الحد الأدنى المطلوب للحجز", Alert.AlertType.WARNING);
+        String purpose = purposeField != null ? purposeField.getText() : null;
+        String capacity = capacityField != null ? capacityField.getText() : null;
+        
+        var user = SessionManager.getInstance().getCurrentUser();
+        int requiredHours = (user != null && "secretary".equals(user.getRole())) ? 48 : 24;
+
+        String errorMsg = BookingValidator.validateStep1(selectedHallCategory, date, timeFrom, purpose, capacity, requiredHours);
+        if (errorMsg != null) {
+            showAlert(errorMsg, Alert.AlertType.WARNING);
             return false;
         }
         return true;
     }
 
     private boolean validateStep2() {
-        if (respNameField == null || respNameField.getText().trim().isEmpty() ||
-            respJobField == null  || respJobField.getText().trim().isEmpty()  ||
-            respMobileField == null || respMobileField.getText().trim().isEmpty()) {
-            showAlert("يرجى تعبئة جميع بيانات المسؤول", Alert.AlertType.WARNING);
-            return false;
-        }
-        if (!respMobileField.getText().matches("[0-9]+")) {
-            showAlert("رقم المحمول يجب أن يحتوي على أرقام فقط", Alert.AlertType.WARNING);
-            return false;
-        }
-        if (respNameField.getText().matches(".*[0-9].*")) {
-            showAlert("الاسم لا يجب أن يحتوي على أرقام", Alert.AlertType.WARNING);
+        String name = respNameField != null ? respNameField.getText() : null;
+        String job = respJobField != null ? respJobField.getText() : null;
+        String mobile = respMobileField != null ? respMobileField.getText() : null;
+
+        String errorMsg = BookingValidator.validateStep2(name, job, mobile);
+        if (errorMsg != null) {
+            showAlert(errorMsg, Alert.AlertType.WARNING);
             return false;
         }
         return true;
     }
 
     private boolean validateStep3() {
-        if (reqOtherCheck != null && reqOtherCheck.isSelected() &&
-            (reqOtherDetailsField == null || reqOtherDetailsField.getText().trim().isEmpty())) {
-            showAlert("يرجى كتابة تفاصيل المتطلبات الأخرى", Alert.AlertType.WARNING);
+        boolean reqOther = reqOtherCheck != null && reqOtherCheck.isSelected();
+        String details = reqOtherDetailsField != null ? reqOtherDetailsField.getText() : null;
+
+        String errorMsg = BookingValidator.validateStep3(reqOther, details);
+        if (errorMsg != null) {
+            showAlert(errorMsg, Alert.AlertType.WARNING);
             return false;
         }
         return true;
@@ -387,7 +395,14 @@ public class BookingFormController implements Initializable {
 
     /** Final submission: builds the Booking via Builder, then submits to Firestore */
     private void handleSubmit() {
-        collectCurrentStepData(); // collect step 3 data
+        collectCurrentStepData(); // collect last step data
+
+        // For lecture halls: steps 2 & 3 are skipped — set defaults so builder.build() doesn't fail
+        if (isLectureMode()) {
+            var user = SessionManager.getInstance().getCurrentUser();
+            String defaultName = user != null && user.getDisplayName() != null ? user.getDisplayName() : "";
+            bookingBuilder.applyLectureDefaults(defaultName);
+        }
 
         Booking booking;
         try {
@@ -405,33 +420,49 @@ public class BookingFormController implements Initializable {
             booking,
             () -> {
                 nextButton.setDisable(false);
-                nextButton.setText("التالي");
+                nextButton.setText(isLectureMode() ? "تأكيد وإرسال الطلب ✓" : "التالي ←");
                 showAlert("تم إرسال الطلب بنجاح وهو الآن بانتظار الموافقة ✓", Alert.AlertType.INFORMATION);
                 if (shellController != null) shellController.showDashboard();
             },
             err -> {
                 nextButton.setDisable(false);
-                nextButton.setText("التالي");
+                nextButton.setText(isLectureMode() ? "تأكيد وإرسال الطلب ✓" : "التالي ←");
                 showAlert("حدث خطأ أثناء إرسال الطلب: " + err.getMessage(), Alert.AlertType.ERROR);
             }
         );
     }
 
     private void updateStepUI() {
-        // Show/hide step panes
-        if (step1Pane != null) step1Pane.setVisible(currentStep == 1);
-        if (step2Pane != null) step2Pane.setVisible(currentStep == 2);
-        if (step3Pane != null) step3Pane.setVisible(currentStep == 3);
+        boolean lecture = isLectureMode();
 
-        // Update step indicators
+        // Show/hide step panes
+        if (step1Pane != null) { 
+            step1Pane.setVisible(currentStep == 1); 
+            step1Pane.setManaged(currentStep == 1); 
+        }
+        if (step2Pane != null) { 
+            step2Pane.setVisible(currentStep == 2 && !lecture); 
+            step2Pane.setManaged(currentStep == 2 && !lecture); 
+        }
+        if (step3Pane != null) { 
+            step3Pane.setVisible(currentStep == 3 && !lecture); 
+            step3Pane.setManaged(currentStep == 3 && !lecture); 
+        }
+
+        // Update step indicators — hide steps 2 & 3 indicators for lecture mode
         updateStepIndicator(step1Indicator, 1);
-        updateStepIndicator(step2Indicator, 2);
-        updateStepIndicator(step3Indicator, 3);
+        if (step2Indicator != null) { step2Indicator.setVisible(!lecture); step2Indicator.setManaged(!lecture); }
+        if (step3Indicator != null) { step3Indicator.setVisible(!lecture); step3Indicator.setManaged(!lecture); }
+        if (!lecture) {
+            updateStepIndicator(step2Indicator, 2);
+            updateStepIndicator(step3Indicator, 3);
+        }
 
         // Prev/Next button states
-        if (prevButton != null) prevButton.setVisible(currentStep > 1);
+        if (prevButton != null) prevButton.setVisible(currentStep > 1 && !lecture);
         if (nextButton != null) {
-            nextButton.setText(currentStep == 3 ? "تأكيد وإرسال الطلب ✓" : "التالي ←");
+            boolean isLastStep = lecture ? (currentStep == 1) : (currentStep == 3);
+            nextButton.setText(isLastStep ? "تأكيد وإرسال الطلب ✓" : "التالي ←");
         }
     }
 

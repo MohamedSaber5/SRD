@@ -47,14 +47,21 @@ public class BookingListController implements Initializable {
             subtitleLabel.setText("نظرة عامة على سجل طلبات الحجز الخاصة بك.");
         }
 
+        fetchBookings();
+    }
+
+    public void fetchBookings() {
         // Start real-time listener (mirrors useEffect + onSnapshot in UserDashboard.jsx)
         loadingIndicator.setVisible(true);
+        loadingIndicator.setManaged(true);
         emptyStateLabel.setVisible(false);
+        emptyStateLabel.setManaged(false);
 
         BookingService.listenToMyBookings(
             this::renderBookings,
             err -> Platform.runLater(() -> {
                 loadingIndicator.setVisible(false);
+                loadingIndicator.setManaged(false);
                 showError("تعذر تحميل الطلبات: " + err.getMessage());
             })
         );
@@ -67,6 +74,7 @@ public class BookingListController implements Initializable {
     // ── Render all bookings (called on every Firestore snapshot update) ────
     private void renderBookings(List<Booking> bookings) {
         loadingIndicator.setVisible(false);
+        loadingIndicator.setManaged(false);
 
         // Count stats (mirrors activeCount, pendingCount, rejectedCount in web)
         long approved = bookings.stream().filter(Booking::isApproved).count();
@@ -81,9 +89,11 @@ public class BookingListController implements Initializable {
 
         if (bookings.isEmpty()) {
             emptyStateLabel.setVisible(true);
+            emptyStateLabel.setManaged(true);
             return;
         }
         emptyStateLabel.setVisible(false);
+        emptyStateLabel.setManaged(false);
 
         for (Booking booking : bookings) {
             bookingsContainer.getChildren().add(buildBookingCard(booking));
