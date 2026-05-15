@@ -1,0 +1,74 @@
+package com.aast.booking.core;
+
+import com.aast.booking.models.User;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+
+/**
+ * DESIGN PATTERN: Factory
+ *
+ * Problem Solved: After login, we need to open different dashboards based on the user's role.
+ *                 Without Factory, we'd have a huge if-else block in the LoginController.
+ *                 Factory isolates this decision and makes adding new roles trivial.
+ *
+ * Creates and navigates to the appropriate dashboard based on the user's role.
+ */
+public class DashboardFactory {
+
+    /**
+     * Opens the correct dashboard for the logged-in user.
+     * Mirrors the role-based routing in LoginScreen.jsx useEffect:
+     *   if (role === 'admin') navigate('/admin')
+     *   else if (role === 'branch_manager') navigate('/branch_manager')
+     *   else navigate('/dashboard')
+     *
+     * @param user The authenticated user with their role set
+     * @param stage The primary JavaFX stage
+     */
+    public static void openDashboard(User user, Stage stage) throws IOException {
+        String fxmlPath = resolveFxmlPath(user.getRole());
+        String title    = resolveTitle(user.getRole());
+
+        FXMLLoader loader = new FXMLLoader(
+            DashboardFactory.class.getResource(fxmlPath)
+        );
+
+        Scene scene = new Scene(loader.load());
+        scene.getStylesheets().add(
+            DashboardFactory.class.getResource("/css/styles.css").toExternalForm()
+        );
+
+        stage.setTitle(title + " - " + user.getDisplayName());
+        stage.setScene(scene);
+        stage.setMaximized(true);
+    }
+
+    /**
+     * Maps user role to the correct FXML file path.
+     */
+    private static String resolveFxmlPath(String role) {
+        if (role == null) role = "employee";
+        return switch (role) {
+            case "admin", "temp_admin" -> "/fxml/admin/AdminDashboard.fxml";
+            case "branch_manager"      -> "/fxml/branchmanager/BranchManagerDashboard.fxml";
+            case "secretary"           -> "/fxml/secretary/SecretaryDashboard.fxml";
+            default                    -> "/fxml/employee/EmployeeDashboard.fxml";
+        };
+    }
+
+    /**
+     * Maps user role to a human-readable Arabic window title.
+     */
+    private static String resolveTitle(String role) {
+        if (role == null) role = "employee";
+        return switch (role) {
+            case "admin", "temp_admin" -> "لوحة تحكم المسؤول";
+            case "branch_manager"      -> "لوحة مدير الفرع";
+            case "secretary"           -> "لوحة السكرتير";
+            default                    -> "لوحة الموظف";
+        };
+    }
+}
