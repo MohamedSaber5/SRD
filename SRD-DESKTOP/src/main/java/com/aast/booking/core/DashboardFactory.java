@@ -41,6 +41,16 @@ public class DashboardFactory {
             DashboardFactory.class.getResource("/css/styles.css").toExternalForm()
         );
 
+        // Load role-specific stylesheet
+        String cssRole = switch (user.getRole() != null ? user.getRole() : "") {
+            case "admin", "temp_admin" -> "/css/admin.css";
+            case "branch_manager"      -> "/css/branchmanager.css";
+            case "secretary"           -> "/css/secretary.css";
+            default                    -> "/css/employee.css";
+        };
+        var roleUrl = DashboardFactory.class.getResource(cssRole);
+        if (roleUrl != null) scene.getStylesheets().add(roleUrl.toExternalForm());
+
         stage.setTitle(title + " - " + user.getDisplayName());
         stage.setScene(scene);
         stage.setMaximized(true);

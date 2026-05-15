@@ -3,8 +3,8 @@ package com.aast.booking.core;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.cloud.FirestoreClient;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -94,7 +94,6 @@ public class FirebaseService {
                 .setProjectId(PROJECT_ID)
                 .setDatabaseId("default")
                 .build();
-                
             firestore = firestoreOptions.getService();
             initialized = true;
             System.out.println("[FirebaseService] Firebase and Firestore initialized successfully (db: default).");

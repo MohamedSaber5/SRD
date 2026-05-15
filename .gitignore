@@ -35,3 +35,16 @@ service-account.json
 # JVM crash logs
 hs_err_pid*.log
 replay_pid*.log
+
+# ── Java / Maven ──────────────────────────────────────────────
+# Maven build output — NEVER commit target/
+SRD-DESKTOP/target/
+**/target/
+
+# Firebase credentials — NEVER commit these
+**/service-account.json
+service-account.json
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log

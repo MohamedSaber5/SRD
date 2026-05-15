@@ -13,8 +13,8 @@
     <description>JavaFX Desktop Application for AAST Room Booking</description>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21</javafx.version>
     </properties>
@@ -81,6 +81,17 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>com.aast.booking.MainApp</mainClass>
+                    <!--
+                      Fix: "paging file too small" = G1GC كان بيطلب memory كبيرة.
+                      الحل: نحدد heap صغير (-Xmx512m) ونستخدم SerialGC الأخف.
+                    -->
+                    <options>
+                        <option>-Xms64m</option>
+                        <option>-Xmx512m</option>
+                        <option>-XX:+UseSerialGC</option>
+                        <option>-XX:MaxMetaspaceSize=256m</option>
+                        <option>-Dfile.encoding=UTF-8</option>
+                    </options>
                 </configuration>
             </plugin>
             <plugin>
@@ -88,8 +99,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>21</source>
+                    <target>21</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
         </plugins>
