@@ -39,7 +39,7 @@ public class BranchManagerDashboardController implements Initializable {
     @FXML private VBox dashboardView, pendingView, instantBookingView, historyView;
 
     // Stats
-    @FXML private Label statPending, statApproved, statRejected, statTotal;
+    @FXML private Label statPending, statApproved, statRejected, statTotal, statEmergency;
     @FXML private Label pendingCountBadge, pendingCountBadge2;
 
     // Cards containers
@@ -53,6 +53,7 @@ public class BranchManagerDashboardController implements Initializable {
 
     // History
     @FXML private ComboBox<String> historyFilter;
+    @FXML private DatePicker historyDatePicker;
     @FXML private TableView<Booking> historyTable;
     @FXML private TableColumn<Booking, String> hColDate, hColTime, hColRoom, hColUser, hColPurpose, hColStatus;
 
@@ -78,6 +79,7 @@ public class BranchManagerDashboardController implements Initializable {
         historyFilter.getItems().addAll("الكل", "approved", "rejected");
         historyFilter.setValue("الكل");
         historyFilter.setOnAction(e -> applyHistoryFilter());
+        if (historyDatePicker != null) historyDatePicker.setOnAction(e -> applyHistoryFilter());
 
         fetchRoomsAndBookings();
         fetchRamadanMode();
@@ -186,11 +188,26 @@ public class BranchManagerDashboardController implements Initializable {
         int approved = (int) historyBookings.stream().filter(b -> "approved".equals(b.getStatus())).count();
         int rejected = (int) historyBookings.stream().filter(b -> "rejected".equals(b.getStatus())).count();
 
+        // Emergency calculation (same logic as web: booked < 48h before event)
+        int emergency = 0;
+        for (Booking b : historyBookings) {
+            if (b.getCreatedAt() != null && b.getDate() != null) {
+                try {
+                    java.time.LocalDate eventDate = java.time.LocalDate.parse(b.getDate());
+                    java.time.LocalDate createdDate = b.getCreatedAt().toInstant()
+                        .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                    long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(createdDate, eventDate);
+                    if (daysBetween <= 2) emergency++;
+                } catch (Exception ignored) {}
+            }
+        }
+
         if (statPending != null) statPending.setText(String.valueOf(pending));
         if (statApproved != null) statApproved.setText(String.valueOf(approved));
         if (statRejected != null) statRejected.setText(String.valueOf(rejected));
         if (statTotal != null) statTotal.setText(String.valueOf(pending + approved + rejected));
-        
+        if (statEmergency != null) statEmergency.setText(String.valueOf(emergency));
+
         String countStr = String.valueOf(pending);
         if (pendingCountBadge != null) pendingCountBadge.setText(countStr);
         if (pendingCountBadge2 != null) pendingCountBadge2.setText(countStr);
@@ -454,15 +471,17 @@ public class BranchManagerDashboardController implements Initializable {
     }
 
     private void applyHistoryFilter() {
-        if(historyFilter == null) return;
+        if (historyFilter == null) return;
         String filter = historyFilter.getValue();
-        if (filter == null || "الكل".equals(filter)) {
-            historyTable.setItems(historyBookings);
-        } else {
-            ObservableList<Booking> filtered = FXCollections.observableArrayList();
-            for (Booking b : historyBookings) if (filter.equals(b.getStatus())) filtered.add(b);
-            historyTable.setItems(filtered);
-        }
+        java.time.LocalDate dateFilter = (historyDatePicker != null) ? historyDatePicker.getValue() : null;
+
+        List<Booking> filtered = historyBookings.stream().filter(b -> {
+            boolean statusMatch = (filter == null || "الكل".equals(filter) || filter.equals(b.getStatus()));
+            boolean dateMatch = (dateFilter == null || dateFilter.toString().equals(b.getDate()));
+            return statusMatch && dateMatch;
+        }).collect(Collectors.toList());
+
+        historyTable.setItems(FXCollections.observableArrayList(filtered));
     }
 
     @FXML private void handleLogout() throws IOException {
