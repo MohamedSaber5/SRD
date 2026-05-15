@@ -26,7 +26,8 @@ public class MainApp extends Application {
         Scene scene = new Scene(loader.load(), 1000, 680);
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
 
-        primaryStage.setTitle("نظام حجز القاعات - الأكاديمية العربية");
+        primaryStage.setTitle("نظام ح" +
+                "جز القاعات - الأكاديمية العربية");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(900);
         primaryStage.setMinHeight(600);
