@@ -36,11 +36,7 @@
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-web</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
+
 
         <!-- Firebase Admin SDK (Server-side Firestore access) -->
         <dependency>
