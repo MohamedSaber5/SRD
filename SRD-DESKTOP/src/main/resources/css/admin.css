@@ -176,3 +176,129 @@
     -fx-font-size: 15px; -fx-font-weight: bold;
     -fx-text-fill: #737780; -fx-text-alignment: center;
 }
+
+/* ── REQUEST CARD ────────────────────────────────────────────── */
+.request-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12px;
+    -fx-border-color: #001e40;
+    -fx-border-width: 0 4 0 0; /* Right border in RTL -> Visual left in LTR, but UI shows left border, wait! */
+    -fx-border-radius: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 2);
+}
+
+.request-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+}
+
+.badge-blue-light {
+    -fx-background-color: #e6f0ff;
+    -fx-text-fill: #0055cc;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 4 12;
+}
+
+.request-date-light {
+    -fx-font-size: 13px;
+    -fx-text-fill: #a0a5b1;
+    -fx-font-weight: bold;
+}
+
+.info-box-blue {
+    -fx-background-color: #f4f8ff;
+    -fx-background-radius: 8px;
+    -fx-border-color: #dcedff;
+    -fx-border-radius: 8px;
+    -fx-padding: 12 16;
+}
+
+.info-box-gray {
+    -fx-background-color: #fafbfc;
+    -fx-background-radius: 8px;
+    -fx-padding: 12 16;
+}
+
+.info-box-orange {
+    -fx-background-color: #fff9f0;
+    -fx-background-radius: 8px;
+    -fx-border-color: #ffe8cc;
+    -fx-border-radius: 8px;
+    -fx-padding: 12 16;
+}
+
+.info-box-title {
+    -fx-font-size: 11px;
+    -fx-text-fill: #737780;
+}
+
+.info-box-title-orange {
+    -fx-font-size: 11px;
+    -fx-text-fill: #ea580c;
+    -fx-font-weight: bold;
+}
+
+.info-box-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: #737780;
+}
+
+.info-box-subtitle-orange {
+    -fx-font-size: 11px;
+    -fx-text-fill: #ea580c;
+    -fx-font-weight: bold;
+}
+
+.info-box-value-dark {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+}
+
+.info-box-value-blue {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0055cc;
+}
+
+.info-box-value-italic {
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+}
+
+.icon-small {
+    -fx-font-size: 14px;
+}
+
+.btn-approve-card {
+    -fx-background-color: #1e3a5f;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 12;
+    -fx-cursor: hand;
+}
+.btn-approve-card:hover {
+    -fx-background-color: #0f1d2f;
+}
+
+.btn-reject-card {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #001e40;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 8px;
+    -fx-padding: 12;
+    -fx-cursor: hand;
+}
+.btn-reject-card:hover {
+    -fx-background-color: #f2f4f6;
+}

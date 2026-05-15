@@ -307,10 +307,13 @@ public class BookingFormController implements Initializable {
     private boolean validateStep1() {
         LocalDate date = datePicker != null ? datePicker.getValue() : null;
         String timeFrom = null;
+        String timeTo = null;
         if ("lecture".equals(selectedHallCategory) && slotComboBox != null && slotComboBox.getValue() != null) {
             timeFrom = slotComboBox.getValue().getFrom();
-        } else if (timeFromCombo != null && timeFromCombo.getValue() != null) {
+            timeTo = slotComboBox.getValue().getTo();
+        } else if (timeFromCombo != null && timeFromCombo.getValue() != null && timeToCombo != null && timeToCombo.getValue() != null) {
             timeFrom = timeFromCombo.getValue();
+            timeTo = timeToCombo.getValue();
         }
         String purpose = purposeField != null ? purposeField.getText() : null;
         String capacity = capacityField != null ? capacityField.getText() : null;
@@ -318,7 +321,7 @@ public class BookingFormController implements Initializable {
         var user = SessionManager.getInstance().getCurrentUser();
         int requiredHours = (user != null && "secretary".equals(user.getRole())) ? 48 : 24;
 
-        String errorMsg = BookingValidator.validateStep1(selectedHallCategory, date, timeFrom, purpose, capacity, requiredHours);
+        String errorMsg = BookingValidator.validateStep1(selectedHallCategory, date, timeFrom, timeTo, purpose, capacity, requiredHours);
         if (errorMsg != null) {
             showAlert(errorMsg, Alert.AlertType.WARNING);
             return false;

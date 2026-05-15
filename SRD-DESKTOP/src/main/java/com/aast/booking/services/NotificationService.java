@@ -28,13 +28,16 @@ public class NotificationService {
             try {
                 QuerySnapshot snapshot = db.collection("notifications")
                     .whereEqualTo("userId", uid)
-                    .orderBy("createdAt", Query.Direction.DESCENDING)
                     .get().get();
 
                 List<BookingNotification> list = new ArrayList<>();
                 for (DocumentSnapshot doc : snapshot.getDocuments()) {
                     list.add(BookingNotification.fromDocument(doc));
                 }
+                list.sort((a, b) -> {
+                    if (a.getCreatedAt() == null || b.getCreatedAt() == null) return 0;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                });
                 Platform.runLater(() -> onUpdate.accept(list));
 
             } catch (InterruptedException | ExecutionException e) {
@@ -77,6 +80,24 @@ public class NotificationService {
                             .update("read", true).get();
                     }
                 }
+                if (onSuccess != null) Platform.runLater(onSuccess);
+            } catch (InterruptedException | ExecutionException e) {
+                if (onError != null) Platform.runLater(() -> onError.accept(e));
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    public static void sendNotification(BookingNotification notification, Runnable onSuccess, Consumer<Exception> onError) {
+        Firestore db = FirebaseService.getInstance().getFirestore();
+        if (db == null) return;
+
+        Thread t = new Thread(() -> {
+            try {
+                var docData = notification.toMap();
+                docData.put("createdAt", FieldValue.serverTimestamp());
+                db.collection("notifications").add(docData).get();
                 if (onSuccess != null) Platform.runLater(onSuccess);
             } catch (InterruptedException | ExecutionException e) {
                 if (onError != null) Platform.runLater(() -> onError.accept(e));

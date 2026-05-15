@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 public class BookingValidator {
 
-    public static String validateStep1(String selectedHallCategory, LocalDate date, String timeFrom, String purpose, String capacity, int requiredLeadTimeHours) {
+    public static String validateStep1(String selectedHallCategory, LocalDate date, String timeFrom, String timeTo, String purpose, String capacity, int requiredLeadTimeHours) {
         if (selectedHallCategory == null || selectedHallCategory.isEmpty()) {
             return "يرجى اختيار نوع القاعة أولاً";
         }
@@ -17,6 +17,12 @@ public class BookingValidator {
         }
         if (capacity == null || capacity.trim().isEmpty()) {
             return "يرجى إدخال السعة المطلوبة";
+        }
+        if (!capacity.matches("[0-9]+")) {
+            return "السعة المطلوبة يجب أن تحتوي على أرقام فقط";
+        }
+        if (timeFrom == null || timeFrom.isEmpty() || timeTo == null || timeTo.isEmpty()) {
+            return "يرجى تحديد وقت البداية والنهاية للحجز";
         }
         if (timeFrom != null && !timeFrom.isEmpty()) {
             String[] parts = timeFrom.split(":");
@@ -41,6 +47,9 @@ public class BookingValidator {
         }
         if (respName.matches(".*[0-9].*")) {
             return "الاسم لا يجب أن يحتوي على أرقام";
+        }
+        if (respJob.matches(".*[0-9].*")) {
+            return "المسمى الوظيفي لا يجب أن يحتوي على أرقام";
         }
         return null; // Valid
     }
