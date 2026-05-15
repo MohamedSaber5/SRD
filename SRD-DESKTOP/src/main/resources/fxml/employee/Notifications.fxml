@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
 <!-- Notifications.fxml — Mirrors NotificationsPage.jsx -->
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.aast.booking.employee.NotificationsController"
-      spacing="0">
 
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="main-scroll">
-        <VBox spacing="16">
-            <padding><Insets top="20" right="28" bottom="20" left="28"/></padding>
+<VBox spacing="0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="com.aast.booking.employee.NotificationsController">
+
+    <ScrollPane fitToWidth="true" styleClass="main-scroll" VBox.vgrow="ALWAYS">
+        <VBox spacing="16" stylesheets="@../../css/employee.css">
+            <padding><Insets bottom="20" left="28" right="28" top="20" /></padding>
 
             <!-- Toolbar (mark all read) -->
-            <HBox alignment="CENTER_LEFT" spacing="16">
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="markAllReadButton" text="✓  تحديد الكل كمقروء"
-                        onAction="#handleMarkAllRead" styleClass="btn-outline" visible="false"/>
+            <HBox alignment="CENTER_LEFT" spacing="16" stylesheets="@../../css/employee.css">
+                <Region stylesheets="@../../css/employee.css" HBox.hgrow="ALWAYS" />
+                <Button fx:id="markAllReadButton" onAction="#handleMarkAllRead" styleClass="btn-outline" stylesheets="@../../css/employee.css" text="✓  تحديد الكل كمقروء" visible="false" />
             </HBox>
 
-            <!-- Loading -->
-            <ProgressIndicator fx:id="loadingIndicator" maxWidth="48" maxHeight="48"
-                               visible="true" styleClass="spinner"/>
+               <!-- Loading -->
+            <ProgressIndicator fx:id="loadingIndicator" maxHeight="48" maxWidth="48" styleClass="spinner" stylesheets="@../../css/employee.css" visible="true" />
 
             <!-- Empty state -->
-            <VBox fx:id="emptyStateLabel" visible="false" alignment="CENTER" spacing="14"
-                  style="-fx-padding: 60 0; -fx-opacity: 0.4;">
-                <Label text="🔕" style="-fx-font-size: 56px;"/>
-                <Label text="لا يوجد أي إشعارات حالياً"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #374151;"/>
+            <VBox fx:id="emptyStateLabel" alignment="CENTER" spacing="14" style="-fx-padding: 60 0; -fx-opacity: 0.4;" stylesheets="@../../css/employee.css" visible="false">
+                <Label style="-fx-font-size: 56px;" text="🔕" />
+                <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #374151;" text="لا يوجد أي إشعارات حالياً" />
             </VBox>
 
             <!-- Notification cards (injected by controller) -->
-            <VBox fx:id="notificationsContainer" spacing="10"/>
+            <VBox fx:id="notificationsContainer" spacing="10" stylesheets="@../../css/employee.css" />
 
         </VBox>
     </ScrollPane>

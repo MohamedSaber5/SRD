@@ -1,117 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<HBox xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.aast.booking.auth.RegisterController"
-      styleClass="root-container"
-      prefWidth="1000" prefHeight="720">
+<HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="720" prefWidth="1000" styleClass="root-container" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.aast.booking.auth.RegisterController">
 
-    <!-- ═══ LEFT PANEL: Branding ═════════════════════════════════════════ -->
-    <VBox styleClass="brand-panel" HBox.hgrow="ALWAYS" alignment="CENTER"
-          minWidth="380">
-        <padding><Insets top="60" bottom="60" left="60" right="40"/></padding>
+    <!-- ═══ RIGHT PANEL (visually): Branding ═══════════════════════ -->
+    <VBox alignment="CENTER" minWidth="380" styleClass="brand-panel" stylesheets="@../css/styles.css" HBox.hgrow="ALWAYS">
+        <padding><Insets bottom="60" left="40" right="60" top="60" /></padding>
 
-        <Label styleClass="brand-title" text="إنشاء حساب جديد" wrapText="true" maxWidth="300"/>
+        <!-- Logo -->
+        <ImageView fitHeight="80.0" fitWidth="190.0" preserveRatio="true" smooth="true">
+            <image><Image url="@../images/retreiveOnePIC.png" /></image>
+        </ImageView>
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="24"/>
+        <Region maxHeight="20" VBox.vgrow="SOMETIMES" />
 
-        <Label styleClass="brand-body"
-               text="أنشئ حسابك للوصول إلى نظام حجز القاعات بالأكاديمية العربية"
-               wrapText="true" maxWidth="300"/>
+        <Label maxWidth="300" styleClass="brand-title" text="إنشاء حساب جديد" wrapText="true" />
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="40"/>
+        <Region maxHeight="24" VBox.vgrow="SOMETIMES" />
 
-        <HBox alignment="CENTER_RIGHT" spacing="8">
-            <Region styleClass="dot-accent"/>
-            <Region styleClass="dot-accent" opacity="0.6"/>
-            <Region styleClass="dot-accent" opacity="0.3"/>
+        <Label maxWidth="300" styleClass="brand-body" text="أنشئ حسابك للوصول إلى نظام حجز القاعات بالأكاديمية العربية" wrapText="true" />
+
+        <Region maxHeight="40" VBox.vgrow="SOMETIMES" />
+
+        <HBox alignment="CENTER" spacing="8">
+            <Region styleClass="dot-accent" />
+            <Region opacity="0.6" styleClass="dot-accent" />
+            <Region opacity="0.3" styleClass="dot-accent" />
         </HBox>
     </VBox>
 
-    <!-- ═══ RIGHT PANEL: Register Form ══════════════════════════════════ -->
-    <VBox styleClass="form-panel" alignment="CENTER" minWidth="460" maxWidth="460">
-        <padding><Insets top="50" bottom="50" left="50" right="50"/></padding>
+    <!-- ═══ LEFT PANEL (visually): Register Form ═══════════════════ -->
+    <VBox alignment="CENTER" maxWidth="460" minWidth="460" styleClass="form-panel" stylesheets="@../css/styles.css">
+        <padding><Insets bottom="40" left="50" right="50" top="40" /></padding>
+      <ImageView fitHeight="80.0" fitWidth="190.0" preserveRatio="true" smooth="true">
+         <image>
+            <Image url="@../images/Logo%20no%20bg.png" />
+         </image>
+      </ImageView>
 
-        <Label styleClass="logo-icon" text="📝"/>
+        <Region maxHeight="10" VBox.vgrow="SOMETIMES" />
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="12"/>
+        <Label styleClass="form-title" text="إنشاء حساب" />
+        <Label styleClass="form-subtitle" text="سجّل بياناتك للانضمام للنظام" />
 
-        <Label styleClass="form-title" text="إنشاء حساب"/>
-        <Label styleClass="form-subtitle" text="سجّل بياناتك للانضمام للنظام"/>
-
-        <Region VBox.vgrow="SOMETIMES" maxHeight="20"/>
+        <Region maxHeight="16" VBox.vgrow="SOMETIMES" />
 
         <!-- Error label -->
-        <Label fx:id="errorLabel" styleClass="error-label"
-               text="" wrapText="true" maxWidth="360"
-               managed="${errorLabel.visible}"/>
+        <Label fx:id="errorLabel" managed="${errorLabel.visible}" maxWidth="360" styleClass="error-label" text="" wrapText="true" />
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="6"/>
+        <Region maxHeight="6" VBox.vgrow="SOMETIMES" />
 
         <!-- Full Name -->
-        <VBox spacing="6" maxWidth="360" prefWidth="360">
-            <Label styleClass="field-label" text="الاسم الكامل"/>
-            <TextField fx:id="nameField" styleClass="text-field"
-                       promptText="أدخل اسمك الكامل" prefHeight="46"/>
+        <VBox maxWidth="360" prefWidth="360" spacing="6">
+            <Label styleClass="field-label" text="الاسم الكامل" />
+            <TextField fx:id="nameField" prefHeight="44" promptText="أدخل اسمك الكامل" styleClass="text-field" />
         </VBox>
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="12"/>
+        <Region maxHeight="10" VBox.vgrow="SOMETIMES" />
 
         <!-- Employee ID -->
-        <VBox spacing="6" maxWidth="360" prefWidth="360">
-            <Label styleClass="field-label" text="الرقم الوظيفي"/>
-            <TextField fx:id="employeeIdField" styleClass="text-field"
-                       promptText="أدخل الرقم الوظيفي" prefHeight="46"/>
+        <VBox maxWidth="360" prefWidth="360" spacing="6">
+            <Label styleClass="field-label" text="الرقم الوظيفي" />
+            <TextField fx:id="employeeIdField" prefHeight="44" promptText="أدخل الرقم الوظيفي" styleClass="text-field" />
         </VBox>
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="12"/>
+        <Region maxHeight="10" VBox.vgrow="SOMETIMES" />
 
         <!-- Role -->
-        <VBox spacing="6" maxWidth="360" prefWidth="360">
-            <Label styleClass="field-label" text="الدور الوظيفي"/>
-            <ComboBox fx:id="roleComboBox" styleClass="combo-box"
-                      maxWidth="360" prefWidth="360" prefHeight="46"/>
+        <VBox maxWidth="360" prefWidth="360" spacing="6">
+            <Label styleClass="field-label" text="الدور الوظيفي" />
+            <ComboBox fx:id="roleComboBox" maxWidth="360" prefHeight="44" prefWidth="360" styleClass="combo-box" />
         </VBox>
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="12"/>
+        <Region maxHeight="10" VBox.vgrow="SOMETIMES" />
 
         <!-- Password -->
-        <VBox spacing="6" maxWidth="360" prefWidth="360">
-            <Label styleClass="field-label" text="كلمة المرور"/>
-            <PasswordField fx:id="passwordField" styleClass="text-field"
-                           promptText="6 أحرف على الأقل" prefHeight="46"/>
+        <VBox maxWidth="360" prefWidth="360" spacing="6">
+            <Label styleClass="field-label" text="كلمة المرور" />
+            <PasswordField fx:id="passwordField" prefHeight="44" promptText="6 أحرف على الأقل" styleClass="text-field" />
         </VBox>
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="12"/>
+        <Region maxHeight="10" VBox.vgrow="SOMETIMES" />
 
         <!-- Confirm Password -->
-        <VBox spacing="6" maxWidth="360" prefWidth="360">
-            <Label styleClass="field-label" text="تأكيد كلمة المرور"/>
-            <PasswordField fx:id="confirmPasswordField" styleClass="text-field"
-                           promptText="أعد إدخال كلمة المرور" prefHeight="46"/>
+        <VBox maxWidth="360" prefWidth="360" spacing="6">
+            <Label styleClass="field-label" text="تأكيد كلمة المرور" />
+            <PasswordField fx:id="confirmPasswordField" prefHeight="44" promptText="أعد إدخال كلمة المرور" styleClass="text-field" />
         </VBox>
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="20"/>
+        <Region maxHeight="18" VBox.vgrow="SOMETIMES" />
 
         <!-- Register button -->
-        <Button fx:id="registerButton"
-                styleClass="primary-button"
-                text="إنشاء الحساب"
-                maxWidth="360" prefWidth="360" prefHeight="50"
-                onAction="#handleRegister"/>
+        <Button fx:id="registerButton" maxWidth="360" onAction="#handleRegister" prefHeight="46" prefWidth="360" styleClass="primary-button" text="إنشاء الحساب" />
 
-        <Region VBox.vgrow="SOMETIMES" maxHeight="16"/>
+        <Region maxHeight="14" VBox.vgrow="SOMETIMES" />
 
         <!-- Back to login -->
         <HBox alignment="CENTER" spacing="4">
-            <Label text="لديك حساب بالفعل؟" styleClass="link-text"/>
-            <Hyperlink fx:id="goToLoginLink" text="تسجيل الدخول"
-                       styleClass="link-hyperlink"
-                       onAction="#goToLogin"/>
+            <Label styleClass="link-text" text="لديك حساب بالفعل؟" />
+            <Hyperlink fx:id="goToLoginLink" onAction="#goToLogin" styleClass="link-hyperlink" text="تسجيل الدخول" />
         </HBox>
 
     </VBox>

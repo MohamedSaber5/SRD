@@ -1,77 +1,79 @@
 /* ═══════════════════════════════════════════════════════════════
-   AAST Room Booking System - JavaFX Desktop Stylesheet
-   Color palette mirrors the web app's Tailwind config
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ── Color Tokens (from web app's tailwind.config.js) ─────────── */
-/* primary:           #003087  (AAST dark blue)                    */
-/* primary-container: #1565C0                                      */
-/* secondary:         #D4AF37  (gold accent)                       */
-/* surface:           #F5F7FA                                      */
-/* on-primary:        #FFFFFF                                      */
-/* error:             #B00020                                      */
+   AAST Room Booking System - JavaFX Login/Register Stylesheet
+   Palette from tailwind.config.js:
+     primary:           #001e40
+     primary-container: #003366
+     primary-fixed:     #d5e3ff
+     secondary:         #775a19
+     secondary-container: #fed488
+     surface:           #f7f9fb
+     on-surface:        #191c1e
+     on-surface-variant:#43474f
+     outline:           #737780
+     outline-variant:   #c3c6d1
+     error:             #ba1a1a
+     error-container:   #ffdad6
+═══════════════════════════════════════════════════════════════ */
 
 /* ── Root / Background ─────────────────────────────────────────── */
 .root-container {
-    -fx-background-color: #003087;
-    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-background-color: #001e40;
 }
 
-/* ── Brand Panel (Left - Blue) ─────────────────────────────────── */
+/* ── Brand Panel (visually Right in RTL) ───────────────────────── */
 .brand-panel {
-    -fx-background-color: linear-gradient(to bottom right, #003087, #1565C0);
+    -fx-background-color: #001e40;
 }
 
 .brand-title {
-    -fx-text-fill: #FFFFFF;
-    -fx-font-size: 36px;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 34px;
     -fx-font-weight: bold;
-    -fx-text-alignment: right;
-    -fx-alignment: CENTER_RIGHT;
+    -fx-text-alignment: center;
+    -fx-alignment: CENTER;
     -fx-wrap-text: true;
 }
 
 .brand-subtitle {
-    -fx-text-fill: #D4AF37;
-    -fx-font-size: 36px;
+    -fx-text-fill: #fed488;
+    -fx-font-size: 34px;
     -fx-font-weight: bold;
-    -fx-text-alignment: right;
-    -fx-alignment: CENTER_RIGHT;
+    -fx-text-alignment: center;
+    -fx-alignment: CENTER;
 }
 
 .brand-body {
-    -fx-text-fill: rgba(255, 255, 255, 0.80);
-    -fx-font-size: 15px;
+    -fx-text-fill: rgba(255, 255, 255, 0.70);
+    -fx-font-size: 14px;
     -fx-wrap-text: true;
-    -fx-text-alignment: right;
-    -fx-alignment: CENTER_RIGHT;
+    -fx-text-alignment: center;
+    -fx-alignment: CENTER;
     -fx-line-spacing: 4px;
 }
 
 .dot-accent {
-    -fx-background-color: #D4AF37;
+    -fx-background-color: #fed488;
     -fx-background-radius: 50%;
-    -fx-min-width: 10px;
-    -fx-min-height: 10px;
-    -fx-max-width: 10px;
-    -fx-max-height: 10px;
+    -fx-min-width: 8px;
+    -fx-min-height: 8px;
+    -fx-max-width: 8px;
+    -fx-max-height: 8px;
 }
 
-/* ── Form Panel (Right - White Card) ───────────────────────────── */
+/* ── Form Panel (visually Left in RTL — White Card) ────────────── */
 .form-panel {
-    -fx-background-color: #FFFFFF;
-    -fx-background-radius: 20px 0 0 20px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 30, 0, -8, 0);
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 0 24 24 0;
 }
 
 .logo-icon {
-    -fx-font-size: 48px;
+    -fx-font-size: 42px;
     -fx-text-alignment: center;
     -fx-alignment: CENTER;
 }
 
 .form-title {
-    -fx-text-fill: #003087;
+    -fx-text-fill: #001e40;
     -fx-font-size: 26px;
     -fx-font-weight: bold;
     -fx-text-alignment: center;
@@ -79,7 +81,7 @@
 }
 
 .form-subtitle {
-    -fx-text-fill: #6B7280;
+    -fx-text-fill: #737780;
     -fx-font-size: 13px;
     -fx-text-alignment: center;
     -fx-alignment: CENTER;
@@ -88,7 +90,7 @@
 
 /* ── Form Fields ────────────────────────────────────────────────── */
 .field-label {
-    -fx-text-fill: #374151;
+    -fx-text-fill: #43474f;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-alignment: right;
@@ -96,74 +98,67 @@
 }
 
 .text-field {
-    -fx-background-color: #F3F4F6;
-    -fx-background-radius: 10px;
-    -fx-border-color: #E5E7EB;
-    -fx-border-radius: 10px;
-    -fx-border-width: 1.5px;
-    -fx-padding: 10px 16px;
+    -fx-background-color: #f7f9fb;
+    -fx-background-radius: 8px;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1;
+    -fx-padding: 10 14;
     -fx-font-size: 14px;
-    -fx-text-fill: #1F2937;
-    -fx-prompt-text-fill: #9CA3AF;
+    -fx-text-fill: #191c1e;
+    -fx-prompt-text-fill: #737780;
     -fx-alignment: CENTER_RIGHT;
 }
 
 .text-field:focused {
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #003087;
-    -fx-border-width: 2px;
-    -fx-effect: dropshadow(gaussian, rgba(0,48,135,0.15), 8, 0, 0, 2);
+    -fx-background-color: #ffffff;
+    -fx-border-color: #001e40;
+    -fx-border-width: 1.5;
 }
 
 .combo-box {
-    -fx-background-color: #F3F4F6;
-    -fx-background-radius: 10px;
-    -fx-border-color: #E5E7EB;
-    -fx-border-radius: 10px;
-    -fx-border-width: 1.5px;
+    -fx-background-color: #f7f9fb;
+    -fx-background-radius: 8px;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1;
     -fx-font-size: 14px;
 }
 
 .combo-box:focused {
-    -fx-border-color: #003087;
-    -fx-border-width: 2px;
+    -fx-border-color: #001e40;
+    -fx-border-width: 1.5;
 }
 
 /* ── Primary Button ────────────────────────────────────────────── */
 .primary-button {
-    -fx-background-color: linear-gradient(to bottom right, #003087, #1565C0);
-    -fx-text-fill: #FFFFFF;
-    -fx-font-size: 16px;
+    -fx-background-color: #001e40;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-background-radius: 12px;
+    -fx-background-radius: 8px;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0,48,135,0.35), 12, 0, 0, 4);
 }
 
 .primary-button:hover {
-    -fx-background-color: linear-gradient(to bottom right, #1565C0, #1976D2);
-    -fx-effect: dropshadow(gaussian, rgba(0,48,135,0.50), 18, 0, 0, 6);
-    -fx-scale-x: 1.02;
-    -fx-scale-y: 1.02;
+    -fx-background-color: #003366;
 }
 
 .primary-button:pressed {
-    -fx-scale-x: 0.98;
-    -fx-scale-y: 0.98;
-    -fx-effect: dropshadow(gaussian, rgba(0,48,135,0.25), 8, 0, 0, 2);
+    -fx-background-color: #001530;
 }
 
 .primary-button:disabled {
-    -fx-opacity: 0.65;
+    -fx-opacity: 0.5;
 }
 
 /* ── Error Label ────────────────────────────────────────────────── */
 .error-label {
-    -fx-background-color: #FEE2E2;
-    -fx-text-fill: #991B1B;
+    -fx-background-color: #ffdad6;
+    -fx-text-fill: #ba1a1a;
     -fx-font-size: 13px;
     -fx-background-radius: 8px;
-    -fx-padding: 10px 14px;
+    -fx-padding: 10 14;
     -fx-wrap-text: true;
     -fx-text-alignment: center;
     -fx-alignment: CENTER;
@@ -172,12 +167,12 @@
 
 /* ── Links ──────────────────────────────────────────────────────── */
 .link-text {
-    -fx-text-fill: #6B7280;
+    -fx-text-fill: #737780;
     -fx-font-size: 13px;
 }
 
 .link-hyperlink {
-    -fx-text-fill: #003087;
+    -fx-text-fill: #001e40;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-border-color: transparent;
@@ -187,27 +182,27 @@
 
 .link-hyperlink:hover {
     -fx-underline: true;
-    -fx-text-fill: #1565C0;
+    -fx-text-fill: #003366;
 }
 
 /* ── Loading ────────────────────────────────────────────────────── */
 .loading-spinner {
-    -fx-progress-color: #003087;
+    -fx-progress-color: #001e40;
 }
 
 .loading-label {
-    -fx-text-fill: #6B7280;
+    -fx-text-fill: #737780;
     -fx-font-size: 13px;
 }
 
 /* ── Scrollbars (global cleanup) ────────────────────────────────── */
 .scroll-bar:vertical .track,
 .scroll-bar:horizontal .track {
-    -fx-background-color: #F3F4F6;
+    -fx-background-color: transparent;
 }
 
 .scroll-bar:vertical .thumb,
 .scroll-bar:horizontal .thumb {
-    -fx-background-color: #D1D5DB;
+    -fx-background-color: #c3c6d1;
     -fx-background-radius: 4px;
 }

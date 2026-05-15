@@ -1,27 +1,29 @@
 /* ═══════════════════════════════════════════════════════════════
    Employee Dashboard CSS — AAST Room Booking System
-   Primary: #003087 | Gold: #D4AF37 | Surface: #F5F7FA
-   NOTE: Sidebar/Nav styles are now in dashboard-common.css
+   Palette from tailwind.config.js
+   NOTE: Sidebar/Nav styles are in dashboard-common.css
 ═══════════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════════════════════
    CONTENT AREA
 ══════════════════════════════════════════════════════════════ */
-.content-area  { -fx-background-color: #F5F7FA; }
+.content-area  { -fx-background-color: #f2f4f6; }
 .main-scroll   { -fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0; }
 .main-scroll > .viewport { -fx-background-color: transparent; }
 .scroll-pane   { -fx-background-color: transparent; -fx-background: transparent; }
 .scroll-pane .viewport { -fx-background-color: transparent; }
 .scroll-bar:vertical .track  { -fx-background-color: transparent; }
-.scroll-bar:vertical .thumb  { -fx-background-color: #C8D0DC; -fx-background-radius: 4px; }
+.scroll-bar:vertical .thumb  { -fx-background-color: #c3c6d1; -fx-background-radius: 4px; }
+.scroll-bar:horizontal .track { -fx-background-color: transparent; }
+.scroll-bar:horizontal .thumb { -fx-background-color: #c3c6d1; -fx-background-radius: 4px; }
 
 /* ── Page Headers ───────────────────────────────────────────── */
-.page-title    { -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #003087; }
-.page-subtitle { -fx-font-size: 13px; -fx-text-fill: #6B7280; }
+.page-title    { -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #001e40; }
+.page-subtitle { -fx-font-size: 13px; -fx-text-fill: #737780; }
 .section-title {
     -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-text-fill: #111827;
+    -fx-text-fill: #191c1e;
     -fx-padding: 0 0 4 0;
 }
 
@@ -29,181 +31,356 @@
    STAT CARDS
 ══════════════════════════════════════════════════════════════ */
 .stat-card {
-    -fx-background-color: white;
-    -fx-background-radius: 14px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);
-    -fx-border-width: 0 0 3 0;
-    -fx-border-radius: 0 0 14 14;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12px;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1;
 }
-.stat-approved  { -fx-border-color: #22C55E; }
-.stat-pending   { -fx-border-color: #F59E0B; }
-.stat-rejected  { -fx-border-color: #EF4444; }
+.stat-approved  { -fx-border-color: #059669; -fx-border-width: 0 0 3 0; -fx-border-radius: 0 0 12 12; }
+.stat-pending   { -fx-border-color: #775a19; -fx-border-width: 0 0 3 0; -fx-border-radius: 0 0 12 12; }
+.stat-rejected  { -fx-border-color: #ba1a1a; -fx-border-width: 0 0 3 0; -fx-border-radius: 0 0 12 12; }
 
 .stat-number          { -fx-font-size: 34px; -fx-font-weight: bold; }
-.stat-number-approved { -fx-text-fill: #22C55E; }
-.stat-number-pending  { -fx-text-fill: #F59E0B; }
-.stat-number-rejected { -fx-text-fill: #EF4444; }
-.stat-label { -fx-font-size: 11px; -fx-text-fill: #6B7280; }
+.stat-number-approved { -fx-text-fill: #059669; }
+.stat-number-pending  { -fx-text-fill: #775a19; }
+.stat-number-rejected { -fx-text-fill: #ba1a1a; }
+.stat-label { -fx-font-size: 11px; -fx-text-fill: #737780; }
 
 /* ══════════════════════════════════════════════════════════════
    BOOKING FORM
 ══════════════════════════════════════════════════════════════ */
-.booking-form-root { -fx-background-color: #F5F7FA; }
-.booking-list-root { -fx-background-color: #F5F7FA; }
+.booking-form-root { -fx-background-color: #f2f4f6; }
+.booking-list-root { -fx-background-color: #f2f4f6; }
 
 .form-notice {
-    -fx-text-fill: #92400E;
-    -fx-font-size: 11px;
-    -fx-background-color: #FEF3C7;
-    -fx-background-radius: 6px;
-    -fx-padding: 6 10;
-    -fx-border-color: #FDE68A;
-    -fx-border-radius: 6px;
+    -fx-text-fill: #785a1a;
+    -fx-font-size: 12px;
+    -fx-background-color: #fed488;
+    -fx-background-radius: 8px;
+    -fx-padding: 8 12;
+    -fx-border-color: #e9c176;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1;
+}
+
+/* ── Form Card (white container for each step) ─────────────── */
+.form-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12px;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 12px;
     -fx-border-width: 1;
 }
 
 /* ── Step Indicator ─────────────────────────────────────────── */
 .step-bar {
-    -fx-background-color: white;
+    -fx-background-color: #ffffff;
     -fx-background-radius: 12px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0, 0, 2);
-    -fx-padding: 14 20;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1;
 }
 .step-indicator {
     -fx-min-width: 32px; -fx-min-height: 32px;
+    -fx-max-width: 32px; -fx-max-height: 32px;
     -fx-background-radius: 50%;
     -fx-font-weight: bold; -fx-font-size: 13px;
     -fx-alignment: center;
 }
-.step-active   { -fx-background-color: #003087; -fx-text-fill: white; }
-.step-done     { -fx-background-color: #22C55E; -fx-text-fill: white; }
-.step-inactive { -fx-background-color: #E5E7EB; -fx-text-fill: #9CA3AF; }
-.step-label    { -fx-font-size: 10px; -fx-text-fill: #6B7280; -fx-alignment: center; }
+.step-active   { -fx-background-color: #001e40; -fx-text-fill: #ffffff; }
+.step-done     { -fx-background-color: #059669; -fx-text-fill: #ffffff; }
+.step-inactive { -fx-background-color: #e0e3e5; -fx-text-fill: #737780; }
+.step-label    { -fx-font-size: 11px; -fx-text-fill: #737780; -fx-alignment: center; }
 .step-connector {
-    -fx-background-color: #E5E7EB;
+    -fx-background-color: #e0e3e5;
     -fx-max-height: 2px; -fx-min-height: 2px;
 }
 
 .step-section-title {
-    -fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #003087;
-    -fx-border-color: transparent transparent #E5E7EB transparent;
+    -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #001e40;
+    -fx-border-color: transparent transparent #e0e3e5 transparent;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 0 0 8 0;
+    -fx-padding: 0 0 10 0;
 }
 
-/* ── Form Inputs ────────────────────────────────────────────── */
-.field-label { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151; }
+/* ══════════════════════════════════════════════════════════════
+   TOGGLE BUTTONS (category selector — segmented control)
+══════════════════════════════════════════════════════════════ */
+.toggle-group {
+    -fx-background-color: #e0e3e5;
+    -fx-background-radius: 8px;
+    -fx-padding: 2;
+}
+
+.toggle-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #43474f;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+    -fx-border-color: transparent;
+    -fx-background-radius: 6px;
+}
+
+.toggle-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.6);
+}
+
+/* Right toggle (first in RTL) */
+.toggle-btn-right {
+    -fx-background-radius: 6 0 0 6;
+}
+
+/* Left toggle (second in RTL) */
+.toggle-btn-left {
+    -fx-background-radius: 0 6 6 0;
+}
+
+/* The controller adds/removes "category-active" on click */
+.category-active {
+    -fx-background-color: #001e40 !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-background-radius: 6px;
+}
+
+/* Keep old class for backward compat */
+.category-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #43474f;
+    -fx-cursor: hand; -fx-padding: 8 16;
+    -fx-background-radius: 6px;
+}
+.category-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.5);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORM INPUTS
+══════════════════════════════════════════════════════════════ */
+.field-label {
+    -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #43474f;
+}
 
 .form-input {
-    -fx-background-color: white;
-    -fx-border-color: #D1D5DB;
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #c3c6d1;
     -fx-border-radius: 8px; -fx-background-radius: 8px;
-    -fx-border-width: 1; -fx-padding: 8 12;
-    -fx-font-size: 13px; -fx-prompt-text-fill: #9CA3AF;
+    -fx-border-width: 1; -fx-padding: 9 12;
+    -fx-font-size: 13px; -fx-prompt-text-fill: #737780;
 }
 .form-input:focused {
-    -fx-border-color: #003087; -fx-border-width: 2;
-    -fx-background-color: #FAFBFF;
+    -fx-border-color: #001e40; -fx-border-width: 1.5;
+    -fx-background-color: #ffffff;
 }
 
 .form-combo {
-    -fx-background-color: white;
-    -fx-border-color: #D1D5DB;
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #c3c6d1;
     -fx-border-radius: 8px; -fx-background-radius: 8px;
     -fx-border-width: 1; -fx-padding: 5 10;
     -fx-font-size: 13px;
 }
-.form-combo:focused { -fx-border-color: #003087; -fx-border-width: 2; }
+.form-combo:focused { -fx-border-color: #001e40; -fx-border-width: 1.5; }
 .form-combo .list-cell { -fx-font-size: 13px; }
 
 .form-textarea {
-    -fx-background-color: white;
-    -fx-border-color: #D1D5DB;
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #c3c6d1;
     -fx-border-radius: 8px; -fx-background-radius: 8px;
     -fx-border-width: 1; -fx-padding: 8 12;
     -fx-font-size: 13px;
 }
 .form-textarea:focused {
-    -fx-border-color: #003087; -fx-border-width: 2;
-    -fx-background-color: #FAFBFF;
+    -fx-border-color: #001e40; -fx-border-width: 1.5;
+    -fx-background-color: #ffffff;
+}
+.form-textarea .content {
+    -fx-background-color: transparent;
 }
 
 .error-label {
-    -fx-text-fill: #B91C1C; -fx-font-size: 11px; -fx-font-weight: bold;
-    -fx-background-color: #FEE2E2; -fx-background-radius: 6px;
-    -fx-padding: 4 8;
+    -fx-text-fill: #ba1a1a; -fx-font-size: 12px; -fx-font-weight: bold;
+    -fx-background-color: #ffdad6; -fx-background-radius: 8px;
+    -fx-padding: 6 10;
 }
 
-/* ── Category Buttons ───────────────────────────────────────── */
-.category-btn {
-    -fx-background-color: white;
-    -fx-border-color: #D1D5DB;
-    -fx-border-radius: 10px; -fx-background-radius: 10px;
-    -fx-border-width: 2;
-    -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;
-    -fx-cursor: hand; -fx-padding: 10 16;
-}
-.category-btn:hover {
-    -fx-border-color: #93C5FD;
-    -fx-background-color: #F0F7FF;
-}
-.category-active {
-    -fx-border-color: #003087 !important;
-    -fx-background-color: #EFF6FF !important;
-    -fx-text-fill: #003087 !important;
-    -fx-effect: dropshadow(gaussian, rgba(0,48,135,0.12), 6, 0, 0, 2);
+/* ══════════════════════════════════════════════════════════════
+   MODERN DATE PICKER
+══════════════════════════════════════════════════════════════ */
+.modern-date-picker {
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-border-width: 1;
+    -fx-font-size: 13px;
 }
 
-/* ── Requirements Card ──────────────────────────────────────── */
+.modern-date-picker:focused {
+    -fx-border-color: #001e40;
+    -fx-border-width: 1.5;
+}
+
+.modern-date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 8 10;
+    -fx-font-size: 13px;
+    -fx-prompt-text-fill: #737780;
+}
+
+.modern-date-picker .arrow-button {
+    -fx-background-color: #001e40;
+    -fx-background-radius: 0 7 7 0;
+    -fx-padding: 8 10;
+    -fx-cursor: hand;
+}
+
+.modern-date-picker .arrow-button .arrow {
+    -fx-background-color: #ffffff;
+}
+
+/* DatePicker popup */
+.date-picker-popup {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 16, 0, 0, 4);
+}
+
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: #001e40;
+    -fx-background-radius: 10 10 0 0;
+    -fx-padding: 8;
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .button > .left-arrow,
+.date-picker-popup > .month-year-pane > .spinner > .button > .right-arrow {
+    -fx-background-color: #ffffff;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-text-fill: #737780;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: transparent;
+    -fx-font-size: 12px;
+    -fx-text-fill: #191c1e;
+    -fx-background-radius: 50%;
+    -fx-padding: 4;
+    -fx-cursor: hand;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #d5e3ff;
+}
+
+.date-picker-popup .selected {
+    -fx-background-color: #001e40;
+    -fx-text-fill: #ffffff;
+}
+
+.date-picker-popup .today {
+    -fx-border-color: #001e40;
+    -fx-border-radius: 50%;
+    -fx-border-width: 1.5;
+}
+
+.date-picker-popup .previous-month,
+.date-picker-popup .next-month {
+    -fx-text-fill: #c3c6d1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REQUIREMENTS CARD
+══════════════════════════════════════════════════════════════ */
 .req-card {
-    -fx-background-color: white;
-    -fx-border-color: #E5E7EB;
-    -fx-border-radius: 10px; -fx-background-radius: 10px;
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 8px; -fx-background-radius: 8px;
     -fx-border-width: 1; -fx-padding: 12 14;
 }
-.req-title { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #003087; }
-.req-desc  { -fx-font-size: 11px; -fx-text-fill: #6B7280; }
+.req-title { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #001e40; }
+.req-desc  { -fx-font-size: 11px; -fx-text-fill: #737780; }
+
+/* CheckBox modernization */
+.check-box .box {
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-border-width: 1.5;
+    -fx-padding: 3;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #001e40;
+    -fx-border-color: #001e40;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #ffffff;
+}
 
 /* ══════════════════════════════════════════════════════════════
    BUTTONS
 ══════════════════════════════════════════════════════════════ */
 .btn-primary {
-    -fx-background-color: #003087;
-    -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;
-    -fx-background-radius: 9px; -fx-padding: 10 24;
+    -fx-background-color: #001e40;
+    -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 14px;
+    -fx-background-radius: 8px; -fx-padding: 10 24;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0,48,135,0.28), 6, 0, 0, 2);
 }
-.btn-primary:hover    { -fx-background-color: #002070; }
-.btn-primary:disabled { -fx-background-color: #93C5FD; -fx-effect: none; }
+.btn-primary:hover    { -fx-background-color: #003366; }
+.btn-primary:disabled { -fx-background-color: #c3c6d1; }
 
 .btn-secondary {
-    -fx-background-color: #F3F4F6; -fx-text-fill: #374151;
+    -fx-background-color: #ffffff; -fx-text-fill: #43474f;
     -fx-font-weight: bold; -fx-font-size: 13px;
-    -fx-background-radius: 9px; -fx-padding: 10 20; -fx-cursor: hand;
+    -fx-background-radius: 8px; -fx-padding: 10 20; -fx-cursor: hand;
+    -fx-border-color: #c3c6d1; -fx-border-radius: 8px; -fx-border-width: 1;
 }
-.btn-secondary:hover { -fx-background-color: #E5E7EB; }
+.btn-secondary:hover { -fx-background-color: #f2f4f6; }
 
 .btn-outline {
-    -fx-background-color: transparent; -fx-text-fill: #003087;
+    -fx-background-color: transparent; -fx-text-fill: #001e40;
     -fx-font-weight: bold; -fx-font-size: 12px;
-    -fx-border-color: #003087; -fx-border-radius: 8px; -fx-background-radius: 8px;
+    -fx-border-color: #001e40; -fx-border-radius: 8px; -fx-background-radius: 8px;
     -fx-border-width: 1; -fx-padding: 6 14; -fx-cursor: hand;
 }
-.btn-outline:hover { -fx-background-color: #EFF6FF; }
+.btn-outline:hover { -fx-background-color: #d5e3ff; }
 
 /* ══════════════════════════════════════════════════════════════
    MISC
 ══════════════════════════════════════════════════════════════ */
-.spinner { -fx-progress-color: #003087; }
+.spinner { -fx-progress-color: #001e40; }
 
 .loading-placeholder {
-    -fx-font-size: 14px; -fx-text-fill: #9CA3AF;
+    -fx-font-size: 14px; -fx-text-fill: #737780;
 }
 
+/* Legacy date-picker styling fallback */
 .date-picker .text-field {
-    -fx-background-color: white;
-    -fx-border-color: #D1D5DB;
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #c3c6d1;
     -fx-border-radius: 8px; -fx-background-radius: 8px;
     -fx-border-width: 1; -fx-padding: 8 12; -fx-font-size: 13px;
 }

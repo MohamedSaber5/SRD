@@ -1,52 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.*?>
+<?import java.lang.String?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.aast.booking.employee.EmployeeDashboardController"
-            style="-fx-background-color: #F5F7FA;"
-            nodeOrientation="RIGHT_TO_LEFT"
-            prefWidth="1200" prefHeight="780">
+<BorderPane nodeOrientation="RIGHT_TO_LEFT" prefHeight="780" prefWidth="1200" style="-fx-background-color: #f2f4f6;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="com.aast.booking.employee.EmployeeDashboardController">
     <stylesheets>
-        <java.lang.String fx:value="/css/dashboard-common.css"/>
-        <java.lang.String fx:value="/css/employee.css"/>
+        <java.lang.String fx:value="/css/dashboard-common.css" />
+        <java.lang.String fx:value="/css/employee.css" />
     </stylesheets>
 
-    <!-- ═══ SIDEBAR (Left) ═══════════════════════════════════════════ -->
+    <!-- ═══ SIDEBAR (Left in code → visually RIGHT in RTL) ════════════ -->
     <left>
-        <VBox styleClass="bm-sidebar" spacing="6">
-            <padding><Insets top="24" right="16" bottom="20" left="16"/></padding>
+        <VBox spacing="6" styleClass="bm-sidebar">
+            <padding><Insets bottom="20" left="16" right="16" top="20" /></padding>
 
-            <!-- Logo / Title -->
-            <VBox spacing="2" style="-fx-padding: 0 0 16 0;">
-                <Label text="نظام حجز القاعات" styleClass="bm-sidebar-title" wrapText="true"/>
-                <Label text="الأكاديمية العربية" styleClass="bm-sidebar-subtitle"/>
-                <Label fx:id="userRoleLabel" text="موظف" style="-fx-font-size:11px;-fx-text-fill:#D4AF37;-fx-font-weight:bold;"/>
+            <!-- Logo + Title -->
+            <VBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 16 0;" stylesheets="@../../css/dashboard-common.css">
+                <ImageView fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
+                    <image><Image url="@../../images/logo_aast.jpg" /></image>
+                </ImageView>
+                <Label styleClass="bm-sidebar-title" text="نظام حجز القاعات" wrapText="true" />
+                <Label styleClass="bm-sidebar-subtitle" text="الأكاديمية العربية" />
+                <Label fx:id="userRoleLabel" style="-fx-font-size:11px;-fx-text-fill:#775a19;-fx-font-weight:bold;" text="موظف" />
             </VBox>
 
             <!-- Divider -->
-            <Region styleClass="bm-divider" maxWidth="Infinity"/>
+            <Region maxWidth="Infinity" styleClass="bm-divider" />
 
             <!-- Welcome -->
-            <Label fx:id="userNameLabel" text="مستخدم" styleClass="bm-sidebar-subtitle" wrapText="true"
-                   style="-fx-padding: 8 4; -fx-font-style:italic;"/>
+            <Label fx:id="userNameLabel" style="-fx-padding: 8 4; -fx-font-style:italic;" styleClass="bm-sidebar-subtitle" text="مستخدم" wrapText="true">
+            <stylesheets>
+               <URL value="@../../css/employee.css" />
+               <URL value="@../../css/dashboard-common.css" />
+            </stylesheets></Label>
 
             <!-- Nav Buttons -->
-            <Button fx:id="btnDashboard" text="🏠  لوحة التحكم" maxWidth="Infinity"
-                    styleClass="bm-nav-btn-active" onAction="#showDashboard"/>
-            <Button fx:id="btnNewBooking" text="📋  طلب حجز جديد" maxWidth="Infinity"
-                    styleClass="bm-nav-btn" onAction="#showNewBooking"/>
-            <Button fx:id="btnNotifications" text="🔔  الإشعارات" maxWidth="Infinity"
-                    styleClass="bm-nav-btn" onAction="#showNotifications"/>
+            <Button fx:id="btnDashboard" alignment="CENTER_RIGHT" contentDisplay="RIGHT" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showDashboard" styleClass="bm-nav-btn-active" text="🏠  لوحة التحكم" textAlignment="RIGHT" />
+            <Button fx:id="btnNewBooking" alignment="CENTER_RIGHT" contentDisplay="RIGHT" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showNewBooking" styleClass="bm-nav-btn" text="📋  طلب حجز جديد" textAlignment="RIGHT" />
+            <Button fx:id="btnNotifications" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showNotifications" styleClass="bm-nav-btn" text="🔔  الإشعارات" />
 
-            <Region VBox.vgrow="ALWAYS"/>
+            <Region VBox.vgrow="ALWAYS" />
 
             <!-- Logout -->
-            <Region styleClass="bm-divider" maxWidth="Infinity"/>
-            <Button text="🚪  تسجيل الخروج" maxWidth="Infinity"
-                    styleClass="bm-logout-btn" onAction="#handleLogout"/>
+            <Region maxWidth="Infinity" styleClass="bm-divider" />
+            <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="bm-logout-btn" text="🚪  تسجيل الخروج" />
+         <stylesheets>
+            <URL value="@../../css/employee.css" />
+            <URL value="@../../css/dashboard-common.css" />
+         </stylesheets>
         </VBox>
     </left>
 
@@ -55,17 +66,25 @@
         <VBox spacing="0">
 
             <!-- ─── Top Header ───────────────────────────────────── -->
-            <HBox styleClass="bm-header" alignment="CENTER_LEFT" spacing="16">
+            <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="bm-header">
                 <VBox spacing="2" HBox.hgrow="ALWAYS">
-                    <Label fx:id="pageTitle" text="لوحة التحكم" styleClass="bm-header-title"/>
-                    <Label fx:id="pageSubtitle" text="نظرة عامة على طلبات الحجز" styleClass="bm-header-subtitle"/>
+                    <Label fx:id="pageTitle" styleClass="bm-header-title" text="لوحة التحكم" />
+                    <Label fx:id="pageSubtitle" styleClass="bm-header-subtitle" text="نظرة عامة على طلبات الحجز" />
                 </VBox>
+            <stylesheets>
+               <URL value="@../../css/dashboard-common.css" />
+               <URL value="@../../css/employee.css" />
+            </stylesheets>
             </HBox>
 
             <!-- ─── Page Content (Stack) ─────────────────────────── -->
             <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS">
                 <!-- Content is loaded dynamically by the controller -->
-                <Label text="جاري التحميل..." style="-fx-font-size:14px;-fx-text-fill:#9CA3AF;"/>
+                <Label style="-fx-font-size:14px;-fx-text-fill:#737780;" text="جاري التحميل..." />
+            <stylesheets>
+               <URL value="@../../css/dashboard-common.css" />
+               <URL value="@../../css/employee.css" />
+            </stylesheets>
             </StackPane>
         </VBox>
     </center>
