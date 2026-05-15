@@ -74,6 +74,7 @@ public class FirebaseService {
                 return;
             }
 
+            // Initialize Firebase App for Auth
             FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .setProjectId(PROJECT_ID)
@@ -83,9 +84,20 @@ public class FirebaseService {
                 FirebaseApp.initializeApp(options);
             }
 
-            firestore = FirestoreClient.getFirestore();
+            // Initialize Firestore directly with specific databaseId "default"
+            // Re-read the input stream for credentials as it was consumed
+            InputStream serviceAccountForFirestore = getClass()
+                .getResourceAsStream("/service-account.json");
+                
+            com.google.cloud.firestore.FirestoreOptions firestoreOptions = com.google.cloud.firestore.FirestoreOptions.newBuilder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccountForFirestore))
+                .setProjectId(PROJECT_ID)
+                .setDatabaseId("default")
+                .build();
+                
+            firestore = firestoreOptions.getService();
             initialized = true;
-            System.out.println("[FirebaseService] Firebase initialized successfully.");
+            System.out.println("[FirebaseService] Firebase and Firestore initialized successfully (db: default).");
 
         } catch (IOException e) {
             System.err.println("[FirebaseService] Initialization failed: " + e.getMessage());

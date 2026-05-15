@@ -82,8 +82,8 @@ public class LoginController implements Initializable {
                 Stage stage = SessionManager.getInstance().getPrimaryStage();
                 DashboardFactory.openDashboard(user, stage);
             } catch (IOException ex) {
-                // Dashboard FXML not yet created — show placeholder
-                showPlaceholderDashboard(user);
+                ex.printStackTrace();
+                showDashboardLoadError(user, ex);
             }
         });
 
@@ -137,18 +137,18 @@ public class LoginController implements Initializable {
     }
 
     /**
-     * Shows a temporary placeholder dialog when dashboard FXML isn't built yet.
+     * Shows error when dashboard FXML fails to load.
      */
-    private void showPlaceholderDashboard(User user) {
+    private void showDashboardLoadError(User user, Exception ex) {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("تسجيل دخول ناجح ✓");
-            alert.setHeaderText("مرحباً " + user.getDisplayName());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("خطأ في التحميل");
+            alert.setHeaderText("حدث خطأ أثناء تحميل لوحة التحكم");
             alert.setContentText(
-                "تم تسجيل دخولك بنجاح!\n\n" +
+                "لم نتمكن من تحميل شاشة لوحة التحكم الخاصة بك.\n\n" +
                 "الدور: " + translateRole(user.getRole()) + "\n" +
                 "الرقم الوظيفي: " + user.getEmployeeId() + "\n\n" +
-                "(شاشة لوحة التحكم قيد الإنشاء)"
+                "تفاصيل الخطأ: " + ex.getMessage()
             );
             alert.showAndWait();
         });

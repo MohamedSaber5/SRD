@@ -87,7 +87,8 @@ public class RegisterController implements Initializable {
                 Stage stage = SessionManager.getInstance().getPrimaryStage();
                 DashboardFactory.openDashboard(user, stage);
             } catch (IOException ex) {
-                showSuccessAlert(user);
+                ex.printStackTrace();
+                showDashboardLoadError(user, ex);
             }
         });
 
@@ -146,12 +147,15 @@ public class RegisterController implements Initializable {
         });
     }
 
-    private void showSuccessAlert(User user) {
+    private void showDashboardLoadError(User user, Exception ex) {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("تم إنشاء الحساب ✓");
-            alert.setHeaderText("مرحباً " + user.getDisplayName());
-            alert.setContentText("تم إنشاء حسابك بنجاح!\n(شاشة لوحة التحكم قيد الإنشاء)");
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("خطأ في التحميل");
+            alert.setHeaderText("حدث خطأ أثناء تحميل لوحة التحكم");
+            alert.setContentText(
+                "تم إنشاء حسابك بنجاح، ولكن لم نتمكن من تحميل شاشة لوحة التحكم.\n\n" +
+                "تفاصيل الخطأ: " + ex.getMessage()
+            );
             alert.showAndWait();
         });
     }
