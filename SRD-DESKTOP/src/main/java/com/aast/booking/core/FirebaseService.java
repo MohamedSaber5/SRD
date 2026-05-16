@@ -28,12 +28,12 @@ public class FirebaseService {
     private boolean initialized = false;
 
     // Same Firebase project as web app
-    private static final String PROJECT_ID = "srd-system";
+    private static final String PROJECT_ID = "aast-booking-system";
     // Firebase REST Auth endpoint (used for signInWithEmailAndPassword)
     public static final String FIREBASE_AUTH_URL =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyC4pAHILx_AFP8lHtV3F9hE6Y0_tg9G7r8";
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAolYvwI1kPyNuaguc4xxYCuStRfw8aLuA";
     public static final String FIREBASE_SIGNUP_URL =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyC4pAHILx_AFP8lHtV3F9hE6Y0_tg9G7r8";
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAolYvwI1kPyNuaguc4xxYCuStRfw8aLuA";
 
     private FirebaseService() {}
 
@@ -92,11 +92,10 @@ public class FirebaseService {
             com.google.cloud.firestore.FirestoreOptions firestoreOptions = com.google.cloud.firestore.FirestoreOptions.newBuilder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccountForFirestore))
                 .setProjectId(PROJECT_ID)
-                .setDatabaseId("default")
                 .build();
             firestore = firestoreOptions.getService();
             initialized = true;
-            System.out.println("[FirebaseService] Firebase and Firestore initialized successfully (db: default).");
+            System.out.println("[FirebaseService] Firebase and Firestore initialized successfully.");
 
         } catch (IOException e) {
             System.err.println("[FirebaseService] Initialization failed: " + e.getMessage());

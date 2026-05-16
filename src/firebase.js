@@ -5,20 +5,19 @@ import { getAnalytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyC4pAHILx_AFP8lHtV3F9hE6Y0_tg9G7r8",
-  authDomain: "srd-system.firebaseapp.com",
-  projectId: "srd-system",
-  storageBucket: "srd-system.firebasestorage.app",
-  messagingSenderId: "533558046147",
-  appId: "1:533558046147:web:0585e93b4c0cff3816e176",
-  measurementId: "G-Y960T4Q22J"
+  apiKey: "AIzaSyAolYvwI1kPyNuaguc4xxYCuStRfw8aLuA",
+  authDomain: "aast-booking-system.firebaseapp.com",
+  projectId: "aast-booking-system",
+  storageBucket: "aast-booking-system.firebasestorage.app",
+  messagingSenderId: "724657515386",
+  appId: "1:724657515386:web:ed6ebc9f36df4b661884c3",
+  measurementId: "G-SVSWFX6T14"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-// Attempting 'default' without parentheses as seen in the user's console
-const db = getFirestore(app, "default");
+const db = getFirestore(app);
 
 console.log("🔥 Firebase Initialized for Project:", firebaseConfig.projectId);
 

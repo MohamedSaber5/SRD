@@ -21,8 +21,7 @@ export default function NotificationsPage() {
 
     const q = query(
       collection(db, 'notifications'),
-      where('userId', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -30,6 +29,13 @@ export default function NotificationsPage() {
         id: doc.id,
         ...doc.data()
       }));
+      
+      data.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
+      });
+      
       setNotifications(data);
       setLoading(false);
     });

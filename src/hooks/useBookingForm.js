@@ -80,7 +80,7 @@ export function useBookingForm({ showAlert } = {}) {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const q = query(collection(db, 'rooms'), orderBy('id', 'asc'));
+        const q = query(collection(db, 'rooms'));
         const querySnapshot = await getDocs(q);
         const roomsData = querySnapshot.docs.map(doc => ({ ...doc.data() }));
         setRooms(roomsData);

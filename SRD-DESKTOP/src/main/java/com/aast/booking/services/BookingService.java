@@ -32,7 +32,6 @@ public class BookingService {
             try {
                 QuerySnapshot snapshot = db.collection("bookings")
                     .whereEqualTo("userId", uid)
-                    .orderBy("createdAt", Query.Direction.DESCENDING)
                     .get()
                     .get(); // blocking — safe on background thread
 
@@ -40,6 +39,15 @@ public class BookingService {
                 for (DocumentSnapshot doc : snapshot.getDocuments()) {
                     bookings.add(Booking.fromDocument(doc));
                 }
+                
+                // Sort bookings descending by createdAt
+                bookings.sort((b1, b2) -> {
+                    if (b1.getCreatedAt() == null && b2.getCreatedAt() == null) return 0;
+                    if (b1.getCreatedAt() == null) return 1;
+                    if (b2.getCreatedAt() == null) return -1;
+                    return b2.getCreatedAt().compareTo(b1.getCreatedAt());
+                });
+
                 System.out.println("[BookingService] Found " + bookings.size() + " bookings");
                 Platform.runLater(() -> onUpdate.accept(bookings));
 

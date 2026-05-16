@@ -491,6 +491,8 @@ public class SecretaryDashboardController extends BaseDashboardController implem
             data.put("purpose", newBooking.getPurpose());
             data.put("createdAt", newBooking.getCreatedAt());
             data.put("status", newBooking.getStatus());
+            data.put("roomType", "multi");
+            data.put("hallCategory", "multi");
             data.put("totalCost", newBooking.getTotalCost());
             data.put("description", bookingService.getDescription());
             
