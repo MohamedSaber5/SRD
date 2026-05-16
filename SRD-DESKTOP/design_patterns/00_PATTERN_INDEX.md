@@ -14,17 +14,14 @@ This directory contains comprehensive documentation of all 13 design patterns id
 | 2 | [Factory](pattern_02_Factory.md) | Creational | `core/` | DashboardFactory | Create role-specific dashboard instances |
 | 3 | [Observer](pattern_03_Observer.md) | Behavioral | `core/observer/` | BookingNotifierSubject, NotificationObserver | Publish booking events to multiple subscribers |
 | 4 | [Facade](pattern_04_Facade.md) | Structural | `auth/`, `admin/facade/` | AuthService, AdminBookingFacade | Simplify complex Firebase interactions |
-| 5 | [Composite](pattern_05_Composite.md) | Structural | `patterns/permissions/` | PermissionComponent, PermissionGroup, LeafPermission | Hierarchical permission structures |
 | 6 | [Decorator](pattern_06_Decorator.md) | Structural | `secretary/form/` | BookingDecorator, WithCateringDecorator, WithProjectorDecorator | Add features to bookings dynamically |
-| 7 | [Memento](pattern_07_Memento.md) | Behavioral | `secretary/form/`, `admin/` | BookingMemento, BookingCaretaker, AdminBookingMemento | Undo/redo form state and audit trail |
 | 8 | [Builder](pattern_08_Builder.md) | Creational | `patterns/builder/` | BookingBuilder, StandardBookingBuilder | Construct complex booking objects step-by-step |
 | 9 | [Command](pattern_09_Command.md) | Behavioral | `patterns/command/` | Command, ApproveBookingCommand, RejectBookingCommand | Encapsulate booking actions as objects |
 | 10 | [Strategy](pattern_10_Strategy.md) | Behavioral | `admin/search/`, `admin/strategies/` | RoomSearchStrategy, IApprovalStrategy, SearchStrategyFactory | Different algorithms for room search and approval |
 | 11 | [Prototype](pattern_11_Prototype.md) | Creational | `models/` | Booking.clone() | Clone bookings for resubmission |
-| 12 | [Template Method](pattern_12_Template_Method.md) | Behavioral | `core/` | BaseDashboardController | Define dashboard initialization skeleton |
-| 13 | [Mediator](pattern_13_Mediator.md) | Behavioral | `secretary/ui/` | DashboardNavigationMediator | Coordinate view transitions |
 
----
+
+-----
 
 ## Patterns by Category
 
