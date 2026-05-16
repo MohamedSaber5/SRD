@@ -1,0 +1,1049 @@
+{
+  "diagrams": [
+    {
+      "file": "pattern_01_Singleton.md",
+      "order": 1,
+      "type": "classDiagram",
+      "lineNumber": 169,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class SessionManager {\n        -static instance: SessionManager\n        -currentUser: User\n        -primaryStage: Stage\n        -idToken: String\n        -SessionManager()\n        +static getInstance() SessionManager\n        +getCurrentUser() User\n        +setCurrentUser(user: User) void\n        +getPrimaryStage() Stage\n        +setPrimaryStage(stage: Stage) void\n        +getIdToken() String\n        +setIdToken(token: String) void\n        +clearSession() void\n        +isLoggedIn() boolean\n    }\n\n    class FirebaseService {\n        -static instance: FirebaseService\n        -firestore: Firestore\n        -initialized: boolean\n        -FirebaseService()\n        +static getInstance() FirebaseService\n        +initialize() void\n        +getFirestore() Firestore\n        +isInitialized() boolean\n        +hasFirestoreAccess() boolean\n    }\n\n    class BookingNotifierSubject {\n        -static instance: BookingNotifierSubject\n        -observers: List~NotificationObserver~\n        -BookingNotifierSubject()\n        +static getInstance() BookingNotifierSubject\n        +addObserver(observer: NotificationObserver) void\n        +removeObserver(observer: NotificationObserver) void\n        +notifyObservers(message: String) void\n    }\n```"
+    },
+    {
+      "file": "pattern_01_Singleton.md",
+      "order": 2,
+      "type": "sequenceDiagram",
+      "lineNumber": 215,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    actor User\n    participant LoginController\n    participant SessionManager\n    participant FirebaseService\n    participant Dashboard\n\n    User->>LoginController: Enter Employee ID & Password\n    LoginController->>LoginController: Validate credentials via Firebase REST API\n    LoginController->>SessionManager: getInstance()\n    activate SessionManager\n    SessionManager-->>LoginController: Return singleton instance\n    deactivate SessionManager\n\n    LoginController->>SessionManager: setCurrentUser(user)\n    LoginController->>SessionManager: setIdToken(token)\n    LoginController->>SessionManager: setPrimaryStage(stage)\n\n    LoginController->>Dashboard: Load dashboard based on user role\n    activate Dashboard\n    Dashboard->>SessionManager: getInstance()\n    SessionManager-->>Dashboard: Return same instance\n    Dashboard->>SessionManager: getCurrentUser()\n    SessionManager-->>Dashboard: Return user object\n    deactivate Dashboard\n\n    Dashboard-->>User: Display personalized dashboard\n```"
+    },
+    {
+      "file": "pattern_01_Singleton.md",
+      "order": 3,
+      "type": "sequenceDiagram",
+      "lineNumber": 249,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant App as Application Startup\n    participant FirebaseService\n    participant Firebase\n    participant Firestore\n\n    App->>FirebaseService: getInstance()\n    FirebaseService-->>App: Return singleton instance\n\n    App->>FirebaseService: initialize()\n    activate FirebaseService\n    \n    alt Service Already Initialized\n        FirebaseService->>FirebaseService: Check initialized flag\n        FirebaseService-->>App: Return early (no-op)\n    else First Time Initialization\n        FirebaseService->>Firebase: Load service-account.json credentials\n        FirebaseService->>Firebase: Initialize Firebase Admin SDK\n        FirebaseService->>Firestore: Initialize Firestore with project ID\n        Firestore-->>FirebaseService: Return Firestore connection\n        FirebaseService->>FirebaseService: Set initialized = true\n        FirebaseService-->>App: Initialization complete\n    end\n    deactivate FirebaseService\n\n    loop Throughout Application Lifetime\n        App->>FirebaseService: getInstance()\n        FirebaseService-->>App: Return same instance (already initialized)\n    end\n```"
+    },
+    {
+      "file": "pattern_01_Singleton.md",
+      "order": 4,
+      "type": "graph TD",
+      "lineNumber": 396,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[Singleton: SessionManager] -->|used by| B[LoginController]\n    A -->|used by| C[All Dashboard Controllers]\n    A -->|used by| D[All Services]\n    \n    E[Singleton: FirebaseService] -->|used by| F[AuthService]\n    E -->|used by| G[Repository Classes]\n    \n    H[Singleton: BookingNotifierSubject] -->|combines with| I[Observer Pattern]\n    H -->|notifies| J[NotificationObserver implementations]\n```"
+    },
+    {
+      "file": "pattern_02_Factory.md",
+      "order": 5,
+      "type": "classDiagram",
+      "lineNumber": 142,
+      "relationships": [
+        {
+          "from": "DashboardFactory",
+          "to": "User",
+          "arrow": "-->"
+        },
+        {
+          "from": "DashboardFactory",
+          "to": "Stage",
+          "arrow": "-->"
+        },
+        {
+          "from": "DashboardFactory",
+          "to": "Scene",
+          "arrow": "-->"
+        },
+        {
+          "from": "DashboardFactory",
+          "to": "FXMLLoader",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class DashboardFactory {\n        +static openDashboard(user: User, stage: Stage) void\n        -static resolveFxmlPath(role: String) String\n        -static resolveTitle(role: String) String\n    }\n\n    class User {\n        -id: String\n        -role: String\n        -displayName: String\n        +getRole() String\n        +getDisplayName() String\n    }\n\n    class Stage {\n        +setScene(scene: Scene) void\n        +setTitle(title: String) void\n        +setMaximized(maximized: boolean) void\n    }\n\n    class Scene {\n        +getStylesheets() ObservableList~String~\n    }\n\n    class FXMLLoader {\n        +load() Parent\n    }\n\n    DashboardFactory --> User : uses\n    DashboardFactory --> Stage : updates\n    DashboardFactory --> Scene : creates\n    DashboardFactory --> FXMLLoader : creates\n```"
+    },
+    {
+      "file": "pattern_02_Factory.md",
+      "order": 6,
+      "type": "sequenceDiagram",
+      "lineNumber": 182,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    actor User as User\n    participant LoginController\n    participant FirebaseService\n    participant DashboardFactory\n    participant FXMLLoader\n    participant Stage\n\n    User->>LoginController: Login with credentials\n    LoginController->>FirebaseService: Authenticate and fetch user role\n    FirebaseService-->>LoginController: Return User object with role\n    \n    LoginController->>DashboardFactory: openDashboard(user, primaryStage)\n    activate DashboardFactory\n    \n    DashboardFactory->>DashboardFactory: resolveFxmlPath(user.role)\n    DashboardFactory->>DashboardFactory: resolveTitle(user.role)\n    \n    alt User is Admin\n        DashboardFactory-->>DashboardFactory: Return \"/fxml/admin/AdminDashboard.fxml\"\n        DashboardFactory-->>DashboardFactory: Return \"لوحة تحكم المسؤول\"\n    else User is Branch Manager\n        DashboardFactory-->>DashboardFactory: Return \"/fxml/branchmanager/BranchManagerDashboard.fxml\"\n        DashboardFactory-->>DashboardFactory: Return \"لوحة مدير الفرع\"\n    else User is Secretary\n        DashboardFactory-->>DashboardFactory: Return \"/fxml/secretary/SecretaryDashboard.fxml\"\n        DashboardFactory-->>DashboardFactory: Return \"لوحة السكرتير\"\n    else User is Employee\n        DashboardFactory-->>DashboardFactory: Return \"/fxml/employee/EmployeeDashboard.fxml\"\n        DashboardFactory-->>DashboardFactory: Return \"لوحة الموظف\"\n    end\n    \n    DashboardFactory->>FXMLLoader: Load FXML from resolved path\n    FXMLLoader-->>DashboardFactory: Return Parent (root node)\n    \n    DashboardFactory->>DashboardFactory: Create Scene from Parent\n    DashboardFactory->>DashboardFactory: Load base CSS (styles.css)\n    DashboardFactory->>DashboardFactory: Load role CSS (admin.css, etc.)\n    \n    DashboardFactory->>Stage: setTitle(titleInArabic)\n    DashboardFactory->>Stage: setScene(scene)\n    DashboardFactory->>Stage: setMaximized(true)\n    \n    deactivate DashboardFactory\n    Stage-->>User: Display role-specific dashboard\n```"
+    },
+    {
+      "file": "pattern_02_Factory.md",
+      "order": 7,
+      "type": "graph TD",
+      "lineNumber": 327,
+      "relationships": [
+        {
+          "from": "C",
+          "to": "G",
+          "arrow": "-->"
+        },
+        {
+          "from": "D",
+          "to": "H",
+          "arrow": "-->"
+        },
+        {
+          "from": "E",
+          "to": "I",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "J",
+          "arrow": "-->"
+        },
+        {
+          "from": "G",
+          "to": "K",
+          "arrow": "-->"
+        },
+        {
+          "from": "H",
+          "to": "K",
+          "arrow": "-->"
+        },
+        {
+          "from": "I",
+          "to": "K",
+          "arrow": "-->"
+        },
+        {
+          "from": "J",
+          "to": "K",
+          "arrow": "-->"
+        },
+        {
+          "from": "K",
+          "to": "L",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[Login Successful] --> B{User Role?}\n    B -->|admin or temp_admin| C[AdminDashboard.fxml]\n    B -->|branch_manager| D[BranchManagerDashboard.fxml]\n    B -->|secretary| E[SecretaryDashboard.fxml]\n    B -->|employee or null| F[EmployeeDashboard.fxml]\n    \n    C --> G[Apply admin.css]\n    D --> H[Apply branchmanager.css]\n    E --> I[Apply secretary.css]\n    F --> J[Apply employee.css]\n    \n    G --> K[Set title in Arabic]\n    H --> K\n    I --> K\n    J --> K\n    \n    K --> L[Display Dashboard]\n```"
+    },
+    {
+      "file": "pattern_02_Factory.md",
+      "order": 8,
+      "type": "graph TD",
+      "lineNumber": 352,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    DashboardFactory -->|uses| SessionManager[Singleton: SessionManager]\n    DashboardFactory -->|creates| FXMLLoader[JavaFX FXMLLoader]\n    DashboardFactory -->|configures| Scene[JavaFX Scene]\n    \n    LoginController -->|calls| DashboardFactory\n    LoginController -->|uses| AuthService[Facade: AuthService]\n    \n    AdminDashboardController -->|extends| BaseDashboardController\n    BranchManagerDashboardController -->|extends| BaseDashboardController\n    SecretaryDashboardController -->|extends| BaseDashboardController\n    EmployeeDashboardController -->|extends| BaseDashboardController\n```"
+    },
+    {
+      "file": "pattern_03_Observer.md",
+      "order": 9,
+      "type": "classDiagram",
+      "lineNumber": 174,
+      "relationships": [
+        {
+          "from": "BookingNotifierSubject",
+          "to": "NotificationObserver",
+          "arrow": "-->"
+        },
+        {
+          "from": "BookingService",
+          "to": "BookingNotifierSubject",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class BookingNotifierSubject {\n        -static instance: BookingNotifierSubject\n        -observers: List~NotificationObserver~\n        -BookingNotifierSubject()\n        +static getInstance() BookingNotifierSubject\n        +addObserver(observer: NotificationObserver) void\n        +removeObserver(observer: NotificationObserver) void\n        +notifyObservers(message: String) void\n    }\n\n    class NotificationObserver {\n        <<interface>>\n        +onNotificationReceived(message: String) void\n    }\n\n    class NotificationsController {\n        +onNotificationReceived(message: String) void\n        +displayNotification(message: String) void\n    }\n\n    class EmployeeDashboardController {\n        +onNotificationReceived(message: String) void\n        +updateBookingCounters() void\n    }\n\n    class AdminDashboardController {\n        +onNotificationReceived(message: String) void\n        +refreshPendingRequests() void\n    }\n\n    class BookingService {\n        +updateBookingStatus(bookingId: String, status: String) void\n        -notifyObservers(message: String) void\n    }\n\n    BookingNotifierSubject --> NotificationObserver : notifies\n    NotificationsController --|> NotificationObserver : implements\n    EmployeeDashboardController --|> NotificationObserver : implements\n    AdminDashboardController --|> NotificationObserver : implements\n    BookingService --> BookingNotifierSubject : uses\n```"
+    },
+    {
+      "file": "pattern_03_Observer.md",
+      "order": 10,
+      "type": "sequenceDiagram",
+      "lineNumber": 222,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    actor Admin as Admin User\n    participant AdminController as AdminDashboardController\n    participant BookingService\n    participant Firestore\n    participant Subject as BookingNotifierSubject\n    participant NotifController as NotificationsController\n    participant DashboardController as EmployeeDashboardController\n\n    AdminController->>AdminController: initialize()\n    activate AdminController\n    AdminController->>Subject: addObserver(this)\n    deactivate AdminController\n\n    DashboardController->>DashboardController: initialize()\n    activate DashboardController\n    DashboardController->>Subject: addObserver(this)\n    deactivate DashboardController\n\n    NotifController->>NotifController: initialize()\n    activate NotifController\n    NotifController->>Subject: addObserver(this)\n    deactivate NotifController\n\n    Admin->>AdminController: Click \"Approve Booking\"\n    activate AdminController\n    AdminController->>BookingService: updateBookingStatus(bookingId, \"approved\")\n    deactivate AdminController\n\n    activate BookingService\n    BookingService->>Firestore: Update booking status in database\n    activate Firestore\n    Firestore-->>BookingService: Confirmation\n    deactivate Firestore\n\n    BookingService->>Subject: notifyObservers(\"Booking approved\")\n    deactivate BookingService\n\n    activate Subject\n    Subject->>NotificationsController: onNotificationReceived(message)\n    Subject->>EmployeeDashboardController: onNotificationReceived(message)\n    Subject->>AdminDashboardController: onNotificationReceived(message)\n    deactivate Subject\n\n    activate NotificationsController\n    NotificationsController->>NotificationsController: Platform.runLater()\n    NotificationsController->>NotificationsController: displayNotification()\n    deactivate NotificationsController\n\n    activate DashboardController\n    DashboardController->>DashboardController: Platform.runLater()\n    DashboardController->>DashboardController: updateBookingCounters()\n    deactivate DashboardController\n\n    activate AdminDashboardController\n    AdminDashboardController->>AdminDashboardController: Platform.runLater()\n    AdminDashboardController->>AdminDashboardController: refreshPendingRequests()\n    deactivate AdminDashboardController\n```"
+    },
+    {
+      "file": "pattern_03_Observer.md",
+      "order": 11,
+      "type": "graph TD",
+      "lineNumber": 408,
+      "relationships": [
+        {
+          "from": "B",
+          "to": "C",
+          "arrow": "-->"
+        },
+        {
+          "from": "C",
+          "to": "D",
+          "arrow": "-->"
+        },
+        {
+          "from": "D",
+          "to": "E",
+          "arrow": "-->"
+        },
+        {
+          "from": "E",
+          "to": "F",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "G",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "H",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "I",
+          "arrow": "-->"
+        },
+        {
+          "from": "G",
+          "to": "J",
+          "arrow": "-->"
+        },
+        {
+          "from": "H",
+          "to": "K",
+          "arrow": "-->"
+        },
+        {
+          "from": "I",
+          "to": "L",
+          "arrow": "-->"
+        },
+        {
+          "from": "J",
+          "to": "M",
+          "arrow": "-->"
+        },
+        {
+          "from": "K",
+          "to": "N",
+          "arrow": "-->"
+        },
+        {
+          "from": "L",
+          "to": "O",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[Booking Status Change] --> B[BookingService.updateStatus]\n    B --> C[Firestore Update]\n    C --> D[Success Callback]\n    D --> E[BookingNotifierSubject.notifyObservers]\n    \n    E --> F{For Each Observer}\n    F --> G[NotificationsController.onNotificationReceived]\n    F --> H[EmployeeDashboardController.onNotificationReceived]\n    F --> I[AdminDashboardController.onNotificationReceived]\n    \n    G --> J[Platform.runLater]\n    H --> K[Platform.runLater]\n    I --> L[Platform.runLater]\n    \n    J --> M[Update Notification List]\n    K --> N[Update Booking Counters]\n    L --> O[Refresh Pending Requests]\n```"
+    },
+    {
+      "file": "pattern_03_Observer.md",
+      "order": 12,
+      "type": "graph TD",
+      "lineNumber": 465,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    BookingNotifierSubject -->|Singleton| DesignPatterns[\"Singleton Pattern\"]\n    BookingNotifierSubject -->|Observer| ObserverPattern[\"Observer Pattern\"]\n    \n    BookingService -->|uses| BookingNotifierSubject\n    AdminBookingFacade -->|uses| BookingNotifierSubject\n    \n    NotificationsController -->|implements| NotificationObserver\n    DashboardControllers -->|implements| NotificationObserver\n    \n    Services -->|publishes via| BookingNotifierSubject\n    Controllers -->|subscribe via| BookingNotifierSubject\n```"
+    },
+    {
+      "file": "pattern_04_Facade.md",
+      "order": 13,
+      "type": "classDiagram",
+      "lineNumber": 246,
+      "relationships": [
+        {
+          "from": "AuthService",
+          "to": "FirebaseService",
+          "arrow": "-->"
+        },
+        {
+          "from": "AuthService",
+          "to": "SessionManager",
+          "arrow": "-->"
+        },
+        {
+          "from": "AdminBookingFacade",
+          "to": "FirebaseService",
+          "arrow": "-->"
+        },
+        {
+          "from": "AdminBookingFacade",
+          "to": "IApprovalStrategy",
+          "arrow": "-->"
+        },
+        {
+          "from": "AdminBookingFacade",
+          "to": "MultiPurposeApprovalStrategy",
+          "arrow": "-->"
+        },
+        {
+          "from": "AdminBookingFacade",
+          "to": "LectureApprovalStrategy",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class AuthService {\n        -static httpClient: OkHttpClient\n        -static gson: Gson\n        +static login(employeeId: String, password: String) User\n        +static register(employeeId: String, password: String) User\n        +static formatEmail(employeeId: String) String\n        -static authenticateViaRest(email: String, password: String) String\n        -static fetchIdToken(email: String, password: String) String\n        -static fetchRoleFromFirestore(uid: String) String\n    }\n\n    class AdminBookingFacade {\n        -pendingRequestsListener: ListenerRegistration\n        +listenToPendingRequests(onUpdate: Consumer, onError: Consumer) void\n        +approveRequest(booking: Booking, roomId: String, isUrgent: boolean, onSuccess: Runnable, onError: Consumer) void\n        +rejectRequest(booking: Booking, reason: String, suggestions: List, onSuccess: Runnable, onError: Consumer) void\n        -selectApprovalStrategy(roomType: String) IApprovalStrategy\n    }\n\n    class IApprovalStrategy {\n        <<interface>>\n        +approve(booking: Booking, roomId: String, isUrgent: boolean) boolean\n    }\n\n    class MultiPurposeApprovalStrategy {\n        +approve(booking: Booking, roomId: String, isUrgent: boolean) boolean\n    }\n\n    class LectureApprovalStrategy {\n        +approve(booking: Booking, roomId: String, isUrgent: boolean) boolean\n    }\n\n    class FirebaseService {\n        -static instance: FirebaseService\n        -firestore: Firestore\n        +static getInstance() FirebaseService\n        +getFirestore() Firestore\n    }\n\n    class SessionManager {\n        -static instance: SessionManager\n        -currentUser: User\n        +static getInstance() SessionManager\n        +setCurrentUser(user: User) void\n    }\n\n    AuthService --> FirebaseService: uses\n    AuthService --> SessionManager: updates\n    AdminBookingFacade --> FirebaseService: uses\n    AdminBookingFacade --> IApprovalStrategy: uses\n    AdminBookingFacade --> MultiPurposeApprovalStrategy: creates\n    AdminBookingFacade --> LectureApprovalStrategy: creates\n```"
+    },
+    {
+      "file": "pattern_04_Facade.md",
+      "order": 14,
+      "type": "sequenceDiagram",
+      "lineNumber": 306,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant User as User\n    participant LoginController as LoginController\n    participant AuthService\n    participant FirebaseREST as Firebase REST API\n    participant Firestore\n    participant SessionManager\n\n    User->>LoginController: Enter employee ID & password\n    LoginController->>AuthService: login(employeeId, password)\n    activate AuthService\n    \n    AuthService->>AuthService: formatEmail(employeeId)\n    AuthService-->>AuthService: Return email\n    \n    AuthService->>FirebaseREST: POST signInWithPassword (email, password)\n    activate FirebaseREST\n    FirebaseREST-->>AuthService: Return uid, idToken\n    deactivate FirebaseREST\n    \n    AuthService->>Firestore: Query users collection for role\n    activate Firestore\n    Firestore-->>AuthService: Return user document with role\n    deactivate Firestore\n    \n    AuthService->>AuthService: Apply role promotion logic\n    AuthService-->>AuthService: Create User object\n    \n    deactivate AuthService\n    LoginController-->>LoginController: Receive User object\n    \n    LoginController->>SessionManager: setCurrentUser(user)\n    LoginController->>SessionManager: setIdToken(idToken)\n    \n    LoginController-->>User: Navigate to dashboard\n```"
+    },
+    {
+      "file": "pattern_04_Facade.md",
+      "order": 15,
+      "type": "sequenceDiagram",
+      "lineNumber": 348,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant AdminUI as Admin Dashboard UI\n    participant AdminController as AdminController\n    participant AdminFacade as AdminBookingFacade\n    participant Strategy as IApprovalStrategy\n    participant Firestore\n\n    AdminUI->>AdminController: Click \"Approve Booking\"\n    activate AdminController\n    AdminController->>AdminFacade: approveRequest(booking, roomId, isUrgent, callback)\n    deactivate AdminController\n\n    activate AdminFacade\n    AdminFacade->>AdminFacade: selectApprovalStrategy(roomType)\n    \n    alt Room Type is \"multi\"\n        AdminFacade->>Strategy: Create MultiPurposeApprovalStrategy\n    else Room Type is \"fixed\"\n        AdminFacade->>Strategy: Create LectureApprovalStrategy\n    end\n    \n    AdminFacade->>Strategy: approve(booking, roomId, isUrgent)\n    activate Strategy\n    Strategy->>Firestore: Update booking status\n    Firestore-->>Strategy: Success\n    Strategy->>Firestore: Update room assignment\n    Firestore-->>Strategy: Success\n    Strategy-->>AdminFacade: Return true\n    deactivate Strategy\n    \n    AdminFacade-->>AdminFacade: Platform.runLater(onSuccess)\n    deactivate AdminFacade\n    \n    AdminUI-->>AdminUI: Update pending requests list\n```"
+    },
+    {
+      "file": "pattern_04_Facade.md",
+      "order": 16,
+      "type": "graph TD",
+      "lineNumber": 490,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[Controller Layer] -->|calls| B[Facade Layer]\n    B -->|calls| C[Firebase REST API]\n    B -->|calls| D[Firestore Database]\n    B -->|calls| E[Approval Strategies]\n    B -->|updates| F[SessionManager]\n    B -->|updates| G[FirebaseService]\n    \n    H[Login Controller] -->|uses| I[AuthService]\n    J[Admin Dashboard] -->|uses| K[AdminBookingFacade]\n    \n    I -->|returns| L[User object]\n    K -->|returns| M[Approval status]\n```"
+    },
+    {
+      "file": "pattern_04_Facade.md",
+      "order": 17,
+      "type": "graph TD",
+      "lineNumber": 510,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    AuthService -->|uses| FirebaseService[Singleton: FirebaseService]\n    AuthService -->|updates| SessionManager[Singleton: SessionManager]\n    \n    AdminBookingFacade -->|uses| IApprovalStrategy[Strategy: IApprovalStrategy]\n    AdminBookingFacade -->|uses| FirebaseService\n    \n    Controllers -->|depends on| AuthService\n    Controllers -->|depends on| AdminBookingFacade\n    \n    FirebaseService -->|manages| Firestore[(Firestore Database)]\n    FirebaseService -->|manages| REST[Firebase REST API]\n```"
+    },
+    {
+      "file": "pattern_05_Composite.md",
+      "order": 18,
+      "type": "classDiagram",
+      "lineNumber": 251,
+      "relationships": [
+        {
+          "from": "PermissionComponent",
+          "to": "LeafPermission",
+          "arrow": "<|--"
+        },
+        {
+          "from": "PermissionComponent",
+          "to": "PermissionGroup",
+          "arrow": "<|--"
+        },
+        {
+          "from": "PermissionGroup",
+          "to": "PermissionComponent",
+          "arrow": "-->"
+        },
+        {
+          "from": "PermissionBuilder",
+          "to": "PermissionComponent",
+          "arrow": "-->"
+        },
+        {
+          "from": "PermissionChecker",
+          "to": "PermissionComponent",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class PermissionComponent {\n        <<abstract>>\n        #name: String\n        #description: String\n        +getName() String\n        +getDescription() String\n        +add(component: PermissionComponent) void*\n        +remove(component: PermissionComponent) void*\n        +getChildren() List~PermissionComponent~*\n        +hasPermission(permissionKey: String) boolean*\n    }\n\n    class LeafPermission {\n        +LeafPermission(name: String, description: String)\n        +hasPermission(permissionKey: String) boolean\n    }\n\n    class PermissionGroup {\n        -children: List~PermissionComponent~\n        +PermissionGroup(name: String, description: String)\n        +add(component: PermissionComponent) void\n        +remove(component: PermissionComponent) void\n        +getChildren() List~PermissionComponent~\n        +hasPermission(permissionKey: String) boolean\n    }\n\n    class PermissionBuilder {\n        +static buildAdminPermissions() PermissionComponent\n        +static buildEmployeePermissions() PermissionComponent\n    }\n\n    class PermissionChecker {\n        +static userHasPermission(user: User, permissions: PermissionComponent, required: String) boolean\n        +static checkAndExecute(user: User, permissions: PermissionComponent, required: String, action: Runnable) void\n    }\n\n    PermissionComponent <|-- LeafPermission\n    PermissionComponent <|-- PermissionGroup\n    PermissionGroup --> PermissionComponent: contains\n    PermissionBuilder --> PermissionComponent: creates\n    PermissionChecker --> PermissionComponent: uses\n```"
+    },
+    {
+      "file": "pattern_05_Composite.md",
+      "order": 19,
+      "type": "sequenceDiagram",
+      "lineNumber": 300,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant Controller\n    participant PermissionChecker\n    participant PermissionGroup as Permission Tree\n    participant LeafPermission\n\n    Controller->>PermissionChecker: checkAndExecute(user, permissions, \"ApproveBooking\", action)\n    activate PermissionChecker\n    \n    PermissionChecker->>PermissionGroup: hasPermission(\"ApproveBooking\")\n    activate PermissionGroup\n    \n    PermissionGroup->>PermissionGroup: Check if own name matches\n    PermissionGroup-->>PermissionGroup: No match\n    \n    PermissionGroup->>PermissionGroup: Iterate through children\n    \n    loop For each child\n        PermissionGroup->>LeafPermission: hasPermission(\"ApproveBooking\")\n        activate LeafPermission\n        LeafPermission-->>PermissionGroup: Compare name == \"ApproveBooking\"\n        deactivate LeafPermission\n    end\n    \n    PermissionGroup-->>PermissionChecker: Return true (found match)\n    deactivate PermissionGroup\n    \n    PermissionChecker->>PermissionChecker: Permission granted\n    PermissionChecker->>Controller: Execute action\n    deactivate PermissionChecker\n    \n    Controller->>Controller: action.run()\n```"
+    },
+    {
+      "file": "pattern_05_Composite.md",
+      "order": 20,
+      "type": "graph TD",
+      "lineNumber": 339,
+      "relationships": [
+        {
+          "from": "A",
+          "to": "C",
+          "arrow": "-->"
+        },
+        {
+          "from": "A",
+          "to": "D",
+          "arrow": "-->"
+        },
+        {
+          "from": "A",
+          "to": "E",
+          "arrow": "-->"
+        },
+        {
+          "from": "E",
+          "to": "F",
+          "arrow": "-->"
+        },
+        {
+          "from": "E",
+          "to": "G",
+          "arrow": "-->"
+        },
+        {
+          "from": "H",
+          "to": "J",
+          "arrow": "-->"
+        },
+        {
+          "from": "H",
+          "to": "K",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[Root: AdminPermissions] --> B[ViewAllBookings]\n    A --> C[ApproveAnyBooking]\n    A --> D[RejectAnyBooking]\n    A --> E[ReportingPermissions Group]\n    E --> F[ViewReports]\n    E --> G[ExportReports]\n    \n    H[Root: EmployeePermissions] --> I[CreateBooking]\n    H --> J[ViewOwnBookings]\n    H --> K[CancelOwnBooking]\n```"
+    },
+    {
+      "file": "pattern_05_Composite.md",
+      "order": 21,
+      "type": "graph TD",
+      "lineNumber": 481,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[PermissionComponent] -->|is extended by| B[LeafPermission]\n    A -->|is extended by| C[PermissionGroup]\n    C -->|contains| A\n    \n    A -->|hasPermission| D{Does it match?}\n    B -->|check name| E[Return true/false]\n    C -->|check group name| F[Return true/false]\n    C -->|recurse to children| A\n```"
+    },
+    {
+      "file": "pattern_05_Composite.md",
+      "order": 22,
+      "type": "graph TD",
+      "lineNumber": 497,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    PermissionComponent -->|used by| PermissionChecker\n    PermissionChecker -->|called by| Controllers\n    \n    PermissionGroup -->|contains| PermissionComponent\n    PermissionGroup -->|contains| LeafPermission\n    \n    PermissionBuilder -->|creates| PermissionComponent\n    PermissionBuilder -->|creates| PermissionGroup\n    PermissionBuilder -->|creates| LeafPermission\n```"
+    },
+    {
+      "file": "pattern_06_Decorator.md",
+      "order": 23,
+      "type": "classDiagram",
+      "lineNumber": 283,
+      "relationships": [
+        {
+          "from": "BookingService",
+          "to": "StandardBooking",
+          "arrow": "<|.."
+        },
+        {
+          "from": "BookingService",
+          "to": "BookingDecorator",
+          "arrow": "<|.."
+        },
+        {
+          "from": "BookingDecorator",
+          "to": "WithCateringDecorator",
+          "arrow": "<|--"
+        },
+        {
+          "from": "BookingDecorator",
+          "to": "WithProjectorDecorator",
+          "arrow": "<|--"
+        },
+        {
+          "from": "BookingDecorator",
+          "to": "HolidayDecorator",
+          "arrow": "<|--"
+        },
+        {
+          "from": "BookingDecorator",
+          "to": "OfficialEventDecorator",
+          "arrow": "<|--"
+        },
+        {
+          "from": "BookingDecorator",
+          "to": "BookingService",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class BookingService {\n        <<interface>>\n        +getDescription() String\n        +getCost() double\n        +applyTo(request: BookingRequest) void\n    }\n\n    class StandardBooking {\n        -roomId: String\n        -date: String\n        +StandardBooking(roomId: String, date: String)\n        +getDescription() String\n        +getCost() double\n        +applyTo(request: BookingRequest) void\n    }\n\n    class BookingDecorator {\n        <<abstract>>\n        #wrappedService: BookingService\n        +BookingDecorator(service: BookingService)\n        +getDescription() String\n        +getCost() double\n        +applyTo(request: BookingRequest) void\n    }\n\n    class WithCateringDecorator {\n        +getDescription() String\n        +getCost() double\n        +applyTo(request: BookingRequest) void\n    }\n\n    class WithProjectorDecorator {\n        +getDescription() String\n        +getCost() double\n        +applyTo(request: BookingRequest) void\n    }\n\n    class HolidayDecorator {\n        +getDescription() String\n        +getCost() double\n        +applyTo(request: BookingRequest) void\n    }\n\n    class OfficialEventDecorator {\n        +getDescription() String\n        +getCost() double\n        +applyTo(request: BookingRequest) void\n    }\n\n    BookingService <|.. StandardBooking\n    BookingService <|.. BookingDecorator\n    BookingDecorator <|-- WithCateringDecorator\n    BookingDecorator <|-- WithProjectorDecorator\n    BookingDecorator <|-- HolidayDecorator\n    BookingDecorator <|-- OfficialEventDecorator\n    BookingDecorator --> BookingService: wraps\n```"
+    },
+    {
+      "file": "pattern_06_Decorator.md",
+      "order": 24,
+      "type": "sequenceDiagram",
+      "lineNumber": 347,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant UI as Secretary UI\n    participant Controller as BookingFormController\n    participant Configurator as BookingConfigurator\n    participant Standard as StandardBooking\n    participant Catering as WithCateringDecorator\n    participant Projector as WithProjectorDecorator\n    participant Holiday as HolidayDecorator\n\n    UI->>Controller: User selects Catering + Projector + Holiday\n    Controller->>Controller: cateringCheckbox.isSelected() = true\n    Controller->>Controller: projectorCheckbox.isSelected() = true\n    Controller->>Controller: holidayCheckbox.isSelected() = true\n\n    Controller->>Configurator: createBooking(..., true, true, true, false)\n    activate Configurator\n\n    Configurator->>Standard: new StandardBooking(roomId, date)\n    activate Standard\n    Standard-->>Configurator: Return basic booking\n    deactivate Standard\n\n    Configurator->>Catering: new WithCateringDecorator(booking)\n    activate Catering\n    Catering-->>Configurator: Return decorated booking (wrapped)\n    deactivate Catering\n\n    Configurator->>Projector: new WithProjectorDecorator(booking)\n    activate Projector\n    Projector-->>Configurator: Return more decorated booking\n    deactivate Projector\n\n    Configurator->>Holiday: new HolidayDecorator(booking)\n    activate Holiday\n    Holiday-->>Configurator: Return final decorated booking\n    deactivate Holiday\n\n    deactivate Configurator\n\n    Controller->>Controller: booking.getDescription()\n    Controller->>Controller: booking.getCost()\n    Controller->>Controller: booking.applyTo(request)\n\n    Controller-->>UI: Display: \"Room X, Catering provided, Projector included (Holiday event)\"\n    Controller-->>UI: Display: \"Total Cost: 1275 EGP\"\n```"
+    },
+    {
+      "file": "pattern_06_Decorator.md",
+      "order": 25,
+      "type": "graph TD",
+      "lineNumber": 399,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[\"HolidayDecorator\n       cost: base * 1.5\n       type: holiday_event\"]\n    B[\"WithProjectorDecorator\n       cost: +150\n       equipment: projector\"]\n    C[\"WithCateringDecorator\n       cost: +500\n       catering: true\"]\n    D[\"StandardBooking\n       cost: base\n       room: X-101, date: 2024-12-20\"]\n\n    A -->|wraps| B\n    B -->|wraps| C\n    C -->|wraps| D\n\n    style A fill:#fff3cd\n    style B fill:#d4edda\n    style C fill:#cfe2ff\n    style D fill:#e2e3e5\n```"
+    },
+    {
+      "file": "pattern_06_Decorator.md",
+      "order": 26,
+      "type": "graph TD",
+      "lineNumber": 550,
+      "relationships": [
+        {
+          "from": "B",
+          "to": "C",
+          "arrow": "-->"
+        },
+        {
+          "from": "C",
+          "to": "D",
+          "arrow": "-->"
+        },
+        {
+          "from": "E",
+          "to": "G",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "G",
+          "arrow": "-->"
+        },
+        {
+          "from": "H",
+          "to": "J",
+          "arrow": "-->"
+        },
+        {
+          "from": "I",
+          "to": "J",
+          "arrow": "-->"
+        },
+        {
+          "from": "K",
+          "to": "M",
+          "arrow": "-->"
+        },
+        {
+          "from": "L",
+          "to": "M",
+          "arrow": "-->"
+        },
+        {
+          "from": "M",
+          "to": "N",
+          "arrow": "-->"
+        },
+        {
+          "from": "N",
+          "to": "O",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[Select Room] --> B[Select Date]\n    B --> C[Check Optional Features]\n    C --> D{Catering?}\n    D -->|Yes| E[Wrap with CateringDecorator]\n    D -->|No| F[Skip]\n    E --> G{Projector?}\n    F --> G\n    G -->|Yes| H[Wrap with ProjectorDecorator]\n    G -->|No| I[Skip]\n    H --> J{Holiday?}\n    I --> J\n    J -->|Yes| K[Wrap with HolidayDecorator]\n    J -->|No| L[Skip]\n    K --> M[Calculate Final Cost]\n    L --> M\n    M --> N[Display Summary]\n    N --> O[Submit Booking]\n```"
+    },
+    {
+      "file": "pattern_06_Decorator.md",
+      "order": 27,
+      "type": "graph TD",
+      "lineNumber": 575,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    BookingService -->|interface| StandardBooking\n    BookingService -->|interface| BookingDecorator\n    BookingDecorator -->|wraps| BookingService\n    \n    WithCateringDecorator -->|extends| BookingDecorator\n    WithProjectorDecorator -->|extends| BookingDecorator\n    HolidayDecorator -->|extends| BookingDecorator\n    OfficialEventDecorator -->|extends| BookingDecorator\n    \n    BookingConfigurator -->|creates| StandardBooking\n    BookingConfigurator -->|creates| BookingDecorator\n    \n    BookingFormController -->|uses| BookingConfigurator\n```"
+    },
+    {
+      "file": "pattern_07_Memento.md",
+      "order": 28,
+      "type": "classDiagram",
+      "lineNumber": 276,
+      "relationships": [
+        {
+          "from": "BookingFormController",
+          "to": "BookingCaretaker",
+          "arrow": "-->"
+        },
+        {
+          "from": "BookingCaretaker",
+          "to": "BookingMemento",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class BookingMemento {\n        -roomId: String\n        -date: String\n        -timeFrom: String\n        -timeTo: String\n        -purpose: String\n        -capacity: String\n        -isHoliday: boolean\n        -isOfficial: boolean\n        -requesterName: String\n        -requesterTitle: String\n        -requesterPhone: String\n        -isLaptop: boolean\n        -isVideoConf: boolean\n        -isMic: boolean\n        +getRoomId() String\n        +getDate() String\n        // ... all getters\n    }\n\n    class BookingCaretaker {\n        -history: Stack~BookingMemento~\n        -currentIndex: int\n        +save(memento: BookingMemento) void\n        +undo() BookingMemento\n        +redo() BookingMemento\n        +getCurrentState() BookingMemento\n        +canUndo() boolean\n        +canRedo() boolean\n    }\n\n    class BookingFormController {\n        +saveFormState() void\n        +restoreFormState(memento: BookingMemento) void\n        +handleUndo() void\n        +handleRedo() void\n    }\n\n    BookingFormController --> BookingCaretaker: uses\n    BookingCaretaker --> BookingMemento: stores\n```"
+    },
+    {
+      "file": "pattern_07_Memento.md",
+      "order": 29,
+      "type": "sequenceDiagram",
+      "lineNumber": 324,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant User as User\n    participant Controller as BookingFormController\n    participant Caretaker as BookingCaretaker\n    participant Memento as BookingMemento\n\n    User->>Controller: Enter room ID\n    Controller->>Controller: Save state to memento\n    Controller->>Caretaker: save(memento1)\n    activate Caretaker\n    Caretaker->>Caretaker: Add to history, currentIndex++\n    deactivate Caretaker\n\n    User->>Controller: Enter date\n    Controller->>Controller: Save state\n    Controller->>Caretaker: save(memento2)\n    activate Caretaker\n    Caretaker->>Caretaker: Add to history, currentIndex++\n    deactivate Caretaker\n\n    User->>Controller: Enter time\n    Controller->>Caretaker: save(memento3)\n    activate Caretaker\n    Caretaker->>Caretaker: Add to history, currentIndex++\n    deactivate Caretaker\n\n    User->>Controller: Click Undo button\n    Controller->>Caretaker: undo()\n    activate Caretaker\n    Caretaker->>Caretaker: currentIndex--\n    Caretaker->>Memento: Get memento2\n    Memento-->>Caretaker: Return memento2\n    Caretaker-->>Controller: Return memento2\n    deactivate Caretaker\n\n    Controller->>Controller: restoreFormState(memento2)\n    Controller-->>User: Form restored to state before time entry\n\n    User->>Controller: Click Redo button\n    Controller->>Caretaker: redo()\n    activate Caretaker\n    Caretaker->>Caretaker: currentIndex++\n    Caretaker->>Memento: Get memento3\n    Memento-->>Caretaker: Return memento3\n    Caretaker-->>Controller: Return memento3\n    deactivate Caretaker\n\n    Controller->>Controller: restoreFormState(memento3)\n    Controller-->>User: Form restored to state with all entries\n```"
+    },
+    {
+      "file": "pattern_07_Memento.md",
+      "order": 30,
+      "type": "graph TD",
+      "lineNumber": 511,
+      "relationships": [
+        {
+          "from": "B",
+          "to": "C",
+          "arrow": "-->"
+        },
+        {
+          "from": "C",
+          "to": "D",
+          "arrow": "-->"
+        },
+        {
+          "from": "D",
+          "to": "E",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[\"State 1: Room selected\"] --> B[\"State 2: Date entered\"]\n    B --> C[\"State 3: Time entered\"]\n    C --> D[\"State 4: Purpose filled\"]\n    D --> E[\"Current: Memento 4\"]\n    \n    E -.->|undo| C\n    C -.->|redo| E\n    \n    F[\"Edit after undo\"] -.->|new state| G[\"State 3b: Different time\"]\n    C -.->|user change| G\n    \n    style E fill:#fff3cd\n    style G fill:#d4edda\n```"
+    },
+    {
+      "file": "pattern_07_Memento.md",
+      "order": 31,
+      "type": "graph TD",
+      "lineNumber": 532,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    BookingFormController -->|uses| BookingCaretaker\n    BookingCaretaker -->|stores| BookingMemento\n    BookingMemento -->|represents| BookingFormState\n    \n    BookingMemento -->|immutable| Data[\"State Data\"]\n    BookingCaretaker -->|manages| History[\"Undo/Redo History\"]\n```"
+    },
+    {
+      "file": "pattern_08_Builder.md",
+      "order": 32,
+      "type": "classDiagram",
+      "lineNumber": 256,
+      "relationships": [
+        {
+          "from": "BookingBuilder",
+          "to": "Booking",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class BookingBuilder {\n        -booking: Booking\n        +BookingBuilder()\n        +roomId(roomId: String) BookingBuilder\n        +roomType(roomType: String) BookingBuilder\n        +hallCategory(category: String) BookingBuilder\n        +date(date: String) BookingBuilder\n        +timeFrom(time: String) BookingBuilder\n        +timeTo(time: String) BookingBuilder\n        +purpose(purpose: String) BookingBuilder\n        +responsibleName(name: String) BookingBuilder\n        +responsibleJob(job: String) BookingBuilder\n        +responsibleMobile(mobile: String) BookingBuilder\n        +reqMic(required: boolean, qty: int) BookingBuilder\n        +reqLaptop(required: boolean) BookingBuilder\n        +reqVideoConf(required: boolean) BookingBuilder\n        +userId(userId: String) BookingBuilder\n        +userName(name: String) BookingBuilder\n        +userRole(role: String) BookingBuilder\n        +applyLectureDefaults(name: String) BookingBuilder\n        +fromPrototype(prototype: Booking) BookingBuilder\n        +build() Booking\n    }\n\n    class Booking {\n        -id: String\n        -roomId: String\n        -date: String\n        -timeFrom: String\n        -timeTo: String\n        -purpose: String\n        -responsibleName: String\n        -responsibleJob: String\n        -responsibleMobile: String\n        -reqMic: boolean\n        -reqMicQty: int\n        -reqLaptop: boolean\n        -reqVideoConf: boolean\n        +setter methods\n        +getter methods\n    }\n\n    BookingBuilder --> Booking: builds\n```"
+    },
+    {
+      "file": "pattern_08_Builder.md",
+      "order": 33,
+      "type": "sequenceDiagram",
+      "lineNumber": 307,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant UI as Form UI\n    participant Controller as BookingFormController\n    participant Builder as BookingBuilder\n    participant Booking\n\n    UI->>Controller: Step 1 - Enter room details\n    Controller->>Builder: new BookingBuilder()\n    Builder->>Booking: new Booking()\n\n    UI->>Controller: Step 1 - Submit\n    Controller->>Builder: .roomId(\"A-101\").roomType(\"fixed\").date(\"2024-12-15\")\n    Builder-->>Builder: Set fields, return this\n\n    UI->>Controller: Step 2 - Enter responsible person\n    Controller->>Builder: .responsibleName(\"Ahmed\").responsibleMobile(\"01234567890\")\n    Builder-->>Builder: Set fields, return this\n\n    UI->>Controller: Step 3 - Enter requirements\n    Controller->>Builder: .reqMic(true, 2).reqLaptop(false)\n    Builder-->>Builder: Set fields, return this\n\n    UI->>Controller: Submit booking\n    Controller->>Builder: .userId(\"uid123\").userRole(\"employee\")\n    Builder-->>Builder: Set metadata, return this\n\n    Controller->>Builder: .build()\n    activate Builder\n    Builder->>Builder: Validate all required fields\n    alt All fields present\n        Builder->>Booking: Return completed booking\n        Builder-->>Controller: Booking object\n    else Missing required field\n        Builder-->>Controller: Throw IllegalStateException\n    end\n    deactivate Builder\n\n    Controller->>Controller: Save booking to database\n```"
+    },
+    {
+      "file": "pattern_08_Builder.md",
+      "order": 34,
+      "type": "graph TD",
+      "lineNumber": 458,
+      "relationships": [
+        {
+          "from": "A",
+          "to": "C",
+          "arrow": "-->"
+        },
+        {
+          "from": "A",
+          "to": "D",
+          "arrow": "-->"
+        },
+        {
+          "from": "A",
+          "to": "E",
+          "arrow": "-->"
+        },
+        {
+          "from": "A",
+          "to": "F",
+          "arrow": "-->"
+        },
+        {
+          "from": "A",
+          "to": "G",
+          "arrow": "-->"
+        },
+        {
+          "from": "B",
+          "to": "B1",
+          "arrow": "-->"
+        },
+        {
+          "from": "B",
+          "to": "B2",
+          "arrow": "-->"
+        },
+        {
+          "from": "B",
+          "to": "B3",
+          "arrow": "-->"
+        },
+        {
+          "from": "C",
+          "to": "C1",
+          "arrow": "-->"
+        },
+        {
+          "from": "D",
+          "to": "D1",
+          "arrow": "-->"
+        },
+        {
+          "from": "E",
+          "to": "E1",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "F2",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "F3",
+          "arrow": "-->"
+        },
+        {
+          "from": "G",
+          "to": "G1",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[BookingBuilder] --> B[Step 1 Methods]\n    A --> C[Step 2 Methods]\n    A --> D[Step 3 Methods]\n    A --> E[Metadata Methods]\n    A --> F[Convenience Methods]\n    A --> G[Build]\n    \n    B --> B1[roomId, roomType, hallCategory]\n    B --> B2[date, timeFrom, timeTo]\n    B --> B3[purpose, capacity, holiday]\n    \n    C --> C1[responsibleName, Job, Mobile]\n    \n    D --> D1[reqMic, reqLaptop, reqVideoConf]\n    \n    E --> E1[userId, userName, userRole, college]\n    \n    F --> F2[applyLectureDefaults]\n    F --> F3[fromPrototype]\n    \n    G --> G1[\"build() -> Booking\"]\n```"
+    },
+    {
+      "file": "pattern_08_Builder.md",
+      "order": 35,
+      "type": "graph TD",
+      "lineNumber": 487,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    BookingBuilder -->|creates| Booking\n    BookingBuilder -->|uses| Prototype[\"Prototype: fromPrototype()\"]\n    BookingFormController -->|uses| BookingBuilder\n    BookingFormController -->|uses| SessionManager[\"Singleton: SessionManager\"]\n```"
+    },
+    {
+      "file": "pattern_09_Command.md",
+      "order": 36,
+      "type": "classDiagram",
+      "lineNumber": 187,
+      "relationships": [
+        {
+          "from": "Command",
+          "to": "ApproveBookingCommand",
+          "arrow": "<|--"
+        },
+        {
+          "from": "Command",
+          "to": "RejectBookingCommand",
+          "arrow": "<|--"
+        },
+        {
+          "from": "Command",
+          "to": "UndoableCommand",
+          "arrow": "<|--"
+        },
+        {
+          "from": "UndoableCommand",
+          "to": "UndoableApproveBookingCommand",
+          "arrow": "<|--"
+        },
+        {
+          "from": "BookingCommandInvoker",
+          "to": "Command",
+          "arrow": "-->"
+        },
+        {
+          "from": "ApproveBookingCommand",
+          "to": "BranchManagerService",
+          "arrow": "-->"
+        },
+        {
+          "from": "RejectBookingCommand",
+          "to": "BranchManagerService",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class Command {\n        <<interface>>\n        +execute() void\n    }\n\n    class ApproveBookingCommand {\n        -bookingId: String\n        -onSuccess: Runnable\n        +ApproveBookingCommand(bookingId: String, onSuccess: Runnable)\n        +execute() void\n    }\n\n    class RejectBookingCommand {\n        -bookingId: String\n        -reason: String\n        -onSuccess: Runnable\n        +RejectBookingCommand(bookingId: String, reason: String, onSuccess: Runnable)\n        +execute() void\n    }\n\n    class UndoableCommand {\n        <<interface>>\n        +execute() void\n        +undo() void\n        +canUndo() boolean\n    }\n\n    class UndoableApproveBookingCommand {\n        -bookingId: String\n        -previousStatus: String\n        -onSuccess: Runnable\n        +execute() void\n        +undo() void\n        +canUndo() boolean\n    }\n\n    class BookingCommandInvoker {\n        -commandQueue: Queue~Command~\n        -executedCommands: List~Command~\n        +queueCommand(command: Command) void\n        +executeCommand(command: Command) void\n        +executeAllQueued() void\n        +getExecutionHistory() List~Command~\n    }\n\n    class BranchManagerService {\n        -static instance: BranchManagerService\n        +updateBookingStatus(bookingId: String, status: String) CompletableFuture~Void~\n        +rejectBooking(bookingId: String, reason: String) CompletableFuture~Void~\n    }\n\n    Command <|-- ApproveBookingCommand\n    Command <|-- RejectBookingCommand\n    Command <|-- UndoableCommand\n    UndoableCommand <|-- UndoableApproveBookingCommand\n    BookingCommandInvoker --> Command: executes\n    ApproveBookingCommand --> BranchManagerService: uses\n    RejectBookingCommand --> BranchManagerService: uses\n```"
+    },
+    {
+      "file": "pattern_09_Command.md",
+      "order": 37,
+      "type": "sequenceDiagram",
+      "lineNumber": 253,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant UI as Manager UI\n    participant Controller as BookingController\n    participant Invoker as CommandInvoker\n    participant Command as ApproveBookingCommand\n    participant Service as BranchManagerService\n    participant DB as Firestore\n\n    UI->>Controller: Click Approve Booking button\n    activate Controller\n    \n    Controller->>Command: new ApproveBookingCommand(bookingId, callback)\n    activate Command\n    Command-->>Controller: Return command object\n    deactivate Command\n    \n    Controller->>Invoker: executeCommand(command)\n    activate Invoker\n    \n    Invoker->>Command: execute()\n    activate Command\n    \n    Command->>Service: updateBookingStatus(bookingId, \"approved\")\n    activate Service\n    \n    Service->>DB: Update booking status in Firestore\n    activate DB\n    DB-->>Service: Confirmed\n    deactivate DB\n    \n    Service-->>Command: Return CompletableFuture\n    deactivate Service\n    \n    Command->>Command: onSuccess.run() callback\n    deactivate Command\n    \n    Invoker->>Invoker: Add command to executedCommands\n    Invoker-->>Controller: Command executed\n    deactivate Invoker\n    \n    deactivate Controller\n    \n    UI-->>UI: Update UI to show approval\n```"
+    },
+    {
+      "file": "pattern_09_Command.md",
+      "order": 38,
+      "type": "graph TD",
+      "lineNumber": 436,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[User Action] -->|Create| B[Command Object]\n    B -->|Queue| C[CommandInvoker]\n    C -->|Execute| D[Command.execute]\n    D -->|Call| E[Service Method]\n    E -->|Update| F[Database]\n    F -->|Callback| G[onSuccess]\n    G -->|Update| H[UI]\n    \n    C -->|Log| I[CommandHistory]\n    I -->|For Audit| J[AuditLog]\n```"
+    },
+    {
+      "file": "pattern_09_Command.md",
+      "order": 39,
+      "type": "graph TD",
+      "lineNumber": 454,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    Command -->|interface| ApproveBookingCommand\n    Command -->|interface| RejectBookingCommand\n    \n    BookingCommandInvoker -->|uses| Command\n    BookingCommandInvoker -->|stores| CommandHistory\n    \n    BookingController -->|creates| ApproveBookingCommand\n    BookingController -->|creates| RejectBookingCommand\n    BookingController -->|invokes| BookingCommandInvoker\n    \n    BranchManagerService -->|executes business logic| Firestore\n```"
+    },
+    {
+      "file": "pattern_10_Strategy.md",
+      "order": 40,
+      "type": "classDiagram",
+      "lineNumber": 402,
+      "relationships": [
+        {
+          "from": "RoomSearchStrategy",
+          "to": "FixedRoomSearchStrategy",
+          "arrow": "<|.."
+        },
+        {
+          "from": "RoomSearchStrategy",
+          "to": "MultiRoomSearchStrategy",
+          "arrow": "<|.."
+        },
+        {
+          "from": "IApprovalStrategy",
+          "to": "LectureApprovalStrategy",
+          "arrow": "<|.."
+        },
+        {
+          "from": "IApprovalStrategy",
+          "to": "MultiPurposeApprovalStrategy",
+          "arrow": "<|.."
+        },
+        {
+          "from": "SearchStrategyFactory",
+          "to": "RoomSearchStrategy",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class RoomSearchStrategy {\n        <<interface>>\n        +validateInput(criteria: SearchCriteria) String\n        +getOccupiedRoomIds(bookings: List, criteria: SearchCriteria) List~String~\n    }\n\n    class FixedRoomSearchStrategy {\n        +validateInput(criteria: SearchCriteria) String\n        +getOccupiedRoomIds(bookings: List, criteria: SearchCriteria) List~String~\n        -isValidTimeRange(from: String, to: String) boolean\n        -timeRangesOverlap(f1: String, t1: String, f2: String, t2: String) boolean\n    }\n\n    class MultiRoomSearchStrategy {\n        +validateInput(criteria: SearchCriteria) String\n        +getOccupiedRoomIds(bookings: List, criteria: SearchCriteria) List~String~\n        -isValidDateRange(from: String, to: String) boolean\n    }\n\n    class IApprovalStrategy {\n        <<interface>>\n        +approve(booking: Booking, roomId: String, isUrgent: boolean) boolean\n    }\n\n    class LectureApprovalStrategy {\n        +approve(booking: Booking, roomId: String, isUrgent: boolean) boolean\n        -checkRoomAvailable(roomId: String, date: String, from: String, to: String) boolean\n        -saveBooking(booking: Booking) void\n    }\n\n    class MultiPurposeApprovalStrategy {\n        +approve(booking: Booking, roomId: String, isUrgent: boolean) boolean\n        -checkRoomAvailable(roomId: String, date: String) boolean\n        -checkResourcesAvailable(booking: Booking) boolean\n        -checkCapacityRequirements(roomId: String, booking: Booking) boolean\n        -reserveResources(booking: Booking) void\n        -sendNotifications(booking: Booking) void\n        -saveBooking(booking: Booking) void\n    }\n\n    class SearchStrategyFactory {\n        +static createStrategy(roomType: String) RoomSearchStrategy\n    }\n\n    RoomSearchStrategy <|.. FixedRoomSearchStrategy\n    RoomSearchStrategy <|.. MultiRoomSearchStrategy\n    IApprovalStrategy <|.. LectureApprovalStrategy\n    IApprovalStrategy <|.. MultiPurposeApprovalStrategy\n    SearchStrategyFactory --> RoomSearchStrategy: creates\n```"
+    },
+    {
+      "file": "pattern_10_Strategy.md",
+      "order": 41,
+      "type": "sequenceDiagram",
+      "lineNumber": 459,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant Admin as Admin User\n    participant Controller as SearchController\n    participant Factory as SearchStrategyFactory\n    participant Strategy as RoomSearchStrategy\n    participant Service as BookingService\n\n    Admin->>Controller: Select room type and search criteria\n    Controller->>Factory: createStrategy(roomType)\n    activate Factory\n    \n    alt roomType == \"multi\"\n        Factory-->>Controller: Return MultiRoomSearchStrategy\n    else roomType == \"fixed\"\n        Factory-->>Controller: Return FixedRoomSearchStrategy\n    end\n    deactivate Factory\n\n    Controller->>Strategy: validateInput(criteria)\n    activate Strategy\n    \n    alt Validation passes\n        Strategy-->>Controller: Return null\n    else Validation fails\n        Strategy-->>Controller: Return error message\n    end\n    deactivate Strategy\n\n    Controller->>Service: loadActiveBookings()\n    Service-->>Controller: Return bookings list\n\n    Controller->>Strategy: getOccupiedRoomIds(bookings, criteria)\n    activate Strategy\n    Strategy->>Strategy: Filter bookings by strategy-specific logic\n    Strategy-->>Controller: Return occupied room IDs\n    deactivate Strategy\n\n    Controller->>Controller: Calculate available rooms\n    Controller-->>Admin: Display available rooms\n```"
+    },
+    {
+      "file": "pattern_10_Strategy.md",
+      "order": 42,
+      "type": "graph TD",
+      "lineNumber": 596,
+      "relationships": [
+        {
+          "from": "C",
+          "to": "F",
+          "arrow": "-->"
+        },
+        {
+          "from": "D",
+          "to": "G",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "H",
+          "arrow": "-->"
+        },
+        {
+          "from": "G",
+          "to": "I",
+          "arrow": "-->"
+        },
+        {
+          "from": "H",
+          "to": "J",
+          "arrow": "-->"
+        },
+        {
+          "from": "I",
+          "to": "J",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[Select Room Type] --> B{Room Type?}\n    B -->|\"fixed\"| C[FixedRoomSearchStrategy]\n    B -->|\"multi\"| D[MultiRoomSearchStrategy]\n    B -->|unknown| E[Throw IllegalArgumentException]\n    \n    C --> F[Validate Time Range]\n    D --> G[Validate Date Range]\n    \n    F --> H[Calculate Occupied by Time Overlap]\n    G --> I[Calculate Occupied by Date Overlap]\n    \n    H --> J[Return Available Rooms]\n    I --> J\n```"
+    },
+    {
+      "file": "pattern_10_Strategy.md",
+      "order": 43,
+      "type": "graph TD",
+      "lineNumber": 617,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    RoomSearchStrategy -->|interface| FixedRoomSearchStrategy\n    RoomSearchStrategy -->|interface| MultiRoomSearchStrategy\n    SearchStrategyFactory -->|creates| RoomSearchStrategy\n    \n    IApprovalStrategy -->|interface| LectureApprovalStrategy\n    IApprovalStrategy -->|interface| MultiPurposeApprovalStrategy\n    \n    AdvancedSearchController -->|uses| RoomSearchStrategy\n    AdminBookingController -->|uses| IApprovalStrategy\n    \n    AdminBookingFacade -->|creates| IApprovalStrategy\n```"
+    },
+    {
+      "file": "pattern_11_Prototype.md",
+      "order": 44,
+      "type": "classDiagram",
+      "lineNumber": 202,
+      "relationships": [
+        {
+          "from": "Cloneable",
+          "to": "Booking",
+          "arrow": "<|.."
+        },
+        {
+          "from": "BookingBuilder",
+          "to": "Booking",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class Cloneable {\n        <<interface>>\n        +clone() Object\n    }\n\n    class Booking {\n        -id: String\n        -roomId: String\n        -roomType: String\n        -hallCategory: String\n        -date: String\n        -timeFrom: String\n        -timeTo: String\n        -purpose: String\n        -requiredCapacity: int\n        -responsibleName: String\n        -responsibleJob: String\n        -responsibleMobile: String\n        -reqMic: boolean\n        -reqMicQty: int\n        -reqLaptop: boolean\n        -reqVideoConf: boolean\n        -status: String\n        -rejectReason: String\n        -suggestedRoomId: String\n        -suggestedDate: String\n        +clone() Booking\n        +getters() ...\n        +setters() ...\n    }\n\n    class BookingBuilder {\n        -booking: Booking\n        +fromPrototype(prototype: Booking) BookingBuilder\n        +build() Booking\n    }\n\n    Cloneable <|.. Booking\n    BookingBuilder --> Booking: uses\n```"
+    },
+    {
+      "file": "pattern_11_Prototype.md",
+      "order": 45,
+      "type": "sequenceDiagram",
+      "lineNumber": 249,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant Employee as Employee\n    participant EmployeeUI as Employee Dashboard\n    participant Controller as BookingFormController\n    participant BookingService\n    participant Builder as BookingBuilder\n    participant Original as Rejected Booking\n    participant Clone as Cloned Booking\n\n    Employee->>EmployeeUI: View rejected booking\n    EmployeeUI->>EmployeeUI: Display rejection reason and suggestions\n    Employee->>EmployeeUI: Click \"Resubmit with suggested room\"\n\n    EmployeeUI->>Controller: resubmitBooking(rejectedBooking, suggestedRoom)\n    activate Controller\n    \n    Controller->>Original: clone()\n    activate Original\n    Original->>Original: super.clone() - create shallow copy\n    Original->>Original: Set id = null\n    Original->>Original: Set status = \"pending\"\n    Original->>Original: Clear rejection fields\n    Original-->>Clone: Return cloned booking\n    deactivate Original\n    \n    Controller->>Builder: new BookingBuilder()\n    Builder-->>Builder: Create new builder\n    \n    Controller->>Builder: fromPrototype(clone)\n    activate Builder\n    Builder->>Clone: Get all fields from clone\n    Builder-->>Builder: Set builder fields from clone\n    deactivate Builder\n    \n    Controller->>Builder: setRoomId(suggestedRoom)\n    Controller->>Builder: setDate(suggestedDate)\n    \n    Controller->>Builder: build()\n    Builder-->>Controller: Return new Booking\n    \n    Controller->>BookingService: submitBooking(newBooking)\n    BookingService-->>Controller: Success\n    \n    deactivate Controller\n    \n    EmployeeUI-->>Employee: Show success message\n```"
+    },
+    {
+      "file": "pattern_11_Prototype.md",
+      "order": 46,
+      "type": "graph TD",
+      "lineNumber": 407,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[\"Original Booking<br/>id: 'booking-123'<br/>status: 'rejected'<br/>roomId: 'A-101'<br/>reason: 'Room unavailable'<br/>suggestedRoom: 'B-202'\"]\n    \n    B[\"Cloned Booking<br/>id: null (NEW)<br/>status: 'pending'<br/>roomId: 'A-101' (copied)<br/>reason: null (cleared)<br/>suggestedRoom: null (cleared)\"]\n    \n    C[\"Modified Clone<br/>id: null<br/>status: 'pending'<br/>roomId: 'B-202' (overridden)<br/>date: new date (overridden)<br/>time: new time (overridden)\"]\n    \n    A -->|clone()| B\n    B -->|setRoomId()<br/>setDate()<br/>setTime()| C\n    \n    style A fill:#fff3cd\n    style B fill:#d4edda\n    style C fill:#cfe2ff\n```"
+    },
+    {
+      "file": "pattern_11_Prototype.md",
+      "order": 47,
+      "type": "graph TD",
+      "lineNumber": 427,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    Booking -->|implements| Cloneable\n    BookingBuilder -->|uses| Booking\n    BookingBuilder -->|fromPrototype| Booking\n    \n    EmployeeDashboardController -->|uses| Booking\n    EmployeeDashboardController -->|calls clone()| Booking\n    \n    BookingService -->|stores| Booking\n```"
+    },
+    {
+      "file": "pattern_12_Template_Method.md",
+      "order": 48,
+      "type": "classDiagram",
+      "lineNumber": 296,
+      "relationships": [
+        {
+          "from": "Initializable",
+          "to": "BaseDashboardController",
+          "arrow": "<|.."
+        },
+        {
+          "from": "BaseDashboardController",
+          "to": "AdminDashboardController",
+          "arrow": "<|--"
+        },
+        {
+          "from": "BaseDashboardController",
+          "to": "EmployeeDashboardController",
+          "arrow": "<|--"
+        },
+        {
+          "from": "BaseDashboardController",
+          "to": "SecretaryDashboardController",
+          "arrow": "<|--"
+        },
+        {
+          "from": "BaseDashboardController",
+          "to": "BranchManagerDashboardController",
+          "arrow": "<|--"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class Initializable {\n        <<interface>>\n        +initialize(location: URL, resources: ResourceBundle) void\n    }\n\n    class BaseDashboardController {\n        <<abstract>>\n        +final initialize(location: URL, resources: ResourceBundle) void\n        #abstract setupObservers() void\n        #abstract initUI() void\n        #abstract loadData() void\n    }\n\n    class AdminDashboardController {\n        +setupObservers() void\n        +initUI() void\n        +loadData() void\n    }\n\n    class EmployeeDashboardController {\n        +setupObservers() void\n        +initUI() void\n        +loadData() void\n    }\n\n    class SecretaryDashboardController {\n        +setupObservers() void\n        +initUI() void\n        +loadData() void\n    }\n\n    class BranchManagerDashboardController {\n        +setupObservers() void\n        +initUI() void\n        +loadData() void\n    }\n\n    Initializable <|.. BaseDashboardController\n    BaseDashboardController <|-- AdminDashboardController\n    BaseDashboardController <|-- EmployeeDashboardController\n    BaseDashboardController <|-- SecretaryDashboardController\n    BaseDashboardController <|-- BranchManagerDashboardController\n```"
+    },
+    {
+      "file": "pattern_12_Template_Method.md",
+      "order": 49,
+      "type": "sequenceDiagram",
+      "lineNumber": 346,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant JavaFX as JavaFX Framework\n    participant Controller as AdminDashboardController\n    participant Base as BaseDashboardController\n    participant Service as AdminBookingService\n\n    JavaFX->>Base: initialize(location, resources)\n    activate Base\n    \n    Note over Base: Execute template steps in order\n    \n    Base->>Controller: setupObservers()\n    activate Controller\n    Controller->>Controller: Add BookingNotifierSubject listener\n    Controller->>Controller: Add table selection listener\n    Controller-->>Base: Return\n    deactivate Controller\n    \n    Base->>Controller: initUI()\n    activate Controller\n    Controller->>Controller: Configure table columns\n    Controller->>Controller: Add action buttons\n    Controller->>Controller: Create cell factories\n    Controller-->>Base: Return\n    deactivate Controller\n    \n    Base->>Controller: loadData()\n    activate Controller\n    Controller->>Service: listenToPendingRequests()\n    Service-->>Controller: Returns bookings\n    Controller->>Controller: Populate table\n    Controller-->>Base: Return\n    deactivate Controller\n    \n    Base-->>JavaFX: Initialization complete\n    deactivate Base\n```"
+    },
+    {
+      "file": "pattern_12_Template_Method.md",
+      "order": 50,
+      "type": "graph TD",
+      "lineNumber": 463,
+      "relationships": [
+        {
+          "from": "B",
+          "to": "C",
+          "arrow": "-->"
+        },
+        {
+          "from": "D",
+          "to": "E",
+          "arrow": "-->"
+        },
+        {
+          "from": "F",
+          "to": "G",
+          "arrow": "-->"
+        },
+        {
+          "from": "H",
+          "to": "I",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\ngraph TD\n    A[\"JavaFX Framework<br/>calls initialize()\"] --> B[\"BaseDashboardController<br/>Template Method\"]\n    B --> C[\"Step 1: setupObservers()\"]\n    C -->|calls| D[\"Admin/Employee/Secretary<br/>setupObservers()\"]\n    D --> E[\"Step 2: initUI()\"]\n    E -->|calls| F[\"Admin/Employee/Secretary<br/>initUI()\"]\n    F --> G[\"Step 3: loadData()\"]\n    G -->|calls| H[\"Admin/Employee/Secretary<br/>loadData()\"]\n    H --> I[\"Dashboard Ready\"]\n    \n    style B fill:#e2e3e5\n    style C fill:#d4edda\n    style E fill:#d4edda\n    style G fill:#d4edda\n```"
+    },
+    {
+      "file": "pattern_12_Template_Method.md",
+      "order": 51,
+      "type": "graph TD",
+      "lineNumber": 484,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    BaseDashboardController -->|defines template| Initialize[\"Initialization<br/>Algorithm\"]\n    AdminDashboardController -->|implements| BaseDashboardController\n    EmployeeDashboardController -->|implements| BaseDashboardController\n    SecretaryDashboardController -->|implements| BaseDashboardController\n    BranchManagerDashboardController -->|implements| BaseDashboardController\n    \n    BookingNotifierSubject -->|used by| setupObservers[\"Hook:<br/>setupObservers\"]\n    Service -->|used by| loadData[\"Hook:<br/>loadData\"]\n    TableView -->|configured by| initUI[\"Hook:<br/>initUI\"]\n```"
+    },
+    {
+      "file": "pattern_13_Mediator.md",
+      "order": 52,
+      "type": "classDiagram",
+      "lineNumber": 199,
+      "relationships": [
+        {
+          "from": "DashboardNavigationMediator",
+          "to": "SecretaryDashboardController",
+          "arrow": "-->"
+        },
+        {
+          "from": "SecretaryDashboardController",
+          "to": "DashboardOverviewView",
+          "arrow": "-->"
+        },
+        {
+          "from": "SecretaryDashboardController",
+          "to": "NewBookingFormView",
+          "arrow": "-->"
+        },
+        {
+          "from": "SecretaryDashboardController",
+          "to": "BookingListView",
+          "arrow": "-->"
+        },
+        {
+          "from": "SecretaryDashboardController",
+          "to": "BookingDetailsView",
+          "arrow": "-->"
+        }
+      ],
+      "mermaidCode": "```mermaid\nclassDiagram\n    class DashboardNavigationMediator {\n        -contentArea: StackPane\n        +DashboardNavigationMediator(contentArea: StackPane)\n        +navigateTo(view: Node) void\n    }\n\n    class SecretaryDashboardController {\n        -contentArea: StackPane\n        -mediator: DashboardNavigationMediator\n        -overviewButton: Button\n        -newBookingButton: Button\n        -bookingListButton: Button\n        +initUI() void\n    }\n\n    class DashboardOverviewView {\n        +getView() Node\n        +addBooking(booking: Booking) void\n    }\n\n    class NewBookingFormView {\n        +getView() Node\n        +clearForm() void\n        +setOnSubmit(callback: Consumer) void\n    }\n\n    class BookingListView {\n        +getView() Node\n        +addBooking(booking: Booking) void\n        +setOnBookingSelected(callback: Consumer) void\n    }\n\n    class BookingDetailsView {\n        +getView() Node\n        +displayBooking(booking: Booking) void\n        +setOnBack(callback: Runnable) void\n    }\n\n    DashboardNavigationMediator --> SecretaryDashboardController: used by\n    SecretaryDashboardController --> DashboardOverviewView: manages\n    SecretaryDashboardController --> NewBookingFormView: manages\n    SecretaryDashboardController --> BookingListView: manages\n    SecretaryDashboardController --> BookingDetailsView: manages\n```"
+    },
+    {
+      "file": "pattern_13_Mediator.md",
+      "order": 53,
+      "type": "sequenceDiagram",
+      "lineNumber": 250,
+      "relationships": [],
+      "mermaidCode": "```mermaid\nsequenceDiagram\n    participant User as Secretary User\n    participant UI as Secretary Dashboard UI\n    participant Mediator as DashboardNavigationMediator\n    participant ContentArea as StackPane contentArea\n    participant Overview as DashboardOverview\n    participant NewForm as NewBookingForm\n    participant List as BookingList\n\n    User->>UI: Click \"Overview\" button\n    UI->>Mediator: navigateTo(overviewView)\n    activate Mediator\n    Mediator->>ContentArea: getChildren().clear()\n    Mediator->>Overview: setVisible(true)\n    Mediator->>ContentArea: getChildren().add(overview)\n    deactivate Mediator\n\n    User->>UI: Click \"New Booking\" button\n    UI->>Mediator: navigateTo(newBookingView)\n    activate Mediator\n    Mediator->>ContentArea: getChildren().clear()\n    Mediator->>NewForm: setVisible(true)\n    Mediator->>ContentArea: getChildren().add(newForm)\n    deactivate Mediator\n\n    User->>NewForm: Fill form and submit\n    NewForm->>UI: Notify booking submitted\n    UI->>Mediator: navigateTo(bookingListView)\n    activate Mediator\n    Mediator->>ContentArea: getChildren().clear()\n    Mediator->>List: setVisible(true)\n    Mediator->>ContentArea: getChildren().add(list)\n    deactivate Mediator\n\n    User->>List: Booking appears in list\n```"
+    },
+    {
+      "file": "pattern_13_Mediator.md",
+      "order": 54,
+      "type": "graph TD",
+      "lineNumber": 477,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    Overview[\"Overview<br/>Dashboard\"]\n    NewBooking[\"New Booking<br/>Form\"]\n    BookingList[\"Booking<br/>List\"]\n    Details[\"Booking<br/>Details\"]\n    \n    Overview -->|New Booking| NewBooking\n    NewBooking -->|Submit| BookingList\n    NewBooking -->|Cancel| Overview\n    BookingList -->|Select| Details\n    Details -->|Back| BookingList\n    Details -->|Edit| NewBooking\n    BookingList -->|Back| Overview\n    \n    Mediator[\"DashboardNavigationMediator<br/>(orchestrates all transitions)\"]\n    \n    Overview -.->|navigateTo| Mediator\n    NewBooking -.->|navigateTo| Mediator\n    BookingList -.->|navigateTo| Mediator\n    Details -.->|navigateTo| Mediator\n```"
+    },
+    {
+      "file": "pattern_13_Mediator.md",
+      "order": 55,
+      "type": "graph TD",
+      "lineNumber": 504,
+      "relationships": [],
+      "mermaidCode": "```mermaid\ngraph TD\n    DashboardNavigationMediator -->|coordinates| OverviewController\n    DashboardNavigationMediator -->|coordinates| NewBookingController\n    DashboardNavigationMediator -->|coordinates| BookingListController\n    DashboardNavigationMediator -->|coordinates| DetailsController\n    \n    SecretaryDashboardController -->|creates| DashboardNavigationMediator\n    \n    OverviewController -.->|calls| navigateTo\n    NewBookingController -.->|calls| navigateTo\n    BookingListController -.->|calls| navigateTo\n    DetailsController -.->|calls| navigateTo\n```"
+    }
+  ]
+}
