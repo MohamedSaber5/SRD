@@ -7,10 +7,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="16" styleClass="request-card"
-      nodeOrientation="RIGHT_TO_LEFT"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.aast.booking.admin.RequestCardController">
+<VBox nodeOrientation="RIGHT_TO_LEFT" spacing="16" styleClass="request-card" stylesheets="@../../css/admin.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.aast.booking.admin.RequestCardController">
 
     <padding><Insets bottom="20" left="24" right="24" top="20" /></padding>
 
@@ -26,7 +23,7 @@
     <!-- Middle Row: 3 Boxes (Time, Responsible, Capacity) -->
     <HBox spacing="16">
         <!-- Date and Time Box -->
-        <VBox spacing="6" styleClass="info-box-blue" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+        <VBox maxWidth="Infinity" spacing="6" styleClass="info-box-blue" HBox.hgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT" spacing="6">
                 <Label styleClass="icon-small" text="📅" />
                 <Label styleClass="info-box-title" text="التاريخ والوقت" />
@@ -36,7 +33,7 @@
         </VBox>
 
         <!-- Responsible Box -->
-        <VBox spacing="6" styleClass="info-box-gray" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+        <VBox maxWidth="Infinity" spacing="6" styleClass="info-box-gray" HBox.hgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT" spacing="6">
                 <Label styleClass="icon-small" text="👤" />
                 <Label styleClass="info-box-title" text="المسؤول عن الحدث" />
@@ -46,7 +43,7 @@
         </VBox>
 
         <!-- Capacity Box -->
-        <VBox spacing="6" styleClass="info-box-orange" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+        <VBox maxWidth="Infinity" spacing="6" styleClass="info-box-orange" HBox.hgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT" spacing="6">
                 <Label styleClass="icon-small" text="👥" />
                 <Label styleClass="info-box-title-orange" text="السعة والنوع" />
@@ -58,7 +55,7 @@
 
     <!-- Lower Middle Row: Purpose and Requester -->
     <HBox spacing="16">
-        <VBox spacing="6" styleClass="info-box-gray" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+        <VBox maxWidth="Infinity" spacing="6" styleClass="info-box-gray" HBox.hgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT" spacing="6">
                 <Label styleClass="icon-small" text="📝" />
                 <Label styleClass="info-box-title" text="الغرض من الاستخدام" />
@@ -66,7 +63,7 @@
             <Label fx:id="lblPurpose" styleClass="info-box-value-italic" text="-" />
         </VBox>
 
-        <VBox spacing="6" styleClass="info-box-gray" prefWidth="250">
+        <VBox prefWidth="250" spacing="6" styleClass="info-box-gray">
             <HBox alignment="CENTER_LEFT" spacing="6">
                 <Label styleClass="icon-small" text="💼" />
                 <Label styleClass="info-box-title" text="مقدم الطلب" />
@@ -84,8 +81,8 @@
 
     <!-- Actions -->
     <HBox spacing="16">
-        <Button fx:id="btnApprove" onAction="#handleApprove" onMouseClicked="#consumeClick" styleClass="btn-approve-card" text="✔  اعتماد وتخصيص قاعة" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-        <Button fx:id="btnReject" onAction="#handleReject" onMouseClicked="#consumeClick" styleClass="btn-reject-card" text="⊗  رفض الطلب" prefWidth="200" />
+        <Button fx:id="btnApprove" maxWidth="Infinity" onAction="#handleApprove" onMouseClicked="#consumeClick" styleClass="btn-approve-card" text="✔  اعتماد وتخصيص قاعة" HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnReject" onAction="#handleReject" onMouseClicked="#consumeClick" prefWidth="200" styleClass="btn-reject-card" text="⊗  رفض الطلب" />
     </HBox>
 
 </VBox>

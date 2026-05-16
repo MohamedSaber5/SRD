@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -10,6 +11,8 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
@@ -20,11 +23,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane nodeOrientation="RIGHT_TO_LEFT"
-            style="-fx-background-color: #f2f4f6; -fx-font-family: 'Tajawal', 'IBM Plex Sans Arabic', 'Inter', sans-serif;"
-            xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.aast.booking.branchmanager.BranchManagerDashboardController">
+<BorderPane nodeOrientation="RIGHT_TO_LEFT" style="-fx-background-color: #f2f4f6; -fx-font-family: 'Tajawal', 'IBM Plex Sans Arabic', 'Inter', sans-serif;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.aast.booking.branchmanager.BranchManagerDashboardController">
 
     <stylesheets>
         <java.lang.String fx:value="/css/styles.css" />
@@ -36,9 +35,12 @@
         <VBox spacing="8" styleClass="bm-sidebar">
             <padding><Insets bottom="24" left="18" right="18" top="28" /></padding>
 
-            <VBox spacing="3" style="-fx-padding: 0 0 20 0;">
-                <Label styleClass="bm-sidebar-title" text="نظام حجز القاعات" wrapText="true" />
-                <Label styleClass="bm-sidebar-subtitle" text="الأكاديمية العربية" />
+            <VBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 20 0;">
+                <javafx.scene.image.ImageView fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
+                    <image><javafx.scene.image.Image url="@../../images/logo_aast.jpg" /></image>
+                </javafx.scene.image.ImageView>
+                <Label styleClass="bm-sidebar-title" text="نظام حجز القاعات" textAlignment="CENTER" wrapText="true" />
+                <Label styleClass="bm-sidebar-subtitle" text="الأكاديمية العربية للعلوم والتكنولوجيا" textAlignment="CENTER" wrapText="true" />
                 <Label fx:id="roleLabel" style="-fx-font-size:11px; -fx-text-fill:#775a19; -fx-font-weight:bold;" text="مدير الفرع" />
             </VBox>
 
@@ -46,22 +48,25 @@
 
             <Label fx:id="welcomeLabel" style="-fx-padding: 10 4 6 4; -fx-font-style:italic;" styleClass="bm-sidebar-subtitle" text="" wrapText="true" />
 
-            <Button fx:id="btnDashboard" maxWidth="Infinity" onAction="#showDashboard" styleClass="bm-nav-btn-active" text="🏠  لوحة التحكم" />
-            <Button fx:id="btnRequests"  maxWidth="Infinity" onAction="#showPendingRequests" styleClass="bm-nav-btn" text="📋  الطلبات المعلقة" />
-            <Button fx:id="btnInstantBook" maxWidth="Infinity" onAction="#showInstantBooking" styleClass="bm-nav-btn" text="⚡  حجز فوري" />
-            <Button fx:id="btnHistory"   maxWidth="Infinity" onAction="#showHistory" styleClass="bm-nav-btn" text="🗂  سجل الطلبات" />
+            <Button fx:id="btnDashboard" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showDashboard" styleClass="bm-nav-btn-active" text="🏠  لوحة التحكم" />
+            <Button fx:id="btnRequests" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showPendingRequests" styleClass="bm-nav-btn" text="📋  الطلبات المعلقة" />
+            <Button fx:id="btnInstantBook" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showInstantBooking" styleClass="bm-nav-btn" text="⚡  حجز فوري" />
+            <Button fx:id="btnHistory" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showHistory" styleClass="bm-nav-btn" text="🗂  سجل الطلبات" />
 
             <Region VBox.vgrow="ALWAYS" />
 
             <Region maxWidth="Infinity" styleClass="bm-divider" />
             <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="bm-logout-btn" text="🚪  تسجيل الخروج" />
+         <stylesheets>
+            <URL value="@../../css/admin.css" />
+            <URL value="@../../css/dashboard-common.css" />
+         </stylesheets>
         </VBox>
     </left>
 
     <!-- CENTER CONTENT wrapped in ScrollPane for scrollability -->
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="bm-main-scroll"
-                    hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+        <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" styleClass="bm-main-scroll" vbarPolicy="AS_NEEDED">
             <VBox spacing="0" style="-fx-background-color: #f2f4f6;">
 
                 <!-- Top Header Bar -->
@@ -70,11 +75,19 @@
                         <Label fx:id="pageTitle" styleClass="bm-header-title" text="لوحة التحكم" />
                         <Label fx:id="pageSubtitle" styleClass="bm-header-subtitle" text="نظرة عامة على طلبات القاعات متعددة الأغراض" />
                     </VBox>
-                    <Button fx:id="ramadanBtn" onAction="#toggleRamadanMode" styleClass="bm-ramadan-off" text="🌙  تفعيل وضع رمضان" />
+                    <Button fx:id="ramadanBtn" onAction="#toggleRamadanMode" stylesheets="@../../css/admin.css" text="🌙  تفعيل وضع رمضان">
+                  <styleClass>
+                     <String fx:value="bm-ramadan-off" />
+                     <String fx:value="admin-ramadan-on" />
+                  </styleClass></Button>
+               <stylesheets>
+                  <URL value="@../../css/admin.css" />
+                  <URL value="@../../css/dashboard-common.css" />
+               </stylesheets>
                 </HBox>
 
                 <!-- Page Stack -->
-                <StackPane VBox.vgrow="ALWAYS" style="-fx-min-height: 600;">
+                <StackPane style="-fx-min-height: 600;" VBox.vgrow="ALWAYS">
 
                     <!-- DASHBOARD VIEW -->
                     <VBox fx:id="dashboardView" spacing="24" visible="true">
@@ -109,17 +122,25 @@
                             <Label styleClass="bm-section-title" text="الطلبات المعلقة" />
                             <Label fx:id="pendingCountBadge" styleClass="bm-count-badge" text="0" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <Button onAction="#refreshAll" styleClass="bm-refresh-btn" text="↻  تحديث" />
+                            <Button onAction="#refreshAll" styleClass="bm-refresh-btn" text="↻  تحديث">
+                        <stylesheets>
+                           <URL value="@../../css/dashboard-common.css" />
+                           <URL value="@../../css/admin.css" />
+                           <URL value="@../../css/branchmanager.css" />
+                        </stylesheets></Button>
                         </HBox>
                         <Label styleClass="bm-section-hint" text="يظهر هنا فقط حجوزات القاعات متعددة الأغراض" />
 
                         <!-- Pending Cards (scrollable) -->
-                        <ScrollPane fitToWidth="true" styleClass="bm-scroll" VBox.vgrow="ALWAYS"
-                                    style="-fx-min-height: 300;">
+                        <ScrollPane fitToWidth="true" style="-fx-min-height: 300;" styleClass="bm-scroll" stylesheets="@../../css/admin.css" VBox.vgrow="ALWAYS">
                             <FlowPane fx:id="cardsContainer" hgap="20" prefWrapLength="800" vgap="20">
                                 <padding><Insets bottom="16" left="4" right="4" top="4" /></padding>
                             </FlowPane>
                         </ScrollPane>
+                  <stylesheets>
+                     <URL value="@../../css/admin.css" />
+                     <URL value="@../../css/dashboard-common.css" />
+                  </stylesheets>
                     </VBox>
 
                     <!-- PENDING REQUESTS VIEW -->
@@ -131,8 +152,7 @@
                             <Region HBox.hgrow="ALWAYS" />
                             <Button onAction="#refreshAll" styleClass="bm-refresh-btn" text="↻  تحديث" />
                         </HBox>
-                        <ScrollPane fitToWidth="true" styleClass="bm-scroll" VBox.vgrow="ALWAYS"
-                                    style="-fx-min-height: 400;">
+                        <ScrollPane fitToWidth="true" style="-fx-min-height: 400;" styleClass="bm-scroll" VBox.vgrow="ALWAYS">
                             <FlowPane fx:id="pendingCardsContainer" hgap="20" prefWrapLength="800" vgap="20">
                                 <padding><Insets bottom="16" left="4" right="4" top="4" /></padding>
                             </FlowPane>
@@ -186,15 +206,14 @@
                             <Button onAction="#refreshHistory" styleClass="bm-refresh-btn" text="↻  تحديث" />
                         </HBox>
 
-                        <TableView fx:id="historyTable" styleClass="bm-table" VBox.vgrow="ALWAYS"
-                                   style="-fx-min-height: 400;">
+                        <TableView fx:id="historyTable" style="-fx-min-height: 400;" styleClass="bm-table" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="hColDate"    prefWidth="110" text="التاريخ" />
-                                <TableColumn fx:id="hColTime"    prefWidth="150" text="الفترة الزمنية" />
-                                <TableColumn fx:id="hColRoom"    prefWidth="150" text="القاعة" />
-                                <TableColumn fx:id="hColUser"    prefWidth="160" text="مقدم الطلب" />
+                                <TableColumn fx:id="hColDate" prefWidth="110" text="التاريخ" />
+                                <TableColumn fx:id="hColTime" prefWidth="150" text="الفترة الزمنية" />
+                                <TableColumn fx:id="hColRoom" prefWidth="150" text="القاعة" />
+                                <TableColumn fx:id="hColUser" prefWidth="160" text="مقدم الطلب" />
                                 <TableColumn fx:id="hColPurpose" prefWidth="200" text="الغرض" />
-                                <TableColumn fx:id="hColStatus"  prefWidth="120" text="الحالة" />
+                                <TableColumn fx:id="hColStatus" prefWidth="120" text="الحالة" />
                             </columns>
                             <placeholder>
                                 <Label styleClass="bm-empty-title" text="لا توجد بيانات مطابقة للبحث" />

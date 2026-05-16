@@ -16,23 +16,19 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-            style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;"
-            xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.aast.booking.admin.AdminStatisticsController">
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" vbarPolicy="AS_NEEDED" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.aast.booking.admin.AdminStatisticsController">
 
     <stylesheets>
         <String fx:value="/css/admin.css" />
     </stylesheets>
 
-    <VBox spacing="24" nodeOrientation="RIGHT_TO_LEFT" style="-fx-background-color: #f2f4f6;">
+    <VBox nodeOrientation="RIGHT_TO_LEFT" spacing="24" style="-fx-background-color: #f2f4f6;" stylesheets="@../../css/admin.css">
         <padding><Insets bottom="32" left="30" right="30" top="24" /></padding>
 
         <!-- ── Section Title ── -->
         <VBox spacing="4">
-            <Label text="📊  الإحصائيات والتقارير" styleClass="admin-section-title" />
-            <Label text="تحليل شامل لاستخدام القاعات ومعدلات الطلب" styleClass="admin-section-subtitle" />
+            <Label styleClass="admin-section-title" text="📊  الإحصائيات والتقارير" />
+            <Label styleClass="admin-section-subtitle" text="تحليل شامل لاستخدام القاعات ومعدلات الطلب" />
         </VBox>
 
         <!-- ── KPI Cards Row ── -->
@@ -74,7 +70,7 @@
                     <Region HBox.hgrow="ALWAYS" />
                 </HBox>
                 <Label styleClass="admin-stat-label" text="القاعة الأكثر طلباً" />
-                <Label fx:id="kpiTopRoom" styleClass="admin-stat-value" text="—" style="-fx-font-size: 18px;" />
+                <Label fx:id="kpiTopRoom" style="-fx-font-size: 18px;" styleClass="admin-stat-value" text="—" />
             </VBox>
         </HBox>
 
@@ -92,9 +88,8 @@
 
             <!-- Row 0, Col 0: Peak Hours (LineChart) -->
             <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                <Label text="⏰  ساعات الذروة" styleClass="stats-chart-title" />
-                <LineChart fx:id="peakHoursChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
-                           animated="false" legendVisible="false" createSymbols="false">
+                <Label styleClass="stats-chart-title" text="⏰  ساعات الذروة" />
+                <LineChart fx:id="peakHoursChart" animated="false" createSymbols="false" legendVisible="false" styleClass="stats-chart" VBox.vgrow="ALWAYS">
                     <xAxis><CategoryAxis label="" tickLabelRotation="0" /></xAxis>
                     <yAxis><NumberAxis label="" /></yAxis>
                 </LineChart>
@@ -102,9 +97,8 @@
 
             <!-- Row 0, Col 1: Busiest Days (BarChart) -->
             <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                <Label text="📅  الأيام الأكثر ازدحاماً" styleClass="stats-chart-title" />
-                <BarChart fx:id="busiestDaysChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
-                          animated="false" legendVisible="false" barGap="4" categoryGap="12">
+                <Label styleClass="stats-chart-title" text="📅  الأيام الأكثر ازدحاماً" />
+                <BarChart fx:id="busiestDaysChart" animated="false" barGap="4" categoryGap="12" legendVisible="false" styleClass="stats-chart" VBox.vgrow="ALWAYS">
                     <xAxis><CategoryAxis /></xAxis>
                     <yAxis><NumberAxis /></yAxis>
                 </BarChart>
@@ -112,9 +106,8 @@
 
             <!-- Row 1, Col 0: Top Rooms (Horizontal BarChart) -->
             <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                <Label text="🏢  القاعات الأكثر طلباً" styleClass="stats-chart-title" />
-                <BarChart fx:id="topRoomsChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
-                          animated="false" legendVisible="false" barGap="4" categoryGap="16">
+                <Label styleClass="stats-chart-title" text="🏢  القاعات الأكثر طلباً" />
+                <BarChart fx:id="topRoomsChart" animated="false" barGap="4" categoryGap="16" legendVisible="false" styleClass="stats-chart" VBox.vgrow="ALWAYS">
                     <xAxis><CategoryAxis /></xAxis>
                     <yAxis><NumberAxis /></yAxis>
                 </BarChart>
@@ -122,9 +115,8 @@
 
             <!-- Row 1, Col 1: Building Pressure (BarChart) -->
             <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                <Label text="🏛  الضغط على المباني" styleClass="stats-chart-title" />
-                <BarChart fx:id="buildingChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
-                          animated="false" legendVisible="false" barGap="4" categoryGap="20">
+                <Label styleClass="stats-chart-title" text="🏛  الضغط على المباني" />
+                <BarChart fx:id="buildingChart" animated="false" barGap="4" categoryGap="20" legendVisible="false" styleClass="stats-chart" VBox.vgrow="ALWAYS">
                     <xAxis><CategoryAxis /></xAxis>
                     <yAxis><NumberAxis /></yAxis>
                 </BarChart>
@@ -132,18 +124,14 @@
 
             <!-- Row 2, Col 0: Status Distribution (PieChart) -->
             <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="0" GridPane.rowIndex="2">
-                <Label text="🍩  توزيع حالة الطلبات" styleClass="stats-chart-title" />
-                <PieChart fx:id="statusPieChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
-                          animated="false" legendVisible="true" labelsVisible="false"
-                          startAngle="90" clockwise="false" />
+                <Label styleClass="stats-chart-title" text="🍩  توزيع حالة الطلبات" />
+                <PieChart fx:id="statusPieChart" animated="false" clockwise="false" labelsVisible="false" legendVisible="true" startAngle="90" styleClass="stats-chart" VBox.vgrow="ALWAYS" />
             </VBox>
 
             <!-- Row 2, Col 1: Emergency vs Normal (PieChart) -->
             <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                <Label text="⏱  الطلبات الطارئة مقابل الطبيعية" styleClass="stats-chart-title" />
-                <PieChart fx:id="leadTimePieChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
-                          animated="false" legendVisible="true" labelsVisible="false"
-                          startAngle="90" clockwise="false" />
+                <Label styleClass="stats-chart-title" text="⏱  الطلبات الطارئة مقابل الطبيعية" />
+                <PieChart fx:id="leadTimePieChart" animated="false" clockwise="false" labelsVisible="false" legendVisible="true" startAngle="90" styleClass="stats-chart" VBox.vgrow="ALWAYS" />
             </VBox>
 
         </GridPane>

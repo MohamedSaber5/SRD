@@ -106,20 +106,202 @@
     -fx-font-size: 12px; -fx-text-fill: #737780;
 }
 
-/* ── TABLE ──────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   TABLE VIEW — Comprehensive Stylesheet
+   Apply with:  tableView.getStyleClass().add("admin-table");
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Container ─────────────────────────────────────────────── */
 .admin-table {
     -fx-background-color: #ffffff;
-    -fx-background-radius: 12px;
-    -fx-border-color: #e0e3e5; -fx-border-radius: 12px; -fx-border-width: 1;
+    -fx-background-radius: 16px;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 16px;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 6, 0, 0, 2);
+    -fx-padding: 0;
+    -fx-table-cell-border-color: transparent;   /* hide inner cell gridlines */
 }
-.admin-table .column-header {
+
+/* ── Column Header Background ──────────────────────────────── */
+.admin-table .column-header-background {
     -fx-background-color: #f7f9fb;
-    -fx-font-weight: bold; -fx-text-fill: #43474f; -fx-font-size: 12px;
-    -fx-border-color: #e0e3e5; -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 16 16 0 0;           /* match card top corners   */
+    -fx-border-color: transparent transparent #e0e3e5 transparent;
+    -fx-border-width: 0 0 1.5 0;
 }
-.admin-table .table-row-cell:odd { -fx-background-color: #f7f9fb; }
-.admin-table .table-row-cell:even { -fx-background-color: #ffffff; }
-.admin-table .table-row-cell:selected { -fx-background-color: #d5e3ff; }
+.admin-table .column-header-background .filler {
+    -fx-background-color: transparent;
+}
+
+/* ── Individual Column Headers ─────────────────────────────── */
+.admin-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent transparent #e0e3e5;
+    -fx-border-width: 0 0 0 0.5;
+    -fx-padding: 14 18;
+    -fx-alignment: CENTER_RIGHT;                 /* RTL-friendly default     */
+}
+.admin-table .column-header .label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #5a7698;
+    -fx-font-family: "Tajawal";
+}
+/* First column — no left divider */
+.admin-table .column-header:first-child {
+    -fx-border-width: 0;
+}
+
+/* ── Column Sort Arrow ─────────────────────────────────────── */
+.admin-table .arrow {
+    -fx-background-color: #001e40;
+    -fx-padding: 3 4 3 4;
+    -fx-shape: "M 0 0 L 7 0 L 3.5 5 z";
+}
+
+/* ── Column Resize Handle ──────────────────────────────────── */
+.admin-table .column-resize-line {
+    -fx-background-color: #001e40;
+    -fx-opacity: 0.35;
+}
+.admin-table .column-drag-header {
+    -fx-background-color: rgba(0,30,64,0.06);
+}
+.admin-table .column-overlay {
+    -fx-background-color: rgba(0,30,64,0.06);
+}
+
+/* ── Row Cells — Zebra Striping ────────────────────────────── */
+.admin-table .table-row-cell:odd {
+    -fx-background-color: #ffffff;
+}
+.admin-table .table-row-cell:even {
+    -fx-background-color: #fafbfc;
+}
+
+/* ── Row Hover ─────────────────────────────────────────────── */
+.admin-table .table-row-cell:hover {
+    -fx-background-color: #f2f6fb;
+}
+
+/* ── Row Selection ─────────────────────────────────────────── */
+.admin-table .table-row-cell:selected {
+    -fx-background-color: #d5e3ff;
+}
+.admin-table .table-row-cell:selected .text,
+.admin-table .table-row-cell:selected .label {
+    -fx-fill: #001e40;
+    -fx-text-fill: #001e40;
+}
+
+/* Focused row (keyboard navigation) */
+.admin-table:focused .table-row-cell:selected {
+    -fx-background-color: #c4d9fd;
+    -fx-border-color: #001e40;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* ── Cell Text ─────────────────────────────────────────────── */
+.admin-table .table-cell {
+    -fx-padding: 12 18;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-font-size: 13px;
+    -fx-text-fill: #191c1e;
+    -fx-font-family: "IBM Plex Sans Arabic";
+    -fx-border-color: transparent;
+}
+
+/* ── Empty Table Placeholder ───────────────────────────────── */
+.admin-table .placeholder .label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #737780;
+    -fx-font-family: "Tajawal";
+}
+
+/* ── Scrollbars inside Table ───────────────────────────────── */
+.admin-table .scroll-bar:vertical .track,
+.admin-table .scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.admin-table .scroll-bar:vertical .thumb,
+.admin-table .scroll-bar:horizontal .thumb {
+    -fx-background-color: #c3c6d1;
+    -fx-background-radius: 4px;
+}
+.admin-table .scroll-bar:vertical .thumb:hover,
+.admin-table .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #a0a5b1;
+}
+.admin-table .scroll-bar .increment-button,
+.admin-table .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.admin-table .scroll-bar .increment-arrow,
+.admin-table .scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+.admin-table .corner {
+    -fx-background-color: transparent;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TABLE STATUS BADGES — Reusable cell label classes
+   Usage:  label.getStyleClass().add("table-badge-approved");
+   ══════════════════════════════════════════════════════════════ */
+.table-badge-approved {
+    -fx-background-color: #d1fae5;
+    -fx-text-fill: #065f46;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 3 12;
+    -fx-alignment: CENTER;
+}
+.table-badge-pending {
+    -fx-background-color: #d5e3ff;
+    -fx-text-fill: #001e40;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 3 12;
+    -fx-alignment: CENTER;
+}
+.table-badge-rejected {
+    -fx-background-color: #ffdad6;
+    -fx-text-fill: #ba1a1a;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 3 12;
+    -fx-alignment: CENTER;
+}
+.table-badge-gold {
+    -fx-background-color: #fbf0dd;
+    -fx-text-fill: #785a1a;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 3 12;
+    -fx-alignment: CENTER;
+}
+
+/* ── Bold primary cell (e.g. Room Name / ID column) ────────── */
+.table-cell-primary {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+}
+
+/* ── Muted secondary cell (e.g. timestamps, notes) ─────────── */
+.table-cell-secondary {
+    -fx-font-size: 12px;
+    -fx-text-fill: #737780;
+}
 
 /* ── RAMADAN TOGGLE ────────────────────────────────────────── */
 .admin-ramadan-off {
@@ -130,11 +312,12 @@
 }
 .admin-ramadan-off:hover { -fx-background-color: #e0e3e5; }
 .admin-ramadan-on {
-    -fx-background-color: #fed488; -fx-text-fill: #261900;
+    -fx-background-color: #001e40; -fx-text-fill: #ffffff;
     -fx-font-size: 13px; -fx-font-weight: bold;
     -fx-background-radius: 12px; -fx-padding: 8 18;
-    -fx-cursor: hand; -fx-border-color: #e9c176; -fx-border-radius: 12px;
+    -fx-cursor: hand; -fx-border-color: #001e40; -fx-border-radius: 12px;
 }
+.admin-ramadan-on:hover { -fx-background-color: #003366; }
 
 /* ── ACTION BUTTONS ────────────────────────────────────────── */
 .admin-action-btn {
@@ -425,3 +608,297 @@
 .admin-choice-title { -fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827; }
 .admin-choice-subtitle { -fx-font-size: 11px; -fx-text-fill: #6b7280; }
 
+/* ══════════════════════════════════════════════════════════════
+   DATE PICKER — Navy Palette
+   Apply with:  styleClass="admin-date-picker"
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Text field portion ────────────────────────────────────── */
+.admin-date-picker {
+    -fx-background-color: #f7f9fb;
+    -fx-background-radius: 10px;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1;
+    -fx-font-size: 13px;
+    -fx-font-family: "IBM Plex Sans Arabic";
+}
+.admin-date-picker:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #001e40;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.08), 6, 0, 0, 0);
+}
+.admin-date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #191c1e;
+    -fx-font-size: 13px;
+    -fx-padding: 8 12;
+}
+.admin-date-picker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10;
+    -fx-cursor: hand;
+}
+.admin-date-picker .arrow-button .arrow {
+    -fx-background-color: #001e40;
+}
+
+/* ── Calendar Popup ────────────────────────────────────────── */
+.admin-date-picker .date-picker-popup {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 16, 0, 0, 6);
+}
+
+/* Month/Year header bar */
+.admin-date-picker .date-picker-popup > .month-year-pane {
+    -fx-background-color: #001e40;
+    -fx-background-radius: 12 12 0 0;
+    -fx-padding: 10 14;
+}
+.admin-date-picker .date-picker-popup > .month-year-pane .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Tajawal";
+}
+.admin-date-picker .date-picker-popup > .month-year-pane .spinner .button .left-arrow,
+.admin-date-picker .date-picker-popup > .month-year-pane .spinner .button .right-arrow {
+    -fx-background-color: #ffffff;
+}
+.admin-date-picker .date-picker-popup > .month-year-pane .spinner .button:hover .left-arrow,
+.admin-date-picker .date-picker-popup > .month-year-pane .spinner .button:hover .right-arrow {
+    -fx-background-color: #a7c8ff;
+}
+
+/* Day-of-week header row (Sun Mon Tue …) */
+.admin-date-picker .date-picker-popup .day-name-cell {
+    -fx-text-fill: #5a7698;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.admin-date-picker .date-picker-popup .week-number-cell {
+    -fx-text-fill: #c3c6d1;
+    -fx-font-size: 10px;
+}
+
+/* Individual day cells */
+.admin-date-picker .date-picker-popup .day-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #191c1e;
+    -fx-font-size: 12px;
+    -fx-background-radius: 8px;
+    -fx-padding: 4;
+}
+.admin-date-picker .date-picker-popup .day-cell:hover {
+    -fx-background-color: #eef2f6;
+}
+
+/* Today highlight */
+.admin-date-picker .date-picker-popup .today {
+    -fx-background-color: #d5e3ff;
+    -fx-text-fill: #001e40;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+}
+
+/* Selected day */
+.admin-date-picker .date-picker-popup .selected {
+    -fx-background-color: #001e40;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+}
+
+/* Days outside current month */
+.admin-date-picker .date-picker-popup .next-month,
+.admin-date-picker .date-picker-popup .previous-month {
+    -fx-text-fill: #c3c6d1;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   COMBO BOX — Navy Palette
+   Apply with:  styleClass="admin-combo-box"
+   ══════════════════════════════════════════════════════════════ */
+.admin-combo-box {
+    -fx-background-color: #f7f9fb;
+    -fx-background-radius: 10px;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1;
+    -fx-font-size: 13px;
+    -fx-font-family: "IBM Plex Sans Arabic";
+    -fx-cursor: hand;
+}
+.admin-combo-box:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #001e40;
+    -fx-border-width: 1.5;
+}
+.admin-combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10;
+}
+.admin-combo-box .arrow-button .arrow {
+    -fx-background-color: #001e40;
+}
+.admin-combo-box .list-cell {
+    -fx-text-fill: #191c1e;
+    -fx-font-size: 13px;
+    -fx-padding: 8 14;
+}
+
+/* Dropdown popup */
+.admin-combo-box .combo-box-popup .list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 12, 0, 0, 4);
+}
+.admin-combo-box .combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #191c1e;
+    -fx-padding: 10 14;
+    -fx-font-size: 13px;
+}
+.admin-combo-box .combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #eef2f6;
+}
+.admin-combo-box .combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #d5e3ff;
+    -fx-text-fill: #001e40;
+    -fx-font-weight: bold;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   CHECKBOX — Navy Palette
+   Apply with:  styleClass="admin-checkbox"
+   ══════════════════════════════════════════════════════════════ */
+.admin-checkbox {
+    -fx-font-size: 13px;
+    -fx-text-fill: #191c1e;
+    -fx-font-family: "IBM Plex Sans Arabic";
+    -fx-cursor: hand;
+}
+.admin-checkbox .box {
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-border-width: 1.5;
+    -fx-padding: 3;
+}
+.admin-checkbox:hover .box {
+    -fx-border-color: #001e40;
+    -fx-background-color: #eef2f6;
+}
+.admin-checkbox:selected .box {
+    -fx-background-color: #001e40;
+    -fx-border-color: #001e40;
+}
+.admin-checkbox:selected .box .mark {
+    -fx-background-color: #ffffff;
+}
+.admin-checkbox:focused .box {
+    -fx-border-color: #001e40;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.15), 4, 0, 0, 0);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SPINNER — Navy Palette  (Time pickers in Delegation)
+   ══════════════════════════════════════════════════════════════ */
+.admin-date-picker ~ .spinner,
+.spinner {
+    -fx-font-size: 13px;
+    -fx-font-family: "IBM Plex Sans Arabic";
+}
+.admin-spinner,
+.admin-date-picker ~ .spinner {
+    -fx-background-color: #f7f9fb;
+    -fx-background-radius: 10px;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1;
+}
+.admin-spinner:focused,
+.admin-date-picker ~ .spinner:focused {
+    -fx-border-color: #001e40;
+    -fx-border-width: 1.5;
+    -fx-background-color: #ffffff;
+}
+.admin-spinner .text-field,
+.admin-date-picker ~ .spinner .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #191c1e;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+.admin-spinner .increment-arrow-button,
+.admin-spinner .decrement-arrow-button,
+.admin-date-picker ~ .spinner .increment-arrow-button,
+.admin-date-picker ~ .spinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 4 8;
+}
+.admin-spinner .increment-arrow-button .increment-arrow,
+.admin-date-picker ~ .spinner .increment-arrow-button .increment-arrow {
+    -fx-background-color: #001e40;
+}
+.admin-spinner .decrement-arrow-button .decrement-arrow,
+.admin-date-picker ~ .spinner .decrement-arrow-button .decrement-arrow {
+    -fx-background-color: #001e40;
+}
+.admin-spinner .increment-arrow-button:hover,
+.admin-spinner .decrement-arrow-button:hover,
+.admin-date-picker ~ .spinner .increment-arrow-button:hover,
+.admin-date-picker ~ .spinner .decrement-arrow-button:hover {
+    -fx-background-color: #eef2f6;
+    -fx-background-radius: 6px;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   RADIO BUTTON — Navy Palette  (Delegation type selector)
+   ══════════════════════════════════════════════════════════════ */
+.radio-button {
+    -fx-font-size: 13px;
+    -fx-text-fill: #191c1e;
+    -fx-cursor: hand;
+}
+.radio-button .radio {
+    -fx-background-color: #f7f9fb;
+    -fx-border-color: #c3c6d1;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+    -fx-border-width: 1.5;
+    -fx-padding: 4;
+}
+.radio-button:hover .radio {
+    -fx-border-color: #001e40;
+    -fx-background-color: #eef2f6;
+}
+.radio-button:selected .radio {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #001e40;
+    -fx-border-width: 2;
+}
+.radio-button:selected .radio .dot {
+    -fx-background-color: #001e40;
+    -fx-background-radius: 50%;
+}
+.radio-button:focused .radio {
+    -fx-border-color: #001e40;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.15), 4, 0, 0, 0);
+}

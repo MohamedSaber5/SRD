@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
@@ -14,11 +21,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane nodeOrientation="RIGHT_TO_LEFT"
-            style="-fx-background-color: #f2f4f6;"
-            xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.aast.booking.admin.AdminDashboardController">
+<BorderPane nodeOrientation="RIGHT_TO_LEFT" style="-fx-background-color: #f2f4f6;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.aast.booking.admin.AdminDashboardController">
 
     <stylesheets>
         <java.lang.String fx:value="/css/styles.css" />
@@ -31,12 +34,12 @@
             <padding><Insets bottom="20" left="16" right="16" top="24" /></padding>
 
             <!-- Brand -->
-            <VBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 16 0;">
+            <VBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 16 0;" stylesheets="@../../css/dashboard-common.css">
                 <javafx.scene.image.ImageView fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
                     <image><javafx.scene.image.Image url="@../../images/logo_aast.jpg" /></image>
                 </javafx.scene.image.ImageView>
-                <Label styleClass="admin-sidebar-title" text="نظام حجز القاعات" wrapText="true" textAlignment="CENTER" />
-                <Label styleClass="admin-sidebar-subtitle" text="الأكاديمية العربية للعلوم والتكنولوجيا" wrapText="true" textAlignment="CENTER" />
+                <Label styleClass="admin-sidebar-title" text="نظام حجز القاعات" textAlignment="CENTER" wrapText="true" />
+                <Label styleClass="admin-sidebar-subtitle" text="الأكاديمية العربية للعلوم والتكنولوجيا" textAlignment="CENTER" wrapText="true" />
                 <Label fx:id="roleLabel" styleClass="admin-role-badge" text="المسؤول العام" />
             </VBox>
 
@@ -45,39 +48,43 @@
             <Label fx:id="welcomeLabel" style="-fx-padding: 8 4 4 4; -fx-font-style:italic;" styleClass="admin-sidebar-subtitle" text="" wrapText="true" />
 
             <!-- Navigation -->
-            <Button fx:id="btnDashboard" maxWidth="Infinity" onAction="#showDashboard" styleClass="admin-nav-btn-active" text="🏛  مدير النظام" />
-            <Button fx:id="btnRequests" maxWidth="Infinity" onAction="#showPendingRequests" styleClass="admin-nav-btn" text="📋  الطلبات المعلقة" />
-            <Button fx:id="btnNewBooking" maxWidth="Infinity" onAction="#showNewBooking" styleClass="admin-nav-btn" text="➕  طلب حجز جديد" />
-            <Button fx:id="btnRoomMgmt" maxWidth="Infinity" onAction="#showRoomManagement" styleClass="admin-nav-btn" text="🏢  إدارة القاعات" />
-            <Button fx:id="btnSearch" maxWidth="Infinity" onAction="#showSearch" styleClass="admin-nav-btn" text="🔍  البحث المتقدم" />
-            <Button fx:id="btnDelegation" maxWidth="Infinity" onAction="#showDelegation" styleClass="admin-nav-btn" text="👥  الصلاحيات والتفويض" />
-            <Button fx:id="btnSettings" maxWidth="Infinity" onAction="#showSettings" styleClass="admin-nav-btn" text="⚙  الإعدادات" />
-            <Button fx:id="btnStats" maxWidth="Infinity" onAction="#showStatistics" styleClass="admin-nav-btn" text="📊  الإحصائيات والتقارير" />
+            <Button fx:id="btnDashboard" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showDashboard" styleClass="admin-nav-btn-active" stylesheets="@../../css/dashboard-common.css" text="🏛  مدير النظام" />
+            <Button fx:id="btnRequests" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showPendingRequests" styleClass="admin-nav-btn" stylesheets="@../../css/dashboard-common.css" text="📋  الطلبات المعلقة" />
+            <Button fx:id="btnNewBooking" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showNewBooking" styleClass="admin-nav-btn" stylesheets="@../../css/dashboard-common.css" text="➕  طلب حجز جديد" />
+            <Button fx:id="btnRoomMgmt" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showRoomManagement" styleClass="admin-nav-btn" stylesheets="@../../css/dashboard-common.css" text="🏢  إدارة القاعات" />
+            <Button fx:id="btnSearch" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showSearch" styleClass="admin-nav-btn" stylesheets="@../../css/dashboard-common.css" text="🔍  البحث المتقدم" />
+            <Button fx:id="btnDelegation" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showDelegation" styleClass="admin-nav-btn" stylesheets="@../../css/dashboard-common.css" text="👥  الصلاحيات والتفويض" />
+            <Button fx:id="btnSettings" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showSettings" styleClass="admin-nav-btn" stylesheets="@../../css/dashboard-common.css" text="⚙  الإعدادات" />
+            <Button fx:id="btnStats" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" onAction="#showStatistics" styleClass="admin-nav-btn" stylesheets="@../../css/dashboard-common.css" text="📊  الإحصائيات والتقارير" />
 
-            <Region VBox.vgrow="ALWAYS" />
+            <Region stylesheets="@../../css/dashboard-common.css" VBox.vgrow="ALWAYS" />
 
-            <Region maxWidth="Infinity" styleClass="admin-divider" />
-            <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="admin-logout-btn" text="🚪  تسجيل الخروج" />
+            <Region maxWidth="Infinity" styleClass="admin-divider" stylesheets="@../../css/dashboard-common.css" />
+            <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="admin-logout-btn" stylesheets="@../../css/dashboard-common.css" text="🚪  تسجيل الخروج" />
+         <stylesheets>
+            <URL value="@../../css/dashboard-common.css" />
+            <URL value="@../../css/styles.css" />
+            <URL value="@../../css/admin.css" />
+         </stylesheets>
         </VBox>
     </left>
 
     <!-- CENTER CONTENT -->
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="false" styleClass="admin-main-scroll"
-                    hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+        <ScrollPane fitToHeight="false" fitToWidth="true" hbarPolicy="NEVER" styleClass="admin-main-scroll" vbarPolicy="AS_NEEDED">
             <VBox spacing="0" style="-fx-background-color: #f2f4f6;">
 
                 <!-- Top Header -->
                 <HBox alignment="CENTER_RIGHT" spacing="16" styleClass="admin-header">
-                    <VBox spacing="3" HBox.hgrow="ALWAYS">
-                        <Label fx:id="pageTitle" styleClass="admin-header-title" text="لوحة تحكم المسؤول" />
+                    <VBox spacing="3" stylesheets="@../../css/admin.css" HBox.hgrow="ALWAYS">
+                        <Label fx:id="pageTitle" styleClass="admin-header-title" text="   لوحة تحكم المسؤول" />
                         <Label fx:id="pageSubtitle" styleClass="admin-header-subtitle" text="إدارة الجداول الأسبوعية ومتابعة العمليات" />
                     </VBox>
-                    <Button fx:id="ramadanBtn" onAction="#toggleRamadanMode" styleClass="admin-ramadan-off" text="🌙  تفعيل وضع رمضان" />
+                    <Button fx:id="ramadanBtn" onAction="#toggleRamadanMode" styleClass="admin-ramadan-off" stylesheets="@../../css/admin.css" text="🌙  تفعيل وضع رمضان" />
                 </HBox>
 
                 <!-- Page Stack -->
-                <StackPane VBox.vgrow="ALWAYS" style="-fx-min-height: 650;">
+                <StackPane style="-fx-min-height: 650;" VBox.vgrow="ALWAYS">
 
                     <!-- HOME / DASHBOARD VIEW -->
                     <VBox fx:id="dashboardView" spacing="28" visible="true">
@@ -88,7 +95,7 @@
                             <!-- Card 1: Accepted Today -->
                             <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
                                 <HBox alignment="CENTER_RIGHT" spacing="10">
-                                    <Label styleClass="admin-stat-icon, admin-stat-icon-blue" text="📋" style="-fx-font-size: 18px;" />
+                                    <Label style="-fx-font-size: 18px;" styleClass="admin-stat-icon, admin-stat-icon-blue" text="📋" />
                                     <Region HBox.hgrow="ALWAYS" />
                                     <Label styleClass="admin-stat-badge-green" text="اليوم" />
                                 </HBox>
@@ -98,7 +105,7 @@
                             <!-- Card 2: Pending -->
                             <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
                                 <HBox alignment="CENTER_RIGHT">
-                                    <Label styleClass="admin-stat-icon, admin-stat-icon-gold" text="⏳" style="-fx-font-size: 18px;" />
+                                    <Label style="-fx-font-size: 18px;" styleClass="admin-stat-icon, admin-stat-icon-gold" text="⏳" />
                                 </HBox>
                                 <Label styleClass="admin-stat-label" text="الطلبات قيد الانتظار" />
                                 <Label fx:id="statPendingCount" styleClass="admin-stat-value-gold" text="0" />
@@ -106,7 +113,7 @@
                             <!-- Card 3: Total Bookings -->
                             <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
                                 <HBox alignment="CENTER_RIGHT">
-                                    <Label styleClass="admin-stat-icon, admin-stat-icon-green" text="✓" style="-fx-font-size: 18px;" />
+                                    <Label style="-fx-font-size: 18px;" styleClass="admin-stat-icon, admin-stat-icon-green" text="✓" />
                                 </HBox>
                                 <Label styleClass="admin-stat-label" text="إجمالي الحجوزات" />
                                 <Label fx:id="statTotalBookings" styleClass="admin-stat-value-green" text="0" />
@@ -114,7 +121,7 @@
                             <!-- Card 4: Total Rooms -->
                             <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
                                 <HBox alignment="CENTER_RIGHT">
-                                    <Label styleClass="admin-stat-icon, admin-stat-icon-blue" text="🏢" style="-fx-font-size: 18px;" />
+                                    <Label style="-fx-font-size: 18px;" styleClass="admin-stat-icon, admin-stat-icon-blue" text="🏢" />
                                 </HBox>
                                 <Label styleClass="admin-stat-label" text="القاعات المسجلة" />
                                 <Label fx:id="statTotalRooms" styleClass="admin-stat-value" text="0" />
@@ -130,27 +137,34 @@
                             </HBox>
                             <Label styleClass="admin-section-subtitle" text="حجوزات اليوم الاستثنائية والقاعات متعددة الأغراض" />
 
-                            <TableView fx:id="todayEventsTable" styleClass="admin-table"
-                                       prefHeight="280" style="-fx-min-height: 200;">
+                            <TableView fx:id="todayEventsTable" prefHeight="280" style="-fx-min-height: 200;" styleClass="admin-table">
                                 <columns>
-                                    <TableColumn fx:id="evColRoom"    prefWidth="140" text="القاعة" />
-                                    <TableColumn fx:id="evColType"    prefWidth="160" text="نوع الحدث" />
-                                    <TableColumn fx:id="evColUser"    prefWidth="170" text="المسؤول" />
-                                    <TableColumn fx:id="evColTime"    prefWidth="130" text="الوقت" />
+                                    <TableColumn fx:id="evColRoom" prefWidth="140" text="القاعة" />
+                                    <TableColumn fx:id="evColType" prefWidth="160" text="نوع الحدث" />
+                                    <TableColumn fx:id="evColUser" prefWidth="170" text="المسؤول" />
+                                    <TableColumn fx:id="evColTime" prefWidth="130" text="الوقت" />
                                     <TableColumn fx:id="evColPurpose" prefWidth="220" text="الغرض / المادة" />
                                 </columns>
                                 <placeholder>
                                     <Label styleClass="admin-empty-label" text="لا توجد حجوزات استثنائية لهذا اليوم" />
                                 </placeholder>
+                        <stylesheets>
+                           <URL value="@../../css/styles.css" />
+                           <URL value="@../../css/admin.css" />
+                        </stylesheets>
                             </TableView>
                         </VBox>
 
                         <!-- Quick Actions -->
                         <HBox spacing="14">
-                            <Button onAction="#showPendingRequests" styleClass="admin-action-btn" text="📋  إدارة الطلبات المعلقة" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-                            <Button onAction="#showNewBooking" styleClass="admin-primary-btn" text="➕  طلب حجز جديد" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-                            <Button onAction="#showStatistics" styleClass="admin-primary-btn" text="📊  الإحصائيات" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                            <Button maxWidth="Infinity" onAction="#showPendingRequests" styleClass="admin-action-btn" text="📋  إدارة الطلبات المعلقة" HBox.hgrow="ALWAYS" />
+                            <Button maxWidth="Infinity" onAction="#showNewBooking" styleClass="admin-primary-btn" text="➕  طلب حجز جديد" HBox.hgrow="ALWAYS" />
+                            <Button maxWidth="Infinity" onAction="#showStatistics" styleClass="admin-primary-btn" text="📊  الإحصائيات" HBox.hgrow="ALWAYS" />
                         </HBox>
+                  <stylesheets>
+                     <URL value="@../../css/dashboard-common.css" />
+                     <URL value="@../../css/admin.css" />
+                  </stylesheets>
                     </VBox>
 
                     <!-- PENDING REQUESTS VIEW -->
@@ -162,30 +176,29 @@
                             <Region HBox.hgrow="ALWAYS" />
                         </HBox>
                         <!-- Cards container matching branch manager style -->
-                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                                    style="-fx-min-height: 400; -fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;">
-                            <FlowPane fx:id="requestsContainer" hgap="20" vgap="20" prefWrapLength="800">
+                        <ScrollPane fitToWidth="true" style="-fx-min-height: 400; -fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
+                            <FlowPane fx:id="requestsContainer" hgap="20" prefWrapLength="800" vgap="20">
                                 <padding><Insets bottom="16" left="4" right="4" top="8" /></padding>
                             </FlowPane>
                         </ScrollPane>
                     </VBox>
-                    <VBox fx:id="newBookingView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="newBookingView" alignment="TOP_CENTER" visible="false" VBox.vgrow="ALWAYS">
                         <fx:include fx:id="newBookingForm" source="AdminBookingForm.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
 
-                    <VBox fx:id="roomMgmtView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="roomMgmtView" alignment="TOP_CENTER" visible="false" VBox.vgrow="ALWAYS">
                         <fx:include source="RoomManagement.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
-                    <VBox fx:id="searchView" spacing="20" visible="false" alignment="CENTER">
+                    <VBox fx:id="searchView" alignment="CENTER" spacing="20" visible="false">
                         <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
                         <Label style="-fx-font-size: 28px;" text="🔍" />
                         <Label styleClass="admin-section-title" text="البحث المتقدم" />
                         <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
                     </VBox>
-                    <VBox fx:id="delegationView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="delegationView" alignment="TOP_CENTER" visible="false" VBox.vgrow="ALWAYS">
                         <fx:include source="AdminDelegation.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
-                    <VBox fx:id="settingsView" spacing="20" visible="false" alignment="CENTER">
+                    <VBox fx:id="settingsView" alignment="CENTER" spacing="20" visible="false">
                         <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
                         <Label style="-fx-font-size: 28px;" text="⚙" />
                         <Label styleClass="admin-section-title" text="الإعدادات" />
@@ -198,32 +211,32 @@
                     <!-- OVERLAYS / MODALS -->
                     <!-- Approve Modal -->
                     <StackPane fx:id="approveModalOverlay" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
-                        <VBox alignment="CENTER" maxWidth="500" maxHeight="350" spacing="20" styleClass="admin-section-card" style="-fx-background-color: #ffffff;">
+                        <VBox alignment="CENTER" maxHeight="350" maxWidth="500" spacing="20" style="-fx-background-color: #ffffff;" styleClass="admin-section-card">
                             <Label styleClass="admin-section-title" text="اعتماد وتخصيص قاعة" />
                             <Label fx:id="lblApproveDetails" styleClass="admin-section-subtitle" text="جاري البحث عن القاعات المتاحة..." wrapText="true" />
                             
-                            <VBox spacing="8" alignment="CENTER_RIGHT" fx:id="vboxAvailableRooms">
+                            <VBox fx:id="vboxAvailableRooms" alignment="CENTER_RIGHT" spacing="8">
                                 <Label styleClass="info-box-title" text="اختر القاعة المناسبة" />
                                 <javafx.scene.control.ComboBox fx:id="cmbAvailableRooms" prefWidth="400" />
                             </VBox>
                             
                             <javafx.scene.control.CheckBox fx:id="chkUrgent" text="طلب عاجل (تجاوز فترة الـ 48 ساعة)" visible="false" />
                             
-                            <HBox spacing="16" alignment="CENTER">
-                                <Button onAction="#confirmApprove" styleClass="admin-primary-btn" text="تأكيد الاعتماد" prefWidth="150" />
-                                <Button onAction="#closeModals" styleClass="btn-reject-card" text="إلغاء" prefWidth="100" />
+                            <HBox alignment="CENTER" spacing="16">
+                                <Button onAction="#confirmApprove" prefWidth="150" styleClass="admin-primary-btn" text="تأكيد الاعتماد" />
+                                <Button onAction="#closeModals" prefWidth="100" styleClass="btn-reject-card" text="إلغاء" />
                             </HBox>
                         </VBox>
                     </StackPane>
 
                     <!-- Reject Modal -->
                     <StackPane fx:id="rejectModalOverlay" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
-                        <VBox alignment="CENTER" maxWidth="520" spacing="16" styleClass="admin-section-card" style="-fx-background-color: #ffffff; -fx-padding: 28;">
+                        <VBox alignment="CENTER" maxWidth="520" spacing="16" style="-fx-background-color: #ffffff; -fx-padding: 28;" styleClass="admin-section-card">
                             <Label styleClass="admin-section-title" text="رفض الطلب واقتراح بدائل" />
                             
-                            <VBox spacing="6" alignment="CENTER_RIGHT">
+                            <VBox alignment="CENTER_RIGHT" spacing="6">
                                 <Label styleClass="info-box-title" text="سبب الرفض *" />
-                                <javafx.scene.control.TextArea fx:id="txtRejectReason" prefRowCount="3" promptText="أدخل سبب الرفض هنا..." maxWidth="Infinity" />
+                                <javafx.scene.control.TextArea fx:id="txtRejectReason" maxWidth="Infinity" prefRowCount="3" promptText="أدخل سبب الرفض هنا..." />
                             </VBox>
                             
                             <Label styleClass="admin-section-subtitle" text="خيارات بديلة (اختياري)" />
@@ -231,7 +244,7 @@
                             <HBox spacing="10">
                                 <VBox spacing="4" HBox.hgrow="ALWAYS">
                                     <Label styleClass="info-box-title" text="قاعة بديلة" />
-                                    <javafx.scene.control.ComboBox fx:id="cmbSuggestedRoom" promptText="اختر قاعة بديلة" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                                    <javafx.scene.control.ComboBox fx:id="cmbSuggestedRoom" maxWidth="Infinity" promptText="اختر قاعة بديلة" HBox.hgrow="ALWAYS" />
                                 </VBox>
                                 <VBox spacing="4">
                                     <Label styleClass="info-box-title" text="تاريخ بديل" />
@@ -241,23 +254,21 @@
                             
                             <VBox spacing="4">
                                 <Label styleClass="info-box-title" text="وقت بديل" />
-                                <javafx.scene.control.ComboBox fx:id="cmbSuggestedSlot" promptText="اختر وقتاً بديلاً" maxWidth="Infinity" />
+                                <javafx.scene.control.ComboBox fx:id="cmbSuggestedSlot" maxWidth="Infinity" promptText="اختر وقتاً بديلاً" />
                             </VBox>
                             
-                            <HBox spacing="16" alignment="CENTER" style="-fx-padding: 8 0 0 0;">
-                                <Button onAction="#confirmReject" styleClass="btn-reject-card" style="-fx-text-fill: #ba1a1a; -fx-border-color: #ba1a1a;" text="تأكيد الرفض" prefWidth="150" />
-                                <Button onAction="#closeModals" styleClass="btn-reject-card" text="إلغاء" prefWidth="100" />
+                            <HBox alignment="CENTER" spacing="16" style="-fx-padding: 8 0 0 0;">
+                                <Button onAction="#confirmReject" prefWidth="150" style="-fx-text-fill: #ba1a1a; -fx-border-color: #ba1a1a;" styleClass="btn-reject-card" text="تأكيد الرفض" />
+                                <Button onAction="#closeModals" prefWidth="100" styleClass="btn-reject-card" text="إلغاء" />
                             </HBox>
                         </VBox>
                     </StackPane>
 
                     <!-- Booking Detail Popup Overlay -->
                     <StackPane fx:id="detailOverlay" style="-fx-background-color: rgba(15,23,42,0.55);" visible="false">
-                        <VBox fx:id="detailCard" alignment="TOP_RIGHT" maxWidth="560" spacing="0"
-                              style="-fx-background-color: #ffffff; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 40, 0, 0, 8); -fx-opacity: 0;">
+                        <VBox fx:id="detailCard" alignment="TOP_RIGHT" maxWidth="560" spacing="0" style="-fx-background-color: #ffffff; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 40, 0, 0, 8); -fx-opacity: 0;">
                             <!-- Header -->
-                            <HBox alignment="CENTER_RIGHT" spacing="10"
-                                  style="-fx-background-color: #1a2a4a; -fx-background-radius: 20 20 0 0; -fx-padding: 18 24;">
+                            <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-background-color: #1a2a4a; -fx-background-radius: 20 20 0 0; -fx-padding: 18 24;">
                                 <Label fx:id="detailTitle" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: white;" text="تفاصيل الطلب" />
                                 <Region HBox.hgrow="ALWAYS" />
                                 <Label fx:id="detailStatusBadge" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #f59e0b; -fx-background-radius: 20; -fx-padding: 4 12;" text="قيد الانتظار" />
