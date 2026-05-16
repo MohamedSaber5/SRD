@@ -405,11 +405,13 @@ public class AdminDashboardController implements Initializable {
         this.selectedRequest = req;
         boolean isMulti = "multi".equals(req.getRoomType());
         chkUrgent.setVisible(isMulti);
+        chkUrgent.setManaged(isMulti);
 
         lblApproveDetails.setText("جاري البحث عن القاعات المتاحة لتاريخ " + req.getDate() + "...");
         cmbAvailableRooms.getItems().clear();
         approveRoomDocIdMap.clear();
         vboxAvailableRooms.setVisible(false);
+        vboxAvailableRooms.setManaged(false);
         approveModalOverlay.setVisible(true);
 
         adminFacade.getAvailableRooms(req.getDate(), req.getTimeFrom(), req.getTimeTo(),
@@ -423,6 +425,7 @@ public class AdminDashboardController implements Initializable {
                     cmbAvailableRooms.getItems().addAll(roomMap.keySet());
                     cmbAvailableRooms.getSelectionModel().selectFirst();
                     vboxAvailableRooms.setVisible(true);
+                    vboxAvailableRooms.setManaged(true);
                 }
             },
             e -> lblApproveDetails.setText("حدث خطأ أثناء البحث عن القاعات.")

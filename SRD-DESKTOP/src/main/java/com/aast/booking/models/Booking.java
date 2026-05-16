@@ -50,6 +50,7 @@ public class Booking implements Cloneable {
     private String userRole;
     private String college;
     private String status;          // pending | approved | rejected | awaiting_manager_final
+    private boolean isUrgent;       // priority flag set by admin for multi-purpose rooms
 
     // Rejection fields (set by admin/secretary)
     private String rejectReason;
@@ -83,6 +84,7 @@ public class Booking implements Cloneable {
             // Reset booking-specific fields for re-submission
             cloned.id = null;
             cloned.status = "pending";
+            cloned.isUrgent = false;
             cloned.rejectReason = null;
             cloned.suggestedRoomId = null;
             cloned.suggestedDate = null;
@@ -124,6 +126,10 @@ public class Booking implements Cloneable {
         b.userRole = doc.getString("userRole");
         b.college = doc.getString("college");
         b.status = doc.getString("status");
+        
+        // Support both Desktop (isUrgent) and Web (priority) flags
+        b.isUrgent = Boolean.TRUE.equals(doc.getBoolean("isUrgent")) || "urgent".equals(doc.getString("priority"));
+        
         b.rejectReason = doc.getString("rejectReason");
         b.suggestedRoomId = doc.getString("suggestedRoomId");
         b.suggestedDate = doc.getString("suggestedDate");
@@ -180,6 +186,8 @@ public class Booking implements Cloneable {
         map.put("userRole", userRole);
         map.put("college", college != null ? college : "");
         map.put("status", status != null ? status : "pending");
+        map.put("isUrgent", isUrgent);
+        map.put("priority", isUrgent ? "urgent" : "normal"); // Compatibility with Web App
         return map;
     }
 
@@ -285,4 +293,7 @@ public class Booking implements Cloneable {
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+    public boolean isUrgent() { return isUrgent; }
+    public void setUrgent(boolean urgent) { isUrgent = urgent; }
 }

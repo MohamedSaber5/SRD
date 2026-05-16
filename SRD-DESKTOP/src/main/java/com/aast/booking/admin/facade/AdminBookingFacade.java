@@ -33,38 +33,40 @@ public class AdminBookingFacade {
             return;
         }
 
-        List<String> statuses = List.of("pending", "awaiting_manager_final");
+        List<String> statuses = List.of("pending");
 
-        Thread t = new Thread(() -> {
-            try {
-                QuerySnapshot snapshots = db.collection("bookings")
-                        .whereIn("status", statuses)
-                        .limit(100)
-                        .get()
-                        .get();
+        if (pendingRequestsListener != null) {
+            pendingRequestsListener.remove();
+        }
 
-                List<Booking> list = new ArrayList<>();
-                if (snapshots != null) {
-                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
-                        list.add(Booking.fromDocument(doc));
+        pendingRequestsListener = db.collection("bookings")
+                .whereIn("status", statuses)
+                .limit(100)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Platform.runLater(() -> onError.accept(e));
+                        return;
                     }
-                    list.sort((a, b) -> {
-                        if (a.getCreatedAt() == null || b.getCreatedAt() == null) return 0;
-                        return b.getCreatedAt().compareTo(a.getCreatedAt());
-                    });
-                }
-                Platform.runLater(() -> onUpdate.accept(list));
-            } catch (Exception e) {
-                e.printStackTrace();
-                Platform.runLater(() -> onError.accept(e));
-            }
-        });
-        t.setDaemon(true);
-        t.start();
+
+                    if (snapshots != null) {
+                        List<Booking> list = new ArrayList<>();
+                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                            list.add(Booking.fromDocument(doc));
+                        }
+                        list.sort((a, b) -> {
+                            if (a.getCreatedAt() == null || b.getCreatedAt() == null) return 0;
+                            return b.getCreatedAt().compareTo(a.getCreatedAt());
+                        });
+                        Platform.runLater(() -> onUpdate.accept(list));
+                    }
+                });
     }
 
     public void stopListening() {
-        // No-op for get()
+        if (pendingRequestsListener != null) {
+            pendingRequestsListener.remove();
+            pendingRequestsListener = null;
+        }
     }
 
     /**

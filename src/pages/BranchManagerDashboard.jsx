@@ -57,8 +57,10 @@ export default function BranchManagerDashboard() {
       }));
       // Sort: Urgent first, then by date (newest first)
       data.sort((a, b) => {
-         if (a.priority === 'urgent' && b.priority !== 'urgent') return -1;
-         if (a.priority !== 'urgent' && b.priority === 'urgent') return 1;
+         const aIsUrgent = a.priority === 'urgent' || a.isUrgent === true;
+         const bIsUrgent = b.priority === 'urgent' || b.isUrgent === true;
+         if (aIsUrgent && !bIsUrgent) return -1;
+         if (!aIsUrgent && bIsUrgent) return 1;
          return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
       });
       setRequests(data);
@@ -194,7 +196,7 @@ export default function BranchManagerDashboard() {
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    {req.priority === 'urgent' && (
+                    {(req.priority === 'urgent' || req.isUrgent === true) && (
                       <span className="bg-red-100 text-red-600 border border-red-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter flex items-center gap-1 shadow-sm">
                         <span className="material-symbols-outlined text-[12px]">local_fire_department</span>
                         عاجل جداً

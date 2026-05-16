@@ -208,7 +208,9 @@
                                 <javafx.scene.control.ComboBox fx:id="cmbAvailableRooms" prefWidth="400" />
                             </VBox>
                             
-                            <javafx.scene.control.CheckBox fx:id="chkUrgent" text="طلب عاجل (تجاوز فترة الـ 48 ساعة)" visible="false" />
+                            <HBox alignment="CENTER_RIGHT" nodeOrientation="RIGHT_TO_LEFT">
+                                <javafx.scene.control.CheckBox fx:id="chkUrgent" text="🚨 تحديد كطلب عاجل جداً (أولوية قصوى لمدير الفرع)" visible="false" style="-fx-text-fill: #ba1a1a; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10;" />
+                            </HBox>
                             
                             <HBox spacing="16" alignment="CENTER">
                                 <Button onAction="#confirmApprove" styleClass="admin-primary-btn" text="تأكيد الاعتماد" prefWidth="150" />

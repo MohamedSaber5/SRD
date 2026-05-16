@@ -21,6 +21,7 @@ public class MultiPurposeApprovalStrategy implements IApprovalStrategy {
         updates.put("status", "awaiting_manager_final");
         updates.put("roomId", roomId);
         updates.put("isUrgent", isUrgent);
+        updates.put("priority", isUrgent ? "urgent" : "normal"); // Added for Web Dashboard compatibility
         
         db.collection("bookings").document(booking.getId()).update(updates).get();
 

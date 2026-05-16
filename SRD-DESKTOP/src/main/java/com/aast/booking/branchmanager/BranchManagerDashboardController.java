@@ -151,8 +151,8 @@ public class BranchManagerDashboardController implements Initializable {
                 
                 // Sort pending
                 pending.sort((a, b) -> {
-                    boolean aUrgent = "urgent".equals(a.getStatus());
-                    boolean bUrgent = "urgent".equals(b.getStatus());
+                    boolean aUrgent = a.isUrgent();
+                    boolean bUrgent = b.isUrgent();
                     if (aUrgent && !bUrgent) return -1;
                     if (!aUrgent && bUrgent) return 1;
                     Date da = a.getCreatedAt(), db2 = b.getCreatedAt();
@@ -279,6 +279,9 @@ public class BranchManagerDashboardController implements Initializable {
 
         VBox statusSection = new VBox(4);
         statusSection.setAlignment(Pos.TOP_RIGHT);
+        if (b.isUrgent()) {
+            statusSection.getChildren().add(badge("🚨 طلب عاجل", "bm-badge-urgent"));
+        }
         statusSection.getChildren().add(badge("بانتظار الاعتماد النهائي", "bm-badge-pending"));
         header.getChildren().addAll(roomSection, spacer, statusSection);
 
