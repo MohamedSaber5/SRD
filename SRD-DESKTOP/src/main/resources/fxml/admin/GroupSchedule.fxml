@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="16" nodeOrientation="RIGHT_TO_LEFT"
+      style="-fx-background-color: #f2f4f6;"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.aast.booking.admin.schedule.GroupScheduleController">
+
+    <padding><Insets bottom="24" left="24" right="24" top="24" /></padding>
+
+    <!-- Header & Search -->
+    <VBox spacing="16" styleClass="admin-section-card">
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <VBox spacing="4">
+                <Label text="الكلية" style="-fx-font-weight: bold; -fx-text-fill: #43474f;" />
+                <TextField fx:id="txtCollege" promptText="مثال: الهندسة" prefWidth="150" styleClass="admin-text-field" />
+            </VBox>
+            <VBox spacing="4">
+                <Label text="القسم" style="-fx-font-weight: bold; -fx-text-fill: #43474f;" />
+                <TextField fx:id="txtDepartment" promptText="مثال: حاسبات" prefWidth="150" styleClass="admin-text-field" />
+            </VBox>
+            <VBox spacing="4">
+                <Label text="الجروب" style="-fx-font-weight: bold; -fx-text-fill: #43474f;" />
+                <TextField fx:id="txtGroup" promptText="مثال: A" prefWidth="100" styleClass="admin-text-field" />
+            </VBox>
+            
+            <Region HBox.hgrow="ALWAYS" />
+            
+            <VBox spacing="4" alignment="BOTTOM_CENTER">
+                <Button fx:id="btnSearch" text="🔍 جلب الجدول" 
+                        onAction="#handleSearch"
+                        styleClass="admin-primary-btn" 
+                        style="-fx-padding: 8 24;" />
+            </VBox>
+            <VBox spacing="4" alignment="BOTTOM_CENTER">
+                <Button fx:id="btnExportPdf" text="📥 حفظ كصورة (PDF/PNG)" 
+                        onAction="#handleExportImage"
+                        style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 24; -fx-font-weight: bold; -fx-cursor: hand;" />
+            </VBox>
+        </HBox>
+        <Label fx:id="lblStatus" text="أدخل البيانات واضغط على جلب الجدول." style="-fx-text-fill: #737780; -fx-font-size: 13px;" />
+    </VBox>
+
+    <!-- Schedule Grid Container -->
+    <ScrollPane fitToWidth="true" style="-fx-background-color: white; -fx-background: white;" VBox.vgrow="ALWAYS">
+        <VBox fx:id="scheduleContainer" visible="false" spacing="8" style="-fx-background-color: white; -fx-padding: 16;">
+            <Label text="Student Schedule" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" nodeOrientation="LEFT_TO_RIGHT"/>
+            <GridPane fx:id="gridSchedule" nodeOrientation="LEFT_TO_RIGHT" />
+        </VBox>
+    </ScrollPane>
+
+</VBox>

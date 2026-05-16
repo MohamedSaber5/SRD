@@ -48,7 +48,7 @@ public class AdminDashboardController implements Initializable {
 
     // Sidebar nav buttons
     @FXML private Button btnDashboard, btnRequests, btnNewBooking, btnRoomMgmt,
-                          btnSearch, btnDelegation, btnSettings, btnStats;
+                          btnSearch, btnDelegation, btnSettings, btnStats, btnLectureScheduling;
     @FXML private Label welcomeLabel, roleLabel;
 
     // Header
@@ -57,7 +57,7 @@ public class AdminDashboardController implements Initializable {
 
     // Views
     @FXML private VBox dashboardView, pendingView, newBookingView, roomMgmtView,
-                        searchView, delegationView, settingsView, statsView;
+                        searchView, delegationView, settingsView, statsView, lectureSchedulingView;
 
     // Dashboard stats
     @FXML private Label statAcceptedToday, statPendingCount, statTotalBookings, statTotalRooms;
@@ -122,14 +122,14 @@ public class AdminDashboardController implements Initializable {
             todayDateLabel.setText("📅  " + todayStr);
 
         allViews = new VBox[]{dashboardView, pendingView, newBookingView, roomMgmtView,
-                              searchView, delegationView, settingsView, statsView};
+                              searchView, lectureSchedulingView, delegationView, settingsView, statsView};
         allNavBtns = new Button[]{btnDashboard, btnRequests, btnNewBooking, btnRoomMgmt,
-                                  btnSearch, btnDelegation, btnSettings, btnStats};
+                                  btnSearch, btnLectureScheduling, btnDelegation, btnSettings, btnStats};
 
         setupTodayEventsTable();
         fetchAllData();
         fetchRamadanMode();
-        startListeningToRequests();
+        fetchPendingRequestsOnly();
  
         // Hide features based on granular permissions for Temporary Admins
         if ("temp_admin".equals(user.getRole())) {
@@ -143,6 +143,7 @@ public class AdminDashboardController implements Initializable {
                 if (!allowed.contains("stats"))    { btnStats.setVisible(false);    btnStats.setManaged(false); }
                 if (!allowed.contains("search"))   { btnSearch.setVisible(false);   btnSearch.setManaged(false); }
                 if (!allowed.contains("settings")) { btnSettings.setVisible(false); btnSettings.setManaged(false); }
+                if (!allowed.contains("lectureScheduling")) { btnLectureScheduling.setVisible(false); btnLectureScheduling.setManaged(false); }
             }
         }
  
@@ -161,7 +162,7 @@ public class AdminDashboardController implements Initializable {
         switchView(1);
         pageTitle.setText("الطلبات المعلقة");
         pageSubtitle.setText("مراجعة وإدارة طلبات الحجز المعلقة");
-        startListeningToRequests(); // Refresh the data when view is opened
+        fetchPendingRequestsOnly(); // Only fetch what's needed for this tab
     }
 
     @FXML private void showNewBooking() {
@@ -174,6 +175,7 @@ public class AdminDashboardController implements Initializable {
         switchView(3);
         pageTitle.setText("إدارة القاعات");
         pageSubtitle.setText("إضافة وتعديل وحذف القاعات");
+        if (roomMgmtController != null) roomMgmtController.refreshData();
     }
 
     @FXML private void showSearch() {
@@ -181,23 +183,31 @@ public class AdminDashboardController implements Initializable {
         pageTitle.setText("البحث المتقدم");
         pageSubtitle.setText("البحث عن القاعات المتاحة");
     }
+    
+    @FXML private void showLectureScheduling() {
+        switchView(5);
+        pageTitle.setText("حجز المحاضرات");
+        pageSubtitle.setText("أتمتة وحجز المحاضرات الأسبوعية عبر إكسل");
+    }
 
     @FXML private void showDelegation() {
-        switchView(5);
+        switchView(6);
         pageTitle.setText("الصلاحيات والتفويض");
         pageSubtitle.setText("إدارة صلاحيات المستخدمين والتفويضات");
+        if (delegationController != null) delegationController.refreshData();
     }
 
     @FXML private void showSettings() {
-        switchView(6);
+        switchView(7);
         pageTitle.setText("الإعدادات");
         pageSubtitle.setText("إعدادات النظام العامة");
     }
 
     @FXML private void showStatistics() {
-        switchView(7);
+        switchView(8);
         pageTitle.setText("الإحصائيات والتقارير");
         pageSubtitle.setText("تحليل شامل لاستخدام القاعات");
+        if (statsController != null) statsController.refreshData();
     }
 
     private void switchView(int index) {
@@ -219,20 +229,37 @@ public class AdminDashboardController implements Initializable {
 
     // ─── Data Fetching (Facade Pattern via service layer) ────────────────
 
+    // Sub-controllers for lazy loading
+    @FXML private RoomManagementController roomMgmtController;
+    @FXML private AdminDelegationController delegationController;
+    @FXML private AdminStatisticsController statsController;
+
     private void fetchAllData() {
         CompletableFuture.supplyAsync(() -> {
             try {
                 Firestore db = com.aast.booking.core.FirebaseService.getInstance().getFirestore();
 
-                // Fetch all bookings
+                // Fetch only last 300 bookings for the dashboard summary (reduced from 500)
                 ApiFuture<QuerySnapshot> bookingsFuture = db.collection("bookings")
-                        .orderBy("createdAt", Query.Direction.DESCENDING).get();
+                        .orderBy("createdAt", Query.Direction.DESCENDING)
+                        .limit(300)
+                        .get();
 
-                // Fetch all rooms
-                ApiFuture<QuerySnapshot> roomsFuture = db.collection("rooms").get();
+                // Get room count (using cache if available to save reads)
+                int roomCount = 0;
+                if (!com.aast.booking.services.GlobalDataService.getInstance().isRoomCacheStale()) {
+                    roomCount = com.aast.booking.services.GlobalDataService.getInstance().getCachedRooms().size();
+                } else {
+                    QuerySnapshot roomsSnap = db.collection("rooms").get().get();
+                    List<com.aast.booking.models.Room> rooms = new ArrayList<>();
+                    for (DocumentSnapshot doc : roomsSnap.getDocuments()) {
+                        rooms.add(com.aast.booking.models.Room.fromDocument(doc));
+                    }
+                    com.aast.booking.services.GlobalDataService.getInstance().setCachedRooms(rooms);
+                    roomCount = rooms.size();
+                }
 
                 QuerySnapshot bookingsSnap = bookingsFuture.get();
-                QuerySnapshot roomsSnap = roomsFuture.get();
 
                 List<Booking> bookings = new ArrayList<>();
                 for (DocumentSnapshot doc : bookingsSnap.getDocuments()) {
@@ -254,7 +281,7 @@ public class AdminDashboardController implements Initializable {
                     bookings.add(b);
                 }
 
-                int roomCount = roomsSnap.size();
+
 
                 return new Object[]{bookings, roomCount};
             } catch (Exception e) {
@@ -329,7 +356,7 @@ public class AdminDashboardController implements Initializable {
 
     // ─── Pending Requests Logic ──────────────────────────────────────────
 
-    private void startListeningToRequests() {
+    private void fetchPendingRequestsOnly() {
         adminFacade.listenToPendingRequests(bookings -> {
             lblPendingCount.setText(String.valueOf(bookings.size()));
             renderPendingRequests(bookings);
@@ -446,7 +473,7 @@ public class AdminDashboardController implements Initializable {
             () -> {
                 showAlert(Alert.AlertType.INFORMATION, "نجاح", "تم التعامل مع الطلب بنجاح.");
                 closeModals();
-                startListeningToRequests();
+                fetchPendingRequestsOnly();
             },
             e -> showAlert(Alert.AlertType.ERROR, "خطأ", "حدث خطأ أثناء حفظ التعديلات.")
         );

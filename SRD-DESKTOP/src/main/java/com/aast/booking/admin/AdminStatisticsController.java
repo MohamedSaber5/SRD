@@ -1,6 +1,7 @@
 package com.aast.booking.admin;
 
 import com.aast.booking.core.FirebaseService;
+import com.aast.booking.models.Room;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import javafx.application.Platform;
@@ -63,32 +64,43 @@ public class AdminStatisticsController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         styleCharts();
-        fetchData();
+        // Data is now loaded lazily via public refreshData()
     }
 
     // ── Firestore Data Fetch ─────────────────────────────────────────────────
 
-    private void fetchData() {
+    public void refreshData() {
         CompletableFuture.runAsync(() -> {
             try {
                 Firestore db = FirebaseService.getInstance().getFirestore();
 
+                // 1. Fetch Bookings (Full set for stats - but we should ideally limit or cache)
                 ApiFuture<QuerySnapshot> bookingsFuture = db.collection("bookings").get();
-                ApiFuture<QuerySnapshot> roomsFuture    = db.collection("rooms").get();
+                
+                // 2. Use Room cache if available
+                List<Room> rooms;
+                if (!com.aast.booking.services.GlobalDataService.getInstance().isRoomCacheStale()) {
+                    rooms = com.aast.booking.services.GlobalDataService.getInstance().getCachedRooms();
+                } else {
+                    QuerySnapshot roomsSnap = db.collection("rooms").get().get();
+                    rooms = new ArrayList<>();
+                    for (DocumentSnapshot doc : roomsSnap.getDocuments()) {
+                        rooms.add(Room.fromDocument(doc));
+                    }
+                    com.aast.booking.services.GlobalDataService.getInstance().setCachedRooms(rooms);
+                }
 
                 List<Map<String, Object>> bookings = new ArrayList<>();
                 for (DocumentSnapshot doc : bookingsFuture.get().getDocuments()) {
                     bookings.add(doc.getData() != null ? doc.getData() : new HashMap<>());
-                    // Inject id
                     bookings.get(bookings.size() - 1).put("__id", doc.getId());
                 }
 
                 // Build roomId → building map
                 Map<String, String> roomBuilding = new HashMap<>();
-                for (DocumentSnapshot doc : roomsFuture.get().getDocuments()) {
-                    String building = doc.getString("building");
-                    if (building != null) {
-                        roomBuilding.put(doc.getId(), building);
+                for (Room r : rooms) {
+                    if (r.getBuilding() != null) {
+                        roomBuilding.put(r.getId(), r.getBuilding());
                     }
                 }
 

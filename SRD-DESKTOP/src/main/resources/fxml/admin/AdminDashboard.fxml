@@ -50,6 +50,7 @@
             <Button fx:id="btnNewBooking" maxWidth="Infinity" onAction="#showNewBooking" styleClass="admin-nav-btn" text="➕  طلب حجز جديد" />
             <Button fx:id="btnRoomMgmt" maxWidth="Infinity" onAction="#showRoomManagement" styleClass="admin-nav-btn" text="🏢  إدارة القاعات" />
             <Button fx:id="btnSearch" maxWidth="Infinity" onAction="#showSearch" styleClass="admin-nav-btn" text="🔍  البحث المتقدم" />
+            <Button fx:id="btnLectureScheduling" maxWidth="Infinity" onAction="#showLectureScheduling" styleClass="admin-nav-btn" text="📅  حجز المحاضرات" />
             <Button fx:id="btnDelegation" maxWidth="Infinity" onAction="#showDelegation" styleClass="admin-nav-btn" text="👥  الصلاحيات والتفويض" />
             <Button fx:id="btnSettings" maxWidth="Infinity" onAction="#showSettings" styleClass="admin-nav-btn" text="⚙  الإعدادات" />
             <Button fx:id="btnStats" maxWidth="Infinity" onAction="#showStatistics" styleClass="admin-nav-btn" text="📊  الإحصائيات والتقارير" />
@@ -174,13 +175,16 @@
                     </VBox>
 
                     <VBox fx:id="roomMgmtView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
-                        <fx:include source="RoomManagement.fxml" VBox.vgrow="ALWAYS" />
+                        <fx:include fx:id="roomMgmt" source="RoomManagement.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
                     <VBox fx:id="searchView" visible="false" VBox.vgrow="ALWAYS">
                         <fx:include source="AdvancedSearch.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
+                    <VBox fx:id="lectureSchedulingView" visible="false" VBox.vgrow="ALWAYS">
+                        <fx:include source="LectureScheduling.fxml" VBox.vgrow="ALWAYS" />
+                    </VBox>
                     <VBox fx:id="delegationView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
-                        <fx:include source="AdminDelegation.fxml" VBox.vgrow="ALWAYS" />
+                        <fx:include fx:id="delegation" source="AdminDelegation.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
                     <VBox fx:id="settingsView" spacing="20" visible="false" alignment="CENTER">
                         <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
@@ -189,7 +193,7 @@
                         <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
                     </VBox>
                     <VBox fx:id="statsView" visible="false" VBox.vgrow="ALWAYS">
-                        <fx:include source="AdminStatistics.fxml" />
+                        <fx:include fx:id="stats" source="AdminStatistics.fxml" />
                     </VBox>
 
                     <!-- OVERLAYS / MODALS -->

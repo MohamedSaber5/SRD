@@ -1,0 +1,2 @@
+college,department,subject,subjectCode,lecturerName,lectureType,requiredCapacity,slotIndex,dayOfWeek,startDate,group,biWeekly  
+Engineering,Computer,AI,CS401,Dr. Ahmed,lecture,50,1,Sunday,2026-10-04,A,0 

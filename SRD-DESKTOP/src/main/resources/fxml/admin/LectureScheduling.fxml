@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<TabPane tabClosingPolicy="UNAVAILABLE" nodeOrientation="RIGHT_TO_LEFT"
+         style="-fx-background-color: #f2f4f6;"
+         xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+         fx:controller="com.aast.booking.admin.schedule.LectureSchedulingController">
+
+    <Tab text="أتمتة وحجز الإكسل" style="-fx-font-weight: bold; -fx-font-size: 14px;">
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                    style="-fx-background-color: #f2f4f6; -fx-background: #f2f4f6; -fx-border-color: transparent;">
+
+            <VBox spacing="24" nodeOrientation="RIGHT_TO_LEFT"
+                  style="-fx-background-color: #f2f4f6;">
+                <padding><Insets bottom="40" left="32" right="32" top="32" /></padding>
+
+                <!-- Header -->
+                <VBox spacing="8">
+                    <HBox alignment="CENTER_RIGHT" spacing="16">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="حجز المحاضرات الأسبوعية"
+                                   style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #001e40;" />
+                            <Label text="قم برفع ملف الإكسل الذي يحتوي على جدول المحاضرات، وسيقوم النظام تلقائياً بالبحث عن قاعات مناسبة وحجزها لمدة ترم كامل (16 أسبوع)."
+                                   style="-fx-font-size: 13px; -fx-text-fill: #5a7698;" wrapText="true"/>
+                        </VBox>
+
+                        <Label fx:id="lblRamadanMode" text="🌙 وضع رمضان مفعّل" 
+                               visible="false" managed="false"
+                               style="-fx-background-color: #fff7ed; -fx-text-fill: #c2410c; -fx-padding: 8 16; -fx-background-radius: 12; -fx-font-weight: bold;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Upload Card -->
+                <VBox spacing="20" styleClass="admin-section-card">
+                    
+                    <HBox spacing="16" alignment="CENTER_LEFT">
+                        <Button fx:id="btnUpload" text="📂 رفع ملف الإكسل (.xlsx)" 
+                                onAction="#handleUpload"
+                                styleClass="admin-primary-btn" 
+                                style="-fx-padding: 12 24; -fx-font-size: 14px;" />
+                                
+                        <Button fx:id="btnDownloadTemplate" text="📥 تحميل قالب الإكسل (Template)" 
+                                onAction="#handleDownloadTemplate"
+                                style="-fx-background-color: #f8fafc; -fx-text-fill: #001e40; -fx-border-color: #001e40; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 11 23; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand;" />
+                        
+                        <VBox spacing="4">
+                            <Label fx:id="lblStatus" text="يرجى تحميل ملف الإكسل للبدء." 
+                                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #43474f;" />
+                            <ProgressBar fx:id="progressBar" prefWidth="400" progress="0.0" visible="false"/>
+                        </VBox>
+                    </HBox>
+
+                    <Region style="-fx-background-color: #e0e3e5; -fx-min-height: 1px; -fx-max-height: 1px;" maxWidth="Infinity" />
+
+                    <VBox spacing="8">
+                        <Label text="تعليمات الملف:" style="-fx-font-weight: bold; -fx-text-fill: #001e40;" />
+                        <Label text="• يجب أن يحتوي الملف على الأعمدة بالترتيب التالي:" style="-fx-text-fill: #737780;" />
+                        <Label text="  1. الكلية | 2. القسم | 3. المادة | 4. كود المادة | 5. اسم المحاضر | 6. نوع المحاضرة" style="-fx-text-fill: #737780;" />
+                        <Label text="  7. السعة | 8. الفترة (1-8) | 9. اليوم | 10. تاريخ البداية | 11. الجروب | 12. كل أسبوعين (0/1)" style="-fx-text-fill: #737780;" />
+                        <Label text="• صيغة التاريخ المدعومة: YYYY-MM-DD" style="-fx-text-fill: #737780;" />
+                    </VBox>
+                </VBox>
+
+                <!-- Danger Zone -->
+                <VBox spacing="16" styleClass="admin-section-card" style="-fx-border-color: #ffdad6;">
+                    <Label text="منطقة الخطر" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #ba1a1a;" />
+                    <Label text="استخدم هذا الزر فقط إذا أردت مسح وإلغاء جميع الحجوزات الأسبوعية التي تم إنشاؤها عبر هذا النظام." 
+                           style="-fx-text-fill: #737780;" />
+                    <Button fx:id="btnCancelAll" text="🗑️ إلغاء جميع الحجوزات الأسبوعية" 
+                            onAction="#handleCancelAll"
+                            style="-fx-background-color: #ffdad6; -fx-text-fill: #ba1a1a; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand;" />
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </Tab>
+
+    <Tab text="جدول المجموعات (Visual Schedule)" style="-fx-font-weight: bold; -fx-font-size: 14px;">
+        <fx:include source="GroupSchedule.fxml" />
+    </Tab>
+
+</TabPane>

@@ -39,6 +39,7 @@ public class AdminBookingFacade {
             try {
                 QuerySnapshot snapshots = db.collection("bookings")
                         .whereIn("status", statuses)
+                        .limit(100)
                         .get()
                         .get();
 

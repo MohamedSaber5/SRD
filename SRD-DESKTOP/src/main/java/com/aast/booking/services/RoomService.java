@@ -41,6 +41,12 @@ public class RoomService {
     }
 
     public static void fetchRooms(Consumer<List<Room>> onSuccess, Consumer<Exception> onError) {
+        if (!GlobalDataService.getInstance().isRoomCacheStale()) {
+            System.out.println("[RoomService] Returning cached rooms");
+            onSuccess.accept(GlobalDataService.getInstance().getCachedRooms());
+            return;
+        }
+
         Firestore db = FirebaseService.getInstance().getFirestore();
         if (db == null) { onError.accept(new IllegalStateException("Firestore not available")); return; }
 
@@ -54,7 +60,8 @@ public class RoomService {
                 for (DocumentSnapshot doc : snapshot.getDocuments()) {
                     rooms.add(Room.fromDocument(doc));
                 }
-                System.out.println("[RoomService] Loaded " + rooms.size() + " rooms");
+                System.out.println("[RoomService] Loaded " + rooms.size() + " rooms from Firestore");
+                GlobalDataService.getInstance().setCachedRooms(rooms);
                 Platform.runLater(() -> onSuccess.accept(rooms));
             } catch (InterruptedException | ExecutionException e) {
                 System.err.println("[RoomService] Error: " + e.getMessage());

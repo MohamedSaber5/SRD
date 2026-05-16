@@ -50,6 +50,10 @@ public class RoomManagementController implements Initializable {
         setupTable();
         setupFilters();
         setupForm();
+        // Data is now loaded lazily via public refreshData()
+    }
+
+    public void refreshData() {
         loadRooms();
     }
 

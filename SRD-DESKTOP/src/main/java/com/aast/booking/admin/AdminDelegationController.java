@@ -47,6 +47,10 @@ public class AdminDelegationController implements Initializable {
         setupColleges();
         setupTimeSpinners();
         setupTableColumns();
+        // Data is now loaded lazily via public refreshData()
+    }
+
+    public void refreshData() {
         fetchUsers();
         fetchDelegations();
     }
@@ -312,21 +316,26 @@ public class AdminDelegationController implements Initializable {
         Firestore db = FirebaseService.getInstance().getFirestore();
         if (db == null) return;
  
-        db.collection("delegations")
-          .orderBy("timestamp", Query.Direction.DESCENDING)
-          .limit(10)
-          .addSnapshotListener((snapshots, e) -> {
-              if (e != null) return;
-              List<com.aast.booking.models.Delegation> list = new ArrayList<>();
-              for (QueryDocumentSnapshot doc : snapshots) {
-                  com.aast.booking.models.Delegation d = doc.toObject(com.aast.booking.models.Delegation.class);
-                  d.setId(doc.getId());
-                  list.add(d);
-              }
-              Platform.runLater(() -> {
-                  activeDelegationsTable.setItems(FXCollections.observableArrayList(list));
-              });
-          });
+        new Thread(() -> {
+            try {
+                QuerySnapshot snapshots = db.collection("delegations")
+                        .orderBy("timestamp", Query.Direction.DESCENDING)
+                        .limit(10)
+                        .get().get();
+
+                List<com.aast.booking.models.Delegation> list = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : snapshots) {
+                    com.aast.booking.models.Delegation d = doc.toObject(com.aast.booking.models.Delegation.class);
+                    d.setId(doc.getId());
+                    list.add(d);
+                }
+                Platform.runLater(() -> {
+                    activeDelegationsTable.setItems(FXCollections.observableArrayList(list));
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
  
     @FXML
@@ -342,6 +351,11 @@ public class AdminDelegationController implements Initializable {
  
  
     private void fetchUsers() {
+        if (!com.aast.booking.services.GlobalDataService.getInstance().isUserCacheStale()) {
+            allUsers.setAll(com.aast.booking.services.GlobalDataService.getInstance().getCachedUsers());
+            return;
+        }
+
         Firestore db = FirebaseService.getInstance().getFirestore();
         if (db == null) return;
  
@@ -357,6 +371,7 @@ public class AdminDelegationController implements Initializable {
                     u.setEmployeeId(doc.getString("employeeId"));
                     users.add(u);
                 }
+                com.aast.booking.services.GlobalDataService.getInstance().setCachedUsers(users);
                 Platform.runLater(() -> allUsers.setAll(users));
             } catch (Exception e) {
                 e.printStackTrace();
