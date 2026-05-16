@@ -124,6 +124,34 @@ public class AuthService {
                     if (firestoreRole != null) user.setRole(firestoreRole);
                     if (firestoreName != null) user.setDisplayName(firestoreName);
                     user.setCollegeName(doc.getString("collegeName"));
+                    
+                    // Check if temp_admin has expired
+                    if ("temp_admin".equals(user.getRole())) {
+                        String endStr = doc.getString("tempAccessEnd");
+                        if (endStr != null) {
+                            try {
+                                java.time.LocalDateTime end = java.time.LocalDateTime.parse(endStr);
+                                if (java.time.LocalDateTime.now().isAfter(end)) {
+                                    System.out.println("[Auth] Temp Admin access expired. Reverting to employee.");
+                                    user.setRole("employee");
+                                    // Update Firestore back to employee
+                                    db.collection("users").document(uid).update("role", "employee");
+                                } else {
+                                    // Not expired, set the dates for local validation
+                                    user.setTempAccessStart(doc.getString("tempAccessStart"));
+                                    user.setTempAccessEnd(endStr);
+                                    
+                                    // Fetch allowed features
+                                    java.util.List<String> features = (java.util.List<String>) doc.get("allowedFeatures");
+                                    if (features != null) {
+                                        user.setAllowedFeatures(features);
+                                    }
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
                 }
             } catch (InterruptedException | ExecutionException e) {
                 System.err.println("[AuthService] Firestore fetch failed, using default role: " + e.getMessage());

@@ -31,9 +31,12 @@
             <padding><Insets bottom="20" left="16" right="16" top="24" /></padding>
 
             <!-- Brand -->
-            <VBox spacing="4" style="-fx-padding: 0 0 16 0;">
-                <Label styleClass="admin-sidebar-title" text="نظام حجز القاعات" wrapText="true" />
-                <Label styleClass="admin-sidebar-subtitle" text="الأكاديمية العربية للعلوم والتكنولوجيا" wrapText="true" />
+            <VBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 16 0;">
+                <javafx.scene.image.ImageView fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
+                    <image><javafx.scene.image.Image url="@../../images/logo_aast.jpg" /></image>
+                </javafx.scene.image.ImageView>
+                <Label styleClass="admin-sidebar-title" text="نظام حجز القاعات" wrapText="true" textAlignment="CENTER" />
+                <Label styleClass="admin-sidebar-subtitle" text="الأكاديمية العربية للعلوم والتكنولوجيا" wrapText="true" textAlignment="CENTER" />
                 <Label fx:id="roleLabel" styleClass="admin-role-badge" text="المسؤول العام" />
             </VBox>
 
@@ -60,7 +63,7 @@
 
     <!-- CENTER CONTENT -->
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="admin-main-scroll"
+        <ScrollPane fitToWidth="true" fitToHeight="false" styleClass="admin-main-scroll"
                     hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
             <VBox spacing="0" style="-fx-background-color: #f2f4f6;">
 

@@ -370,6 +370,58 @@
     -fx-text-fill: #5a7698;
 }
 
-/* Bar radius — JavaFX doesn't support border-radius on bars natively */
-/* but we can use custom cell factory if needed; left for now */
+
+/* ── SEARCH & SUGGESTIONS ───────────────────────────────────── */
+.admin-search-container {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 0 16;
+}
+.admin-search-container:focused-within {
+    -fx-border-color: #001e40;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.1), 8, 0, 0, 0);
+}
+.admin-search-input {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 8;
+    -fx-font-size: 14px;
+}
+.admin-suggestions-overlay {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 0 0 12px 12px;
+    -fx-border-color: #e0e3e5;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 12px 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 15, 0, 0, 8);
+}
+.admin-suggestions-overlay .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: #f2f4f6;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0;
+}
+.admin-suggestions-overlay .list-cell:hover {
+    -fx-background-color: #f7f9fb;
+}
+.admin-suggestions-overlay .list-cell:selected {
+    -fx-background-color: #eef2f6;
+}
+.admin-choice-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 16px;
+    -fx-background-radius: 16px;
+    -fx-padding: 16 20;
+    -fx-cursor: hand;
+    -fx-transition: 0.2s;
+}
+.admin-choice-card:hover {
+    -fx-border-color: #001e40;
+    -fx-background-color: #f8fafc;
+}
+.admin-choice-title { -fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827; }
+.admin-choice-subtitle { -fx-font-size: 11px; -fx-text-fill: #6b7280; }
 

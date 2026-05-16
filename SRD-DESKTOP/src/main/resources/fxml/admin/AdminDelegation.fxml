@@ -22,9 +22,12 @@
                     <Label text="🔍" style="-fx-font-size: 18px;" />
                     <TextField fx:id="searchUserField" HBox.hgrow="ALWAYS" promptText="ابحث هنا أو اختر من الجدول بالأسفل..." styleClass="admin-search-input" />
                 </HBox>
-                <!-- Suggestions Area (Overlayed) -->
-                <ListView fx:id="userListView" prefHeight="200" visible="false" managed="false" styleClass="admin-suggestions-overlay" />
             </VBox>
+            <!-- Suggestions Area (Floating Overlay) -->
+            <ListView fx:id="userListView" prefHeight="250" visible="false" managed="false" 
+                      styleClass="admin-suggestions-overlay" maxWidth="Infinity" StackPane.alignment="TOP_RIGHT">
+                <StackPane.margin><Insets top="45" /></StackPane.margin>
+            </ListView>
         </StackPane>
     </VBox>
  
@@ -34,27 +37,39 @@
             <Label text="نوع الصلاحية الممنوحة" style="-fx-font-weight: bold; -fx-text-fill: #374151;" />
             <HBox spacing="15">
                 <VBox fx:id="tempAdminCard" spacing="8" HBox.hgrow="ALWAYS" styleClass="admin-choice-card" onMouseClicked="#selectTempAdmin">
-                    <HBox alignment="CENTER_LEFT" spacing="15">
-                        <RadioButton fx:id="rbTempAdmin" />
+                    <HBox alignment="CENTER_RIGHT" spacing="15">
                         <VBox spacing="4" HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
                             <Label text="أدمن مؤقت" styleClass="admin-choice-title" />
                             <Label text="يمنح صلاحيات إدارة النظام لفترة محددة" styleClass="admin-choice-subtitle" />
                         </VBox>
+                        <RadioButton fx:id="rbTempAdmin" />
                     </HBox>
                 </VBox>
  
                 <VBox fx:id="secretaryCard" spacing="8" HBox.hgrow="ALWAYS" styleClass="admin-choice-card" onMouseClicked="#selectSecretary">
-                    <HBox alignment="CENTER_LEFT" spacing="15">
-                        <RadioButton fx:id="rbSecretary" />
+                    <HBox alignment="CENTER_RIGHT" spacing="15">
                         <VBox spacing="4" HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
                             <Label text="سكرتير جهة / كلية" styleClass="admin-choice-title" />
                             <Label text="تعيين كممثل لجهة لتقديم الحجوزات" styleClass="admin-choice-subtitle" />
                         </VBox>
+                        <RadioButton fx:id="rbSecretary" />
                     </HBox>
                 </VBox>
             </HBox>
         </VBox>
     </HBox>
+ 
+    <!-- Granular Permissions (Only for Temp Admin) -->
+    <VBox fx:id="granularPermissionsBox" spacing="10" styleClass="admin-section-card" visible="false" managed="false">
+        <Label text="تحديد صلاحيات محددة (اختياري)" style="-fx-font-weight: bold; -fx-text-fill: #374151;" />
+        <FlowPane hgap="30" vgap="15">
+            <CheckBox fx:id="checkRequests" text="الطلبات المعلقة" styleClass="admin-checkbox" selected="true" />
+            <CheckBox fx:id="checkRooms" text="إدارة القاعات" styleClass="admin-checkbox" selected="true" />
+            <CheckBox fx:id="checkStats" text="الإحصائيات والتقارير" styleClass="admin-checkbox" selected="true" />
+            <CheckBox fx:id="checkSearch" text="البحث المتقدم" styleClass="admin-checkbox" selected="true" />
+            <CheckBox fx:id="checkSettings" text="الإعدادات" styleClass="admin-checkbox" selected="true" />
+        </FlowPane>
+    </VBox>
  
     <HBox spacing="20">
         <!-- College Selection -->
@@ -87,8 +102,8 @@
     </HBox>
  
     <HBox spacing="15" alignment="CENTER_LEFT">
-        <Button fx:id="btnDelegate" onAction="#handleDelegate" text="✅  منح واعتماد الصلاحية" styleClass="admin-primary-btn" prefWidth="200" />
-        <Button fx:id="btnUndo" onAction="#handleUndo" text="🔙  تراجع" styleClass="admin-action-btn" />
+        <Button fx:id="btnDelegate" onAction="#handleDelegate" text="✅  منح واعتماد الصلاحية" styleClass="admin-primary-btn" prefWidth="250" prefHeight="45" />
+        <Button fx:id="btnUndo" onAction="#handleUndo" text="🔙  تراجع" styleClass="admin-action-btn" prefHeight="45" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="statusLabel" text="تم اختيار المستخدم: -" style="-fx-text-fill: #6B7280; -fx-font-style: italic;" />
     </HBox>
@@ -96,7 +111,7 @@
     <!-- Active Delegations Table -->
     <VBox spacing="10" styleClass="admin-section-card">
         <Label styleClass="admin-section-title" text="📜  التفويضات النشطة حالياً" />
-        <TableView fx:id="activeDelegationsTable" prefHeight="200">
+        <TableView fx:id="activeDelegationsTable" prefHeight="400">
             <columns>
                 <TableColumn fx:id="colUser" prefWidth="200" text="المستخدم" />
                 <TableColumn fx:id="colPermission" prefWidth="250" text="الصلاحية / المجموعة" />

@@ -26,11 +26,12 @@ public class AdminDelegationController implements Initializable {
     @FXML private ComboBox<String> collegeCombo;
     @FXML private DatePicker startDatePicker, endDatePicker;
     @FXML private Spinner<Integer> startHourSpinner, startMinSpinner, endHourSpinner, endMinSpinner;
-    @FXML private VBox collegeSelectionBox;
+    @FXML private VBox collegeSelectionBox, granularPermissionsBox;
+    @FXML private CheckBox checkRequests, checkRooms, checkStats, checkSearch, checkSettings;
     @FXML private javafx.scene.layout.HBox dateTimeRangeBox;
     @FXML private Label statusLabel;
-    @FXML private TableView<Object> activeDelegationsTable;
-    @FXML private TableColumn<Object, String> colUser, colPermission, colType, colStatus, colAction;
+    @FXML private TableView<com.aast.booking.models.Delegation> activeDelegationsTable;
+    @FXML private TableColumn<com.aast.booking.models.Delegation, String> colUser, colPermission, colType, colStatus, colAction;
  
     private ObservableList<User> allUsers = FXCollections.observableArrayList();
     private javafx.collections.transformation.FilteredList<User> filteredUsers;
@@ -55,7 +56,50 @@ public class AdminDelegationController implements Initializable {
         colPermission.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("permissionName"));
         colType.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("type"));
         colStatus.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty("نشط"));
-        // Action column could be added later for delete/revoke
+ 
+        colAction.setCellFactory(param -> new TableCell<>() {
+            private final Button btn = new Button("سحب الصلاحية");
+            {
+                btn.getStyleClass().add("admin-logout-btn"); // Red style
+                btn.setStyle("-fx-font-size: 11px; -fx-padding: 4 8;");
+                btn.setOnAction(event -> {
+                    com.aast.booking.models.Delegation d = getTableView().getItems().get(getIndex());
+                    handleRevoke(d);
+                });
+            }
+ 
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) setGraphic(null);
+                else setGraphic(btn);
+            }
+        });
+    }
+ 
+    private void handleRevoke(com.aast.booking.models.Delegation d) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "هل أنت متأكد من سحب الصلاحية عن " + d.getUserName() + "؟", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait().ifPresent(type -> {
+            if (type == ButtonType.YES) {
+                Firestore db = FirebaseService.getInstance().getFirestore();
+                if (db == null) return;
+                
+                // 1. Delete from delegations collection
+                db.collection("delegations").document(d.getId()).delete();
+                
+                // 2. Reset user role to employee
+                db.collection("users").document(d.getTargetUserId()).update(
+                    "role", "employee",
+                    "collegeName", FieldValue.delete(),
+                    "tempAccessStart", FieldValue.delete(),
+                    "tempAccessEnd", FieldValue.delete(),
+                    "allowedFeatures", FieldValue.delete()
+                );
+                
+                showAlert("نجاح", "تم سحب الصلاحية بنجاح.");
+                fetchDelegations();
+            }
+        });
     }
  
     private void setupTimeSpinners() {
@@ -76,23 +120,24 @@ public class AdminDelegationController implements Initializable {
                     setGraphic(null);
                 } else {
                     javafx.scene.layout.HBox cell = new javafx.scene.layout.HBox(15);
-                    cell.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                    cell.setStyle("-fx-padding: 8 15;");
+                    cell.setAlignment(javafx.geometry.Pos.CENTER_RIGHT); // Align right for Arabic
+                    cell.setStyle("-fx-padding: 10 15;");
  
-                    javafx.scene.layout.VBox details = new javafx.scene.layout.VBox(4);
+                    javafx.scene.layout.VBox details = new javafx.scene.layout.VBox(2);
                     details.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
                     javafx.scene.control.Label name = new javafx.scene.control.Label(item.getDisplayName());
-                    name.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827;");
-                    javafx.scene.control.Label id = new javafx.scene.control.Label(item.getEmployeeId() != null ? item.getEmployeeId() : "N/A");
+                    name.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 14px;");
+                    javafx.scene.control.Label id = new javafx.scene.control.Label("ID: " + (item.getEmployeeId() != null ? item.getEmployeeId() : "N/A"));
                     id.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
                     details.getChildren().addAll(name, id);
  
-                    javafx.scene.control.Label icon = new javafx.scene.control.Label("👤+");
-                    icon.setStyle("-fx-text-fill: #3B82F6; -fx-font-size: 16px;");
+                    javafx.scene.control.Label icon = new javafx.scene.control.Label("👤");
+                    icon.setStyle("-fx-text-fill: #3B82F6; -fx-font-size: 18px;");
  
                     javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
                     javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
  
+                    // In RTL, adding icon first then details with spacer will put icon on left and details on right
                     cell.getChildren().addAll(icon, spacer, details);
                     setGraphic(cell);
                     setText(null);
@@ -117,8 +162,11 @@ public class AdminDelegationController implements Initializable {
     private void setupSearchLogic() {
         searchUserField.textProperty().addListener((observable, oldValue, newValue) -> {
             boolean hasText = newValue != null && !newValue.isEmpty();
-            userListView.setVisible(hasText && (selectedUser == null || !selectedUser.getDisplayName().equals(newValue)));
-            userListView.setManaged(hasText && (selectedUser == null || !selectedUser.getDisplayName().equals(newValue)));
+            boolean show = hasText && (selectedUser == null || !selectedUser.getDisplayName().equals(newValue));
+            
+            userListView.setVisible(show);
+            userListView.setManaged(show); // Ensure it takes space or at least is considered in layout
+            if (show) userListView.toFront();
             
             if (selectedUser != null && !selectedUser.getDisplayName().equals(newValue)) {
                 selectedUser = null;
@@ -128,9 +176,20 @@ public class AdminDelegationController implements Initializable {
             filteredUsers.setPredicate(user -> {
                 if (!hasText) return true;
                 String lowerCaseFilter = newValue.toLowerCase();
-                return user.getDisplayName().toLowerCase().contains(lowerCaseFilter) || 
-                       (user.getEmployeeId() != null && user.getEmployeeId().contains(lowerCaseFilter));
+                boolean match = (user.getDisplayName() != null && user.getDisplayName().toLowerCase().contains(lowerCaseFilter)) || 
+                                (user.getEmployeeId() != null && user.getEmployeeId().toLowerCase().contains(lowerCaseFilter));
+                return match;
             });
+        });
+ 
+        // Hide suggestions when clicking elsewhere
+        searchUserField.focusedProperty().addListener((obs, oldV, newV) -> {
+            if (!newV) {
+                // Delay hiding to allow ListView selection
+                Platform.runLater(() -> {
+                    if (!userListView.isFocused()) userListView.setVisible(false);
+                });
+            }
         });
     }
  
@@ -145,6 +204,8 @@ public class AdminDelegationController implements Initializable {
             collegeSelectionBox.setManaged(!isTemp);
             dateTimeRangeBox.setVisible(isTemp);
             dateTimeRangeBox.setManaged(isTemp);
+            granularPermissionsBox.setVisible(isTemp);
+            granularPermissionsBox.setManaged(isTemp);
         });
         
         rbTempAdmin.setSelected(true);
@@ -201,7 +262,7 @@ public class AdminDelegationController implements Initializable {
             // Proceed with Secretary Delegation
             PermissionComponent perm = new LeafPermission("SECRETARY", "صلاحيات سكرتير جهة: " + college);
             DelegationStrategy strategy = new PermanentValidationStrategy();
-            PermissionCommand command = new DelegateCommand(selectedUser.getUid(), selectedUser.getDisplayName(), perm, strategy);
+            PermissionCommand command = new DelegateCommand(selectedUser.getUid(), selectedUser.getDisplayName(), perm, strategy, null);
             command.execute();
             commandHistory.push(command);
             showAlert("نجاح", "تم تعيين " + selectedUser.getDisplayName() + " كسكرتير لـ " + college);
@@ -210,6 +271,19 @@ public class AdminDelegationController implements Initializable {
         } else if (rbTempAdmin.isSelected()) {
             if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
                 showAlert("خطأ", "يرجى تحديد تاريخ ووقت البداية والنهاية للأدمن المؤقت.");
+                return;
+            }
+ 
+            // Collect allowed features
+            List<String> allowed = new ArrayList<>();
+            if (checkRequests.isSelected()) allowed.add("requests");
+            if (checkRooms.isSelected())    allowed.add("rooms");
+            if (checkStats.isSelected())    allowed.add("stats");
+            if (checkSearch.isSelected())   allowed.add("search");
+            if (checkSettings.isSelected()) allowed.add("settings");
+ 
+            if (allowed.isEmpty()) {
+                showAlert("خطأ", "يجب اختيار صلاحية واحدة على الأقل للأدمن المؤقت.");
                 return;
             }
  
@@ -224,9 +298,9 @@ public class AdminDelegationController implements Initializable {
                 return;
             }
  
-            PermissionComponent perm = new PermissionGroup("TEMP_ADMIN", "صلاحيات مسؤول مؤقت");
+            PermissionComponent perm = new PermissionGroup("TEMP_ADMIN", "صلاحيات مسؤول مؤقت (" + allowed.size() + " ميزات)");
             DelegationStrategy strategy = new TemporaryValidationStrategy(start, end);
-            PermissionCommand command = new DelegateCommand(selectedUser.getUid(), selectedUser.getDisplayName(), perm, strategy);
+            PermissionCommand command = new DelegateCommand(selectedUser.getUid(), selectedUser.getDisplayName(), perm, strategy, allowed);
             command.execute();
             commandHistory.push(command);
             showAlert("نجاح", "تم منح صلاحيات أدمن مؤقت بنجاح لـ: " + selectedUser.getDisplayName());

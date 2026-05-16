@@ -14,12 +14,14 @@ public class DelegateCommand implements PermissionCommand {
     private String userName;
     private PermissionComponent permission;
     private DelegationStrategy strategy;
+    private java.util.List<String> allowedFeatures;
  
-    public DelegateCommand(String targetUserId, String userName, PermissionComponent permission, DelegationStrategy strategy) {
+    public DelegateCommand(String targetUserId, String userName, PermissionComponent permission, DelegationStrategy strategy, java.util.List<String> allowedFeatures) {
         this.targetUserId = targetUserId;
         this.userName = userName;
         this.permission = permission;
         this.strategy = strategy;
+        this.allowedFeatures = allowedFeatures;
     }
  
     @Override
@@ -45,6 +47,9 @@ public class DelegateCommand implements PermissionCommand {
                 TemporaryValidationStrategy ts = (TemporaryValidationStrategy) strategy;
                 userUpdate.put("tempAccessStart", ts.getStart().toString());
                 userUpdate.put("tempAccessEnd", ts.getEnd().toString());
+            }
+            if (allowedFeatures != null) {
+                userUpdate.put("allowedFeatures", allowedFeatures);
             }
         } else if (permission.getName().equals("SECRETARY")) {
             userUpdate.put("role", "secretary");

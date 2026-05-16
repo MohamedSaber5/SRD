@@ -14,6 +14,7 @@ public class User {
     private String collegeName;    // Used for secretary/manager assignment
     private String tempAccessStart;
     private String tempAccessEnd;
+    private java.util.List<String> allowedFeatures;
 
     public User() {}
 
@@ -50,6 +51,9 @@ public class User {
 
     public String getTempAccessEnd() { return tempAccessEnd; }
     public void setTempAccessEnd(String tempAccessEnd) { this.tempAccessEnd = tempAccessEnd; }
+ 
+    public java.util.List<String> getAllowedFeatures() { return allowedFeatures; }
+    public void setAllowedFeatures(java.util.List<String> allowedFeatures) { this.allowedFeatures = allowedFeatures; }
 
     /**
      * Checks if this user has admin-level privileges (admin or active temp_admin).

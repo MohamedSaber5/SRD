@@ -131,10 +131,19 @@ public class AdminDashboardController implements Initializable {
         fetchRamadanMode();
         startListeningToRequests();
  
-        // Hide Delegation feature for Temporary Admins
+        // Hide features based on granular permissions for Temporary Admins
         if ("temp_admin".equals(user.getRole())) {
             btnDelegation.setVisible(false);
             btnDelegation.setManaged(false);
+            
+            List<String> allowed = user.getAllowedFeatures();
+            if (allowed != null) {
+                if (!allowed.contains("requests")) { btnRequests.setVisible(false); btnRequests.setManaged(false); }
+                if (!allowed.contains("rooms"))    { btnRoomMgmt.setVisible(false); btnRoomMgmt.setManaged(false); }
+                if (!allowed.contains("stats"))    { btnStats.setVisible(false);    btnStats.setManaged(false); }
+                if (!allowed.contains("search"))   { btnSearch.setVisible(false);   btnSearch.setManaged(false); }
+                if (!allowed.contains("settings")) { btnSettings.setVisible(false); btnSettings.setManaged(false); }
+            }
         }
  
         showDashboard();

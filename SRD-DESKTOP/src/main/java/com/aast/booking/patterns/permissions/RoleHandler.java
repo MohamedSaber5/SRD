@@ -16,6 +16,19 @@ public class RoleHandler extends PermissionHandler {
  
         // Temp Admin has access to everything EXCEPT Delegation/Permissions
         if ("temp_admin".equals(user.getRole())) {
+            // Check expiration
+            String endStr = user.getTempAccessEnd();
+            if (endStr != null) {
+                try {
+                    java.time.LocalDateTime end = java.time.LocalDateTime.parse(endStr);
+                    if (java.time.LocalDateTime.now().isAfter(end)) {
+                        return false; // Expired!
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+ 
             if ("DELEGATE_PERMISSION".equals(permissionKey)) {
                 return false;
             }
