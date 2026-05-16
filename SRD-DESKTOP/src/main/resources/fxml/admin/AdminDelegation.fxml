@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.lang.String?>
+ 
+<VBox spacing="20" alignment="TOP_CENTER" 
+      xmlns="http://javafx.com/javafx/21" 
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.aast.booking.admin.AdminDelegationController"
+      style="-fx-background-color: #f2f4f6;">
+    
+    <padding><Insets bottom="30" left="30" right="30" top="28" /></padding>
+ 
+    <!-- Top Search Area with Overlay Suggestions -->
+    <VBox spacing="10" styleClass="admin-section-card">
+        <Label text="ابحث عن الموظف (الاسم أو الرقم الوظيفي)" style="-fx-font-weight: bold; -fx-text-fill: #374151;" />
+        <StackPane alignment="TOP_RIGHT">
+            <VBox spacing="0">
+                <HBox spacing="10" alignment="CENTER_LEFT" styleClass="admin-search-container" prefHeight="45">
+                    <Label text="🔍" style="-fx-font-size: 18px;" />
+                    <TextField fx:id="searchUserField" HBox.hgrow="ALWAYS" promptText="ابحث هنا أو اختر من الجدول بالأسفل..." styleClass="admin-search-input" />
+                </HBox>
+                <!-- Suggestions Area (Overlayed) -->
+                <ListView fx:id="userListView" prefHeight="200" visible="false" managed="false" styleClass="admin-suggestions-overlay" />
+            </VBox>
+        </StackPane>
+    </VBox>
+ 
+    <HBox spacing="20">
+        <!-- Permission Type Cards -->
+        <VBox spacing="10" HBox.hgrow="ALWAYS">
+            <Label text="نوع الصلاحية الممنوحة" style="-fx-font-weight: bold; -fx-text-fill: #374151;" />
+            <HBox spacing="15">
+                <VBox fx:id="tempAdminCard" spacing="8" HBox.hgrow="ALWAYS" styleClass="admin-choice-card" onMouseClicked="#selectTempAdmin">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <RadioButton fx:id="rbTempAdmin" />
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
+                            <Label text="أدمن مؤقت" styleClass="admin-choice-title" />
+                            <Label text="يمنح صلاحيات إدارة النظام لفترة محددة" styleClass="admin-choice-subtitle" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+ 
+                <VBox fx:id="secretaryCard" spacing="8" HBox.hgrow="ALWAYS" styleClass="admin-choice-card" onMouseClicked="#selectSecretary">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <RadioButton fx:id="rbSecretary" />
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
+                            <Label text="سكرتير جهة / كلية" styleClass="admin-choice-title" />
+                            <Label text="تعيين كممثل لجهة لتقديم الحجوزات" styleClass="admin-choice-subtitle" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </HBox>
+        </VBox>
+    </HBox>
+ 
+    <HBox spacing="20">
+        <!-- College Selection -->
+        <VBox fx:id="collegeSelectionBox" spacing="10" HBox.hgrow="ALWAYS" visible="false" managed="false">
+            <Label text="الكلية / الجهة التابع لها" style="-fx-font-weight: bold; -fx-text-fill: #374151;" />
+            <ComboBox fx:id="collegeCombo" maxWidth="Infinity" promptText="-- اختر الكلية من القائمة --" styleClass="admin-combo-box" />
+        </VBox>
+ 
+        <!-- Date & Time Range -->
+        <HBox fx:id="dateTimeRangeBox" spacing="15" HBox.hgrow="ALWAYS">
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label text="تاريخ ووقت البداية" style="-fx-font-weight: bold; -fx-text-fill: #374151;" />
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <DatePicker fx:id="startDatePicker" HBox.hgrow="ALWAYS" prefHeight="40" styleClass="admin-date-picker" />
+                    <Spinner fx:id="startHourSpinner" prefWidth="70" prefHeight="40" />
+                    <Label text=":" style="-fx-font-weight: bold;" />
+                    <Spinner fx:id="startMinSpinner" prefWidth="70" prefHeight="40" />
+                </HBox>
+            </VBox>
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label text="تاريخ ووقت النهاية" style="-fx-font-weight: bold; -fx-text-fill: #374151;" />
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <DatePicker fx:id="endDatePicker" HBox.hgrow="ALWAYS" prefHeight="40" styleClass="admin-date-picker" />
+                    <Spinner fx:id="endHourSpinner" prefWidth="70" prefHeight="40" />
+                    <Label text=":" style="-fx-font-weight: bold;" />
+                    <Spinner fx:id="endMinSpinner" prefWidth="70" prefHeight="40" />
+                </HBox>
+            </VBox>
+        </HBox>
+    </HBox>
+ 
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Button fx:id="btnDelegate" onAction="#handleDelegate" text="✅  منح واعتماد الصلاحية" styleClass="admin-primary-btn" prefWidth="200" />
+        <Button fx:id="btnUndo" onAction="#handleUndo" text="🔙  تراجع" styleClass="admin-action-btn" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="statusLabel" text="تم اختيار المستخدم: -" style="-fx-text-fill: #6B7280; -fx-font-style: italic;" />
+    </HBox>
+ 
+    <!-- Active Delegations Table -->
+    <VBox spacing="10" styleClass="admin-section-card">
+        <Label styleClass="admin-section-title" text="📜  التفويضات النشطة حالياً" />
+        <TableView fx:id="activeDelegationsTable" prefHeight="200">
+            <columns>
+                <TableColumn fx:id="colUser" prefWidth="200" text="المستخدم" />
+                <TableColumn fx:id="colPermission" prefWidth="250" text="الصلاحية / المجموعة" />
+                <TableColumn fx:id="colType" prefWidth="150" text="النوع" />
+                <TableColumn fx:id="colStatus" prefWidth="150" text="الحالة" />
+                <TableColumn fx:id="colAction" prefWidth="120" text="إجراء" />
+            </columns>
+        </TableView>
+    </VBox>
+ 
+</VBox>

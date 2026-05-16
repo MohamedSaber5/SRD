@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import java.net.URL?>
+ 
+<VBox alignment="TOP_CENTER" nodeOrientation="RIGHT_TO_LEFT" spacing="0" styleClass="booking-form-root" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="com.aast.booking.admin.AdminBookingFormController">
+    <stylesheets>
+        <URL value="@../../css/secretary.css" />
+        <URL value="@../../css/dashboard-common.css" />
+        <URL value="@../../css/styles.css" />
+    </stylesheets>
+    
+    <padding><Insets bottom="24" left="28" right="28" top="24" /></padding>
+
+    <!-- Centered max-width column -->
+    <VBox alignment="TOP_CENTER" maxWidth="680" spacing="16">
+
+        <!-- Form header row -->
+        <HBox alignment="CENTER_RIGHT" spacing="12">
+            <Label fx:id="pageTitle" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #001e40;" text="طلب حجز جديد (إدارة)" HBox.hgrow="ALWAYS" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button onAction="#cloneLastBooking" styleClass="btn-secondary" text="تكرار الحجز السابق" />
+            <Button onAction="#handleUndo" styleClass="btn-secondary" text="تراجع" />
+            <Button onAction="#handleReset" styleClass="btn-danger" text="مسح البيانات" />
+        </HBox>
+ 
+        <!-- Step progress bar (Secretary Style) -->
+        <HBox alignment="CENTER" spacing="0" styleClass="step-bar-sec">
+            <padding><Insets bottom="14" left="20" right="20" top="14" /></padding>
+            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS">
+                <StackPane fx:id="step1IndicatorCircle" styleClass="step-circle-active">
+                    <Label fx:id="step1Indicator" styleClass="step-num-active" text="1" />
+                </StackPane>
+                <Label styleClass="step-lbl" text="التفاصيل" />
+            </VBox>
+            <Region maxHeight="2" prefWidth="50" styleClass="step-connector-sec" />
+            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS">
+                <StackPane fx:id="step2IndicatorCircle" styleClass="step-circle-inactive">
+                    <Label fx:id="step2Indicator" styleClass="step-num-inactive" text="2" />
+                </StackPane>
+                <Label styleClass="step-lbl" text="المسؤول" />
+            </VBox>
+            <Region maxHeight="2" prefWidth="50" styleClass="step-connector-sec" />
+            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS">
+                <StackPane fx:id="step3IndicatorCircle" styleClass="step-circle-inactive">
+                    <Label fx:id="step3Indicator" styleClass="step-num-inactive" text="3" />
+                </StackPane>
+                <Label styleClass="step-lbl" text="التجهيزات" />
+            </VBox>
+        </HBox>
+ 
+        <!-- ══════════════════════════════════════
+             STEP 1: EVENT DETAILS
+             ══════════════════════════════════════ -->
+        <VBox fx:id="step1Pane" spacing="16" styleClass="sec-form-card" visible="true">
+            <Label styleClass="sec-card-title" text="1. تفاصيل الفعالية" />
+
+            <!-- Category toggle (Admin Special) -->
+            <VBox spacing="6">
+                <Label styleClass="sec-field-label" text="نوع القاعة" />
+                <HBox spacing="0" styleClass="toggle-group" style="-fx-border-color: #d1d5db; -fx-border-radius: 8; -fx-overflow: hidden;">
+                    <Button fx:id="btnCategoryLecture" maxWidth="Infinity" onAction="#selectLectureCategory" prefHeight="40" styleClass="toggle-btn" text="🎓  قاعة محاضرات" HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnCategoryMulti" maxWidth="Infinity" onAction="#selectMultiCategory" prefHeight="40" styleClass="toggle-btn" text="🏛  متعددة الأغراض" HBox.hgrow="ALWAYS" />
+                </HBox>
+            </VBox>
+
+            <!-- Date + Time row -->
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label styleClass="sec-field-label" text="تاريخ الفعالية" />
+                    <DatePicker fx:id="datePicker" maxWidth="Infinity" promptText="اختر التاريخ..." styleClass="sec-date-picker" />
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label styleClass="sec-field-label" text="الفترة الزمنية" />
+                    <VBox spacing="8">
+                        <HBox fx:id="slotBox" spacing="8">
+                            <ComboBox fx:id="slotComboBox" maxWidth="Infinity" promptText="اختر فترة المحاضرة..." styleClass="sec-combo" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                        <HBox fx:id="multiTimeBox" spacing="8" visible="false" managed="false">
+                            <ComboBox fx:id="timeFromCombo" maxWidth="Infinity" promptText="من..." styleClass="sec-combo" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="timeToCombo" maxWidth="Infinity" promptText="إلى..." styleClass="sec-combo" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </HBox>
+ 
+            <!-- Purpose -->
+            <VBox spacing="6">
+                <Label styleClass="sec-field-label" text="الغرض من الاستخدام" />
+                <TextArea fx:id="purposeField" prefRowCount="2" promptText="وصف موجز للفعالية..." styleClass="sec-input" style="-fx-padding: 8;" />
+            </VBox>
+ 
+            <!-- Capacity -->
+            <VBox spacing="6">
+                <Label styleClass="sec-field-label" text="عدد الحضور المتوقع" />
+                <TextField fx:id="capacityField" promptText="مثال: 50" styleClass="sec-input" />
+            </VBox>
+
+            <HBox alignment="CENTER" spacing="10">
+                <Button onAction="#handleNext" prefHeight="42" prefWidth="200" styleClass="btn-submit" text="التالي ←" />
+            </HBox>
+        </VBox>
+ 
+        <!-- ══════════════════════════════════════
+             STEP 2: RESPONSIBLE PERSON
+             ══════════════════════════════════════ -->
+        <VBox fx:id="step2Pane" managed="false" spacing="16" styleClass="sec-form-card" visible="false">
+            <Label styleClass="sec-card-title" text="2. بيانات المسؤول عن الحدث" />
+ 
+            <VBox spacing="6">
+                <Label styleClass="sec-field-label" text="الاسم الكامل" />
+                <TextField fx:id="respNameField" promptText="مثال: أحمد محمد إبراهيم" styleClass="sec-input" />
+            </VBox>
+            <VBox spacing="6">
+                <Label styleClass="sec-field-label" text="المسمى الوظيفي" />
+                <TextField fx:id="respJobField" promptText="مثال: دكتور / مهندس" styleClass="sec-input" />
+            </VBox>
+            <VBox spacing="6">
+                <Label styleClass="sec-field-label" text="رقم المحمول" />
+                <TextField fx:id="respMobileField" promptText="مثال: 01012345678" styleClass="sec-input" />
+            </VBox>
+            <HBox alignment="CENTER" spacing="10">
+                <Button onAction="#handleNext" prefHeight="42" prefWidth="200" styleClass="btn-submit" text="التالي ←" />
+                <Button onAction="#handlePrev" prefHeight="42" prefWidth="120" styleClass="btn-secondary" text="السابق →" />
+            </HBox>
+        </VBox>
+ 
+        <!-- ══════════════════════════════════════
+             STEP 3: REQUIREMENTS
+             ══════════════════════════════════════ -->
+        <VBox fx:id="step3Pane" managed="false" spacing="16" styleClass="sec-form-card" visible="false">
+            <Label styleClass="sec-card-title" text="3. المتطلبات والامتيازات" />
+ 
+            <VBox spacing="10" styleClass="sec-extras-box">
+                <Label styleClass="sec-field-label" text="امتيازات المسؤول (Admin Privileges)" />
+                <CheckBox fx:id="cbOfficial" styleClass="sec-checkbox" text="فعالية رسمية (Official Event)" />
+                <CheckBox fx:id="cbHoliday" styleClass="sec-checkbox" text="خارج أوقات العمل (Holiday/Weekend)" />
+            </VBox>
+
+            <VBox spacing="12">
+                <Label styleClass="sec-field-label" text="المتطلبات التقنية" />
+                <CheckBox fx:id="reqLaptopCheck" styleClass="sec-checkbox" text="جهاز حاسب آلي (Laptop)" />
+                <CheckBox fx:id="reqVideoConfCheck" styleClass="sec-checkbox" text="نظام Video Conference" />
+                
+                <VBox spacing="8">
+                    <CheckBox fx:id="reqMicCheck" styleClass="sec-checkbox" text="ميكروفونات متحركة" />
+                    <HBox fx:id="micQtyRow" alignment="CENTER_RIGHT" spacing="8" visible="false" managed="false">
+                        <padding><Insets right="28" /></padding>
+                        <Label styleClass="sec-field-label" text="العدد:" />
+                        <Spinner fx:id="reqMicQtySpinner" prefWidth="80" styleClass="form-spinner" />
+                    </HBox>
+                </VBox>
+ 
+                <VBox spacing="8">
+                    <CheckBox fx:id="reqOtherCheck" styleClass="sec-checkbox" text="متطلبات أخرى" />
+                    <VBox fx:id="reqOtherDetailsRow" visible="false" managed="false">
+                        <padding><Insets right="28" /></padding>
+                        <TextArea fx:id="reqOtherDetailsField" prefRowCount="2" promptText="اكتب التفاصيل..." styleClass="sec-input" />
+                    </VBox>
+                </VBox>
+            </VBox>
+ 
+            <!-- Submit -->
+            <HBox spacing="10">
+                <Button fx:id="nextButton" maxWidth="Infinity" onAction="#handleNext" prefHeight="44" styleClass="btn-submit" text="⚡  تأكيد وإرسال الطلب" HBox.hgrow="ALWAYS" />
+                <Button onAction="#handlePrev" prefHeight="44" styleClass="btn-secondary" text="السابق →" />
+            </HBox>
+        </VBox>
+ 
+    </VBox>
+</VBox>

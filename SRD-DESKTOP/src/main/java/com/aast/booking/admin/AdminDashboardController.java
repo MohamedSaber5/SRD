@@ -59,6 +59,9 @@ public class AdminDashboardController implements Initializable {
     @FXML private Label statAcceptedToday, statPendingCount, statTotalBookings, statTotalRooms;
     @FXML private Label todayDateLabel;
 
+    // Sub-controllers
+    @FXML private AdminBookingFormController newBookingFormController;
+
     // Today's events table
     @FXML private TableView<Booking> todayEventsTable;
     @FXML private TableColumn<Booking, String> evColRoom, evColType, evColUser, evColTime, evColPurpose;

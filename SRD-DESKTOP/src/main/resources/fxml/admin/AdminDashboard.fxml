@@ -157,11 +157,8 @@
                         <Label styleClass="admin-section-title" text="الطلبات المعلقة" />
                         <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
                     </VBox>
-                    <VBox fx:id="newBookingView" spacing="20" visible="false" alignment="CENTER">
-                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
-                        <Label style="-fx-font-size: 28px;" text="➕" />
-                        <Label styleClass="admin-section-title" text="طلب حجز جديد" />
-                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    <VBox fx:id="newBookingView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
+                        <fx:include fx:id="newBookingForm" source="AdminBookingForm.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
                     <VBox fx:id="roomMgmtView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
                         <fx:include source="RoomManagement.fxml" VBox.vgrow="ALWAYS" />
@@ -172,11 +169,8 @@
                         <Label styleClass="admin-section-title" text="البحث المتقدم" />
                         <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
                     </VBox>
-                    <VBox fx:id="delegationView" spacing="20" visible="false" alignment="CENTER">
-                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
-                        <Label style="-fx-font-size: 28px;" text="👥" />
-                        <Label styleClass="admin-section-title" text="الصلاحيات والتفويض" />
-                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    <VBox fx:id="delegationView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
+                        <fx:include source="AdminDelegation.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
                     <VBox fx:id="settingsView" spacing="20" visible="false" alignment="CENTER">
                         <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
