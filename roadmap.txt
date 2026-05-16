@@ -1,0 +1,2224 @@
+crational design pattern :
+
+Factory Method: Defines an interface for creating an object, but lets subclasses alter the type of
+object that will be created.
+code template :
+// Define the Transport interface
+interface Transport { 
+    void deliver(); 
+}
+
+// Implement Truck and Ship classes
+class Truck implements Transport {
+    public void deliver() {
+        System.out.println("Truck delivering goods by land.");
+    }
+}
+
+class Ship implements Transport {
+    public void deliver() {
+        System.out.println("Ship delivering goods by sea.");
+    }
+}
+
+// Abstract Logistics class with a factory method that takes a control parameter
+abstract class Logistics {
+    // Factory method: it takes a 'mode' parameter to decide which Transport to create.
+    protected abstract Transport createTransport(String mode);
+    
+    public void deliverCargo(String mode) {
+        Transport t = createTransport(mode);
+        t.deliver();
+    }
+}
+
+// Instead of having separate subclasses for each product type, we use one subclass.
+class UniversalLogistics extends Logistics {
+    // Here we use the control parameter 'mode' to choose the correct Transport.
+    protected Transport createTransport(String mode) {
+        if (mode.equals("land")) {
+            return new Truck();
+        } else if (mode.equals("sea")) {
+            return new Ship();
+        } else {
+            throw new IllegalArgumentException("Unknown mode: " + mode);
+        }
+    }
+}
+
+// Client code
+public class FactoryMethodDemo {
+    public static void main(String[] args) {
+        Logistics logistics = new UniversalLogistics();
+        logistics.deliverCargo("sea");  // Output: Ship delivering goods by sea
+        logistics.deliverCargo("land"); // Output: Truck delivering goods by land
+    }
+}
+
+
+• Abstract Factory: Provides an interface for creating families of related or dependent objects without
+specifying their concrete classes.
+
+ 
+code template :
+// Step 1: Define abstract product interfaces
+interface Chair { 
+    void sitOn(); 
+}
+
+interface Sofa { 
+    void lieOn(); 
+}
+
+interface CoffeeTable { 
+    void placeItems(); 
+}
+
+// Step 2: Implement concrete product variants
+class ModernChair implements Chair {
+    public void sitOn() {
+        System.out.println("Sitting on a modern chair.");
+    }
+}
+
+class VictorianChair implements Chair {
+    public void sitOn() {
+        System.out.println("Sitting on a Victorian chair.");
+    }
+}
+
+class ArtDecoChair implements Chair {
+    public void sitOn() {
+        System.out.println("Sitting on an Art Deco chair.");
+    }
+}
+
+class ModernSofa implements Sofa {
+    public void lieOn() {
+        System.out.println("Lying on a modern sofa.");
+    }
+}
+
+class VictorianSofa implements Sofa {
+    public void lieOn() {
+        System.out.println("Lying on a Victorian sofa.");
+    }
+}
+
+class ArtDecoSofa implements Sofa {
+    public void lieOn() {
+        System.out.println("Lying on an Art Deco sofa.");
+    }
+}
+
+class ModernCoffeeTable implements CoffeeTable {
+    public void placeItems() {
+        System.out.println("Placing items on a modern coffee table.");
+    }
+}
+
+class VictorianCoffeeTable implements CoffeeTable {
+    public void placeItems() {
+        System.out.println("Placing items on a Victorian coffee table.");
+    }
+}
+
+class ArtDecoCoffeeTable implements CoffeeTable {
+    public void placeItems() {
+        System.out.println("Placing items on an Art Deco coffee table.");
+    }
+}
+
+// Step 3: Define the Abstract Factory interface
+interface FurnitureFactory {
+    Chair createChair();
+    Sofa createSofa();
+    CoffeeTable createCoffeeTable();
+}
+
+// Step 4: Implement concrete factory classes
+class ModernFurnitureFactory implements FurnitureFactory {
+    public Chair createChair() { return new ModernChair(); }
+    public Sofa createSofa() { return new ModernSofa(); }
+    public CoffeeTable createCoffeeTable() {
+        return new ModernCoffeeTable();
+    }
+}
+
+class VictorianFurnitureFactory implements FurnitureFactory {
+    public Chair createChair() { return new VictorianChair(); }
+    public Sofa createSofa() { return new VictorianSofa(); }
+    public CoffeeTable createCoffeeTable() {
+        return new VictorianCoffeeTable();
+    }
+}
+
+class ArtDecoFurnitureFactory implements FurnitureFactory {
+    public Chair createChair() { return new ArtDecoChair(); }
+    public Sofa createSofa() { return new ArtDecoSofa(); }
+    public CoffeeTable createCoffeeTable() {
+        return new ArtDecoCoffeeTable();
+    }
+}
+
+// Step 5: Client code (FurnitureStore)
+class FurnitureStore {
+    private Chair chair;
+    private Sofa sofa;
+    private CoffeeTable coffeeTable;
+    
+    public FurnitureStore(FurnitureFactory factory) {
+        this.chair = factory.createChair();
+        this.sofa = factory.createSofa();
+        this.coffeeTable = factory.createCoffeeTable();
+    }
+    
+    public void describeFurniture() {
+        chair.sitOn();
+        sofa.lieOn();
+        coffeeTable.placeItems();
+    }
+}
+
+// Step 6: Application setup
+public class Main {
+    public static void main(String[] args) {
+        FurnitureFactory factory;
+        
+        // Simulate user choice (Modern, Victorian, ArtDeco)
+        String userChoice = "Victorian"; // Change this to "Modern" or "ArtDeco" for different outputs
+        
+        if (userChoice.equals("Modern")) {
+            factory = new ModernFurnitureFactory();
+        } else if (userChoice.equals("Victorian")) {
+            factory = new VictorianFurnitureFactory();
+        } else {
+            factory = new ArtDecoFurnitureFactory();
+        }
+        
+        FurnitureStore store = new FurnitureStore(factory);
+        store.describeFurniture();
+    }
+}
+
+
+• Builder: Separates the construction of a complex object from its representation, allowing the same
+construction process to create different representations.
+code template :
+// Step 1: Product Classes
+class Car {
+    private int seats;
+    private String engine;
+    private boolean hasTripComputer;
+    private boolean hasGPS;
+    
+    public void setSeats(int seats) { this.seats = seats; }
+    public void setEngine(String engine) { this.engine = engine; }
+    public void setTripComputer(boolean hasTripComputer) { this.hasTripComputer = hasTripComputer; }
+    public void setGPS(boolean hasGPS) { this.hasGPS = hasGPS; }
+    
+    @Override
+    public String toString() {
+        return "Car [Seats=" + seats + ", Engine=" + engine + ", Trip Computer=" +
+               hasTripComputer + ", GPS=" + hasGPS + "]";
+    }
+}
+
+class Manual {
+    private StringBuilder content = new StringBuilder();
+    
+    public void addSection(String section) { 
+        content.append(section).append("\n");
+    }
+    
+    @Override
+    public String toString() { 
+        return "Manual:\n" + content.toString(); 
+    }
+}
+
+// Step 2: Builder Interface
+interface Builder {
+    void reset();
+    void setSeats(int seats);
+    void setEngine(String engine);
+    void setTripComputer(boolean hasTripComputer);  // Changed: bool -> boolean
+    void setGPS(boolean hasGPS);
+}
+
+// Step 3: Concrete Builders
+class CarBuilder implements Builder {
+    private Car car;
+    
+    public CarBuilder() { reset(); }
+    
+    public void reset() { car = new Car(); }
+    
+    public void setSeats(int seats) { car.setSeats(seats); }
+    
+    public void setEngine(String engine) { car.setEngine(engine); }
+    
+    public void setTripComputer(boolean hasTripComputer) { 
+        car.setTripComputer(hasTripComputer); 
+    }
+    
+    public void setGPS(boolean hasGPS) { car.setGPS(hasGPS); }
+    
+    public Car getProduct() {
+        Car product = this.car;
+        reset();  // Reset for next build
+        return product;
+    }
+}
+
+class CarManualBuilder implements Builder {
+    private Manual manual;
+    
+    public CarManualBuilder() { reset(); }
+    
+    public void reset() { manual = new Manual(); }
+    
+    public void setSeats(int seats) { 
+        manual.addSection("Seats: " + seats); 
+    }
+    
+    public void setEngine(String engine) { 
+        manual.addSection("Engine: " + engine); 
+    }
+    
+    public void setTripComputer(boolean hasTripComputer) {
+        manual.addSection("Trip Computer: " + (hasTripComputer ? "Included" : "Not Included"));
+    }
+    
+    public void setGPS(boolean hasGPS) { 
+        manual.addSection("GPS: " + (hasGPS ? "Included" : "Not Included"));  // Fixed missing parenthesis
+    }
+    
+    public Manual getProduct() {
+        Manual product = this.manual;
+        reset();
+        return product;
+    }
+}
+
+// Step 4: Director
+class Director {
+    public void constructSportsCar(Builder builder) {
+        builder.reset();
+        builder.setSeats(2);
+        builder.setEngine("V8 Engine");
+        builder.setTripComputer(true);
+        builder.setGPS(true);
+    }
+    
+    public void constructSUV(Builder builder) {
+        builder.reset();
+        builder.setSeats(5);
+        builder.setEngine("Diesel Engine");
+        builder.setTripComputer(false);
+        builder.setGPS(true);
+    }
+    
+    // Additional car types
+    public void constructEconomyCar(Builder builder) {
+        builder.reset();
+        builder.setSeats(4);
+        builder.setEngine("4-Cylinder Engine");
+        builder.setTripComputer(false);
+        builder.setGPS(false);
+    }
+    
+    public void constructElectricCar(Builder builder) {
+        builder.reset();
+        builder.setSeats(4);
+        builder.setEngine("Electric Motor");
+        builder.setTripComputer(true);
+        builder.setGPS(true);
+    }
+}
+
+// Step 5: Client Application
+public class Application {
+    public static void main(String[] args) {
+        Director director = new Director();
+        
+        System.out.println("=== Building Sports Car ===");
+        // Build a sports car
+        CarBuilder carBuilder = new CarBuilder();
+        director.constructSportsCar(carBuilder);
+        Car sportsCar = carBuilder.getProduct();
+        System.out.println(sportsCar);
+        
+        // Build a manual for the sports car
+        CarManualBuilder manualBuilder = new CarManualBuilder();
+        director.constructSportsCar(manualBuilder);
+        Manual sportsCarManual = manualBuilder.getProduct();
+        System.out.println(sportsCarManual);
+        
+        System.out.println("\n=== Building SUV ===");
+        // Build an SUV
+        CarBuilder suvBuilder = new CarBuilder();
+        director.constructSUV(suvBuilder);
+        Car suv = suvBuilder.getProduct();
+        System.out.println(suv);
+        
+        // Build manual for SUV
+        CarManualBuilder suvManualBuilder = new CarManualBuilder();
+        director.constructSUV(suvManualBuilder);
+        Manual suvManual = suvManualBuilder.getProduct();
+        System.out.println(suvManual);
+        
+        System.out.println("\n=== Building Economy Car (without Director) ===");
+        // Building without Director
+        CarBuilder economyBuilder = new CarBuilder();
+        economyBuilder.setSeats(4);
+        economyBuilder.setEngine("1.5L Engine");
+        economyBuilder.setTripComputer(false);
+        economyBuilder.setGPS(false);
+        Car economyCar = economyBuilder.getProduct();
+        System.out.println(economyCar);
+    }
+}
+
+
+• Prototype: Creates new objects by cloning an existing object (the prototype).
+
+code template :
+// Step 1: Prototype Interface
+interface Prototype {
+    Prototype clone();  // Fixed: removed incorrect `{}`
+}
+
+// Step 2: Concrete Prototypes
+class Circle implements Prototype {
+    private int x, y, radius;
+    
+    public Circle(int x, int y, int radius) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    @Override
+    public Prototype clone() {
+        return new Circle(x, y, radius);
+    }
+    
+    @Override
+    public String toString() {
+        return "Circle [x=" + x + ", y=" + y + ", radius=" + radius + "]";
+    }
+}
+
+class Rectangle implements Prototype {
+    private int width, height;
+    
+    public Rectangle(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public Prototype clone() {
+        return new Rectangle(width, height);
+    }
+    
+    @Override
+    public String toString() {
+        return "Rectangle [width=" + width + ", height=" + height + "]";
+    }
+}
+
+// Step 3: Client Code
+public class PrototypeDemo {
+    public static void main(String[] args) {
+        // Create original objects
+        Circle originalCircle = new Circle(10, 20, 30);
+        Rectangle originalRectangle = new Rectangle(50, 100);
+
+        // Clone the objects
+        Circle clonedCircle = (Circle) originalCircle.clone();
+        Rectangle clonedRectangle = (Rectangle) originalRectangle.clone();
+
+        // Print both original and cloned objects
+        System.out.println("Original: " + originalCircle);
+        System.out.println("Cloned: " + clonedCircle);
+        System.out.println("Original: " + originalRectangle);
+        System.out.println("Cloned: " + clonedRectangle);
+    }
+}
+
+
+• Singleton: Ensures that a class has only one instance and provides a global point of access to that
+instance
+code template :
+// Step 1: Create Singleton Class
+class Singleton {
+    // Step 2: Create a private static instance (Lazy Initialization)
+    private static Singleton instance;
+    
+    // Step 3: Private constructor to prevent direct instantiation
+    private Singleton() {
+        System.out.println("Singleton Instance Created");
+    }
+    
+    // Step 4: Public static method to provide a global access point
+    public static Singleton getInstance() {
+        if (instance == null) {
+            instance = new Singleton();
+        }
+        return instance;
+    }
+    
+    // Example method
+    public void showMessage() { 
+        System.out.println("Hello from Singleton!"); 
+    }
+}
+
+// Step 5: Test Singleton
+public class SingletonDemo {
+    public static void main(String[] args) {
+        // Try to create multiple instances
+        Singleton obj1 = Singleton.getInstance();
+        Singleton obj2 = Singleton.getInstance();
+
+        // Show message
+        obj1.showMessage();
+
+        // Check if obj1 and obj2 are the same
+        System.out.println("Are both instances the same? " + (obj1 == obj2));
+    }
+}
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+structural design pattern :
+
+
+
+adpter:The adapter is a structural design pattern that allows objects with incompatible 
+interfaces to collaborate. 
+
+code template:
+// Common interface for pegs (Target Interface)
+interface Peg { 
+    double getRadius();
+}
+
+// RoundPeg implements Peg
+class RoundPeg implements Peg {
+    private double radius;
+    
+    public RoundPeg(double radius) {
+        this.radius = radius;
+    }
+    
+    @Override
+    public double getRadius() {
+        return radius;
+    }
+}
+
+// SquarePeg (Incompatible Class - Adaptee)
+class SquarePeg {
+    private double width;
+    
+    public SquarePeg(double width) {
+        this.width = width;
+    }
+    
+    public double getWidth() {
+        return width;
+    }
+}
+
+// RoundHole expects objects that implement Peg interface
+class RoundHole {
+    private double radius;
+    
+    public RoundHole(double radius) {
+        this.radius = radius;
+    }
+    
+    public boolean fits(Peg peg) {
+        return this.radius >= peg.getRadius();
+    }
+}
+
+// ==========================================
+// Adapter
+// ==========================================
+
+// Adapter: Makes SquarePeg compatible with RoundHole
+class SquarePegAdapter implements Peg {
+    private SquarePeg peg;
+    
+    public SquarePegAdapter(SquarePeg peg) {
+        this.peg = peg;
+    }
+    
+    @Override
+    public double getRadius() {
+        // Convert square peg width to equivalent radius
+        return (peg.getWidth() * Math.sqrt(2)) / 2;
+    }
+}
+
+// ==========================================
+// Main
+// ==========================================
+
+// Main class to test the Adapter Pattern
+public class AdapterPatternExample {
+    public static void main(String[] args) {
+        // Create a round hole with radius 5
+        RoundHole hole = new RoundHole(5);
+        
+        // Create a round peg of radius 5
+        RoundPeg roundPeg = new RoundPeg(5);
+        System.out.println("Round peg fits: " + hole.fits(roundPeg)); // true
+        
+        // Create square pegs
+        SquarePeg smallSquarePeg = new SquarePeg(5);
+        SquarePeg largeSquarePeg = new SquarePeg(10);
+        
+        // Can't use SquarePeg directly in RoundHole
+        // hole.fits(smallSquarePeg); // This won't compile!
+        
+        // Use the adapter
+        SquarePegAdapter smallAdapter = new SquarePegAdapter(smallSquarePeg);
+        SquarePegAdapter largeAdapter = new SquarePegAdapter(largeSquarePeg);
+        
+        // Now the square pegs fit into the round hole
+        System.out.println("Small square peg fits: " + hole.fits(smallAdapter)); // true
+        System.out.println("Large square peg fits: " + hole.fits(largeAdapter)); // false
+    }
+}
+---------------------------------------
+// RoundPeg class (Compatible)
+class RoundPeg {
+    private double radius;
+    
+    public RoundPeg(double radius) {
+        this.radius = radius;
+    }
+    
+    public double getRadius() {
+        return radius;
+    }
+}
+
+// RoundHole class (Compatible)
+class RoundHole {
+    private double radius;
+    
+    public RoundHole(double radius) {
+        this.radius = radius;
+    }
+    
+    public double getRadius() {
+        return radius;
+    }
+    
+    public boolean fits(RoundPeg peg) {
+        return this.getRadius() >= peg.getRadius();
+    }
+}
+
+// SquarePeg class (Incompatible)
+class SquarePeg {
+    private double width;
+    
+    public SquarePeg(double width) {
+        this.width = width;
+    }
+    
+    public double getWidth() {
+        return width;
+    }
+}
+
+// ==========================================
+// Adapter
+// ==========================================
+
+// Adapter class: Converts SquarePeg to RoundPeg
+class SquarePegAdapter extends RoundPeg {
+    private SquarePeg peg;
+    
+    public SquarePegAdapter(SquarePeg peg) {
+        // Calculate equivalent radius and pass it to super class
+        super((peg.getWidth() * Math.sqrt(2)) / 2);
+        this.peg = peg;
+    }
+    
+    @Override
+    public double getRadius() {
+        return peg.getWidth() * Math.sqrt(2) / 2;
+    }
+}
+
+// ==========================================
+// Client Code
+// ==========================================
+
+public class AdapterPatternExample {
+    public static void main(String[] args) {
+        RoundHole hole = new RoundHole(5.0);
+        RoundPeg rpeg = new RoundPeg(5.0);
+        
+        System.out.println("Round peg fits: " + (hole.fits(rpeg) ? "Yes" : "No")); // Expected: Yes
+        
+        SquarePeg smallSqPeg = new SquarePeg(5.0);
+        SquarePeg largeSqPeg = new SquarePeg(10.0);
+        
+        // Using the adapter to fit square pegs
+        SquarePegAdapter smallSqPegAdapter = new SquarePegAdapter(smallSqPeg);
+        SquarePegAdapter largeSqPegAdapter = new SquarePegAdapter(largeSqPeg);
+        
+        System.out.println("Small square peg fits: " + (hole.fits(smallSqPegAdapter) ? "Yes" : "No")); // Expected: Yes
+        System.out.println("Large square peg fits: " + (hole.fits(largeSqPegAdapter) ? "Yes" : "No")); // Expected: No
+    }
+}
+
+
+
+
+
+
+===========================================================
+
+
+
+bridge:✔ Decouples Abstraction from Implementation – Remotes and Devices evolve separately. 
+✔ Allows adding new Remotes and Devices independently – No need for complex hierarchies. 
+✔ Reduces code duplication – Code is reused effectively. 
+✔ Promotes flexibility and scalability – New types of remotes or devices can be added easily. 
+By separating the concerns of remotes and devices, the Bridge pattern makes our system more modular, 
+maintainable, and scalable. 
+
+code template:
+
+// ============================================================================
+// Step 1: The Implementation Interface
+// ============================================================================
+// Interface for all devices
+interface Device {
+    boolean isEnabled();
+    void enable();
+    void disable();
+    int getVolume();
+    void setVolume(int percent);
+    int getChannel();
+    void setChannel(int channel);
+}
+
+// ============================================================================
+// Step 2: Concrete Implementations (TV & Radio)
+// ============================================================================
+// TV Implementation
+class TV implements Device {
+    private boolean powerOn = false;
+    private int volume = 50;
+    private int channel = 1;
+
+    @Override
+    public boolean isEnabled() {
+        return powerOn;
+    }
+
+    @Override
+    public void enable() {
+        powerOn = true;
+        System.out.println("TV is now ON");
+    }
+
+    @Override
+    public void disable() {
+        powerOn = false;
+        System.out.println("TV is now OFF");
+    }
+
+    @Override
+    public int getVolume() {
+        return volume;
+    }
+
+    @Override
+    public void setVolume(int percent) {
+        volume = Math.max(0, Math.min(100, percent)); // Ensure 0-100 range
+        System.out.println("TV volume set to " + volume);
+    }
+
+    @Override
+    public int getChannel() {
+        return channel;
+    }
+
+    @Override
+    public void setChannel(int channel) {
+        this.channel = channel;
+        System.out.println("TV channel set to " + channel);
+    }
+}
+
+// Radio Implementation
+class Radio implements Device {
+    private boolean powerOn = false;
+    private int volume = 30;
+    private int channel = 1;
+
+    @Override
+    public boolean isEnabled() {
+        return powerOn;
+    }
+
+    @Override
+    public void enable() {
+        powerOn = true;
+        System.out.println("Radio is now ON");
+    }
+
+    @Override
+    public void disable() {
+        powerOn = false;
+        System.out.println("Radio is now OFF");
+    }
+
+    @Override
+    public int getVolume() {
+        return volume;
+    }
+
+    @Override
+    public void setVolume(int percent) {
+        volume = Math.max(0, Math.min(100, percent));
+        System.out.println("Radio volume set to " + volume);
+    }
+
+    @Override
+    public int getChannel() {
+        return channel;
+    }
+
+    @Override
+    public void setChannel(int channel) {
+        this.channel = channel;
+        System.out.println("Radio channel set to " + channel);
+    }
+}
+
+// ============================================================================
+// Step 3: Create the Remote Control Abstraction
+// ============================================================================
+// This class acts as a bridge between the device and the remote control controls
+class RemoteControl {
+    protected Device device;
+
+    public RemoteControl(Device device) {
+        this.device = device;
+    }
+
+    public void togglePower() {
+        if (device.isEnabled()) {
+            device.disable();
+        } else {
+            device.enable();
+        }
+    }
+
+    public void volumeDown() {
+        device.setVolume(device.getVolume() - 10);
+    }
+
+    public void volumeUp() {
+        device.setVolume(device.getVolume() + 10);
+    }
+
+    public void channelDown() {
+        device.setChannel(device.getChannel() - 10);
+    }
+
+    public void channelUp() {
+        device.setChannel(device.getChannel() + 10);
+    }
+}
+
+// ============================================================================
+// Step 4: Extend the Remote Control for Advanced Features
+// ============================================================================
+// This class adds extra functionality like muting.
+class AdvancedRemoteControl extends RemoteControl {
+    
+    public AdvancedRemoteControl(Device device) {
+        super(device);
+    }
+
+    public void mute() {
+        device.setVolume(0);
+        System.out.println("Device has been muted");
+    }
+}
+
+// ============================================================================
+// Step 5: Demonstration in main()
+// ============================================================================
+public class BridgePatternExample {
+    public static void main(String[] args) {
+        // Using a basic remote with TV
+        Device tv = new TV();
+        RemoteControl remote = new RemoteControl(tv);
+        
+        System.out.println("Using Remote Control with TV:");
+        remote.togglePower();
+        remote.volumeUp();
+        remote.channelUp();
+        remote.togglePower();
+        
+        System.out.println("\n---------------------------------------------\n");
+        
+        // Using an advanced remote with Radio
+        Device radio = new Radio();
+        AdvancedRemoteControl advancedRemote = new AdvancedRemoteControl(radio);
+        
+        System.out.println("Using Advanced Remote Control with Radio:");
+        advancedRemote.togglePower();
+        advancedRemote.volumeDown();
+        advancedRemote.mute();
+        advancedRemote.channelDown();
+    }
+}
+
+
+
+======================================
+
+
+
+
+
+
+
+
+
+
+
+Composite:Composite is a structural design pattern that lets you compose objects into tree 
+structures and then work with these structures as if they were individual objects. 
+
+code template:
+
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+// ============================================================================
+// Step 1: Component Interface
+// ============================================================================
+interface Item {
+    double getPrice();
+}
+
+// ============================================================================
+// Step 2: A single product (Leaf / Product)
+// ============================================================================
+class Product implements Item {
+    private final String name;
+    private final double price;
+
+    public Product(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public double getPrice() {
+        System.out.printf("📦 Item: %s, Price: $%.2f%n", name, price);
+        return price;
+    }
+}
+
+// ============================================================================
+// Step 3: A Box that contains multiple items (Composite / Box)
+// ============================================================================
+class Box implements Item {
+    private final String name;
+    private final List<Item> items = new ArrayList<>();
+
+    public Box(String name) {
+        this.name = name;
+    }
+
+    public void addItem(Item item) {
+        items.add(item);
+    }
+
+    @Override
+    public double getPrice() {
+        System.out.println("📥 Opening box: " + name);
+        double total = 0;
+        
+        for (Item item : items) {
+            total += item.getPrice();
+        }
+        
+        System.out.printf("📥 Total price of '%s': $%.2f%n", name, total);
+        return total;
+    }
+}
+
+// ============================================================================
+// Step 4: Putting everything together (Main method)
+// ============================================================================
+public class AmazonOrderDemo {
+    public static void main(String[] args) {
+        // Single products
+        Product phone = new Product("Phone", 500);
+        Product book = new Product("Book", 20);
+        Product pen = new Product("Pen", 2);
+        Product toy = new Product("Toy", 15);
+        Product ring = new Product("Ring", 200);
+
+        // Tiny box containing a ring
+        Box tinyBox = new Box("Tiny Box");
+        tinyBox.addItem(ring);
+
+        // Medium box containing a toy and tiny box
+        Box mediumBox = new Box("Medium Box");
+        mediumBox.addItem(toy);
+        mediumBox.addItem(tinyBox);
+
+        // Small box containing a book and pen
+        Box smallBox = new Box("Small Box");
+        smallBox.addItem(book);
+        smallBox.addItem(pen);
+
+        // Big box (main box) containing phone, small box, medium box
+        Box bigBox = new Box("Big Box");
+        bigBox.addItem(phone);
+        bigBox.addItem(smallBox);
+        bigBox.addItem(mediumBox);
+
+        // Now we simply ask the big box the total price
+        System.out.println("\n--- Finding total Amazon order price ---");
+        double totalOrderPrice = bigBox.getPrice();
+        
+        System.out.printf("%n💰 Your Total Order Price: $%.2f%n", totalOrderPrice);
+    }
+}
+
+
+
+
+
+===================================================================
+
+
+
+
+
+
+Decorator:Decorator is a design pattern that lets you add new features to an object without changing 
+its code — by wrapping it inside another object. 
+
+code template:
+
+
+
+// ============================================================================
+// Step 1: Create a Component interface
+// ============================================================================
+interface Notifier {
+    void send(String message);
+}
+
+// ============================================================================
+// Step 2: Create the base email notifier (Concrete Component)
+// ============================================================================
+class EmailNotifier implements Notifier {
+    @Override
+    public void send(String message) {
+        System.out.println("Sending EMAIL: " + message);
+    }
+}
+
+// ============================================================================
+// Step 3: Create decorator classes
+// ============================================================================
+class SMSDecorator implements Notifier {
+    private Notifier wrapped;
+
+    public SMSDecorator(Notifier notifier) {
+        this.wrapped = notifier;
+    }
+
+    @Override
+    public void send(String message) {
+        wrapped.send(message); // delegate to wrapped notifier
+        System.out.println("Sending SMS: " + message);
+    }
+}
+
+class SlackDecorator implements Notifier {
+    private Notifier wrapped;
+
+    public SlackDecorator(Notifier notifier) {
+        this.wrapped = notifier;
+    }
+
+    @Override
+    public void send(String message) {
+        wrapped.send(message); // delegate to wrapped notifier
+        System.out.println("Sending SLACK: " + message);
+    }
+}
+
+// Add decorator "you want to add facebook"
+class FacebookDecorator implements Notifier {
+    private Notifier wrapped;
+
+    public FacebookDecorator(Notifier notifier) {
+        this.wrapped = notifier;
+    }
+
+    @Override
+    public void send(String message) {
+        wrapped.send(message); // delegate to wrapped notifier
+        System.out.println("🟦 Sending FACEBOOK: " + message);
+    }
+}
+
+// ============================================================================
+// Client Scenario 1: Initial Client Code (Email + SMS + Slack)
+// ============================================================================
+class NotificationApp {
+    public static void main(String[] args) {
+        System.out.println("--- Running Client Scenario 1 ---");
+        
+        // Basic email notifier
+        Notifier notifier = new EmailNotifier();
+        
+        // Wrap it with SMS support
+        notifier = new SMSDecorator(notifier);
+        
+        // Then wrap with Slack support too
+        notifier = new SlackDecorator(notifier);
+        
+        // Send message via all channels!
+        notifier.send("⚠️ ALERT: Server down!");
+    }
+}
+
+// ============================================================================
+// Client Scenario 2: Client Code with Different Notifiers (Including Facebook)
+// ============================================================================
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("\n--- Running Client Scenario 2 (With Facebook) ---");
+        
+        // Step 1: Start with basic email notifier
+        Notifier notifier = new EmailNotifier();
+        Notifier notifier2 = new EmailNotifier();
+        
+        // Step 2: Wrap with SMS
+        notifier = new SMSDecorator(notifier);
+        notifier2 = new SMSDecorator(notifier2);
+        
+        // Step 3: Wrap with Slack
+        notifier = new SlackDecorator(notifier);
+        
+        // Step 4: Wrap with Facebook
+        notifier = new FacebookDecorator(notifier);
+        notifier2 = new FacebookDecorator(notifier2);
+        
+        // Final step: Send one message through all channels
+        System.out.println("[Notifier 1 Pipeline]:");
+        notifier.send("⚠️ ALERT: Server is down!");
+        
+        System.out.println("\n[Notifier 2 Pipeline (Skips Slack)]:");
+        notifier2.send("⚠️ ALERT: Server is down!");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+=============================================================
+
+Facade:To hide complexity behind a simple, easy-to-use interface. 
+Imagine a big, complicated machine with tons of buttons, wires, and levers. You don’t want 
+to deal with all that mess. You just want one big green button that says “Start”. 
+That’s what a Facade gives you. 
+
+code template:
+
+
+import java.io.File;
+
+// ============================================================================
+// Step 1: Subsystem Classes (Complex Video Processing Library)
+// ============================================================================
+class VideoFile {
+    private String filename;
+    public VideoFile(String filename) { this.filename = filename; }
+    public String getFilename() { return filename; }
+}
+
+interface Codec {}
+class OggCompressionCodec implements Codec {}
+class MPEG4CompressionCodec implements Codec {}
+
+class CodecFactory {
+    public Codec extract(VideoFile file) {
+        System.out.println("🎬 CodecFactory: Extracting source codec from file...");
+        return new OggCompressionCodec(); // Stub implementation
+    }
+}
+
+class Buffer {}
+
+class BitrateReader {
+    public static Buffer read(String filename, Codec sourceCodec) {
+        System.out.println("📖 BitrateReader: Reading file into buffer using source codec...");
+        return new Buffer();
+    }
+    
+    public static VideoFile convert(Buffer buffer, Codec destinationCodec) {
+        System.out.println("🔄 BitrateReader: Converting buffer to destination codec...");
+        return new VideoFile("converted_video.mp4");
+    }
+}
+
+class AudioMixer {
+    public VideoFile fix(VideoFile result) {
+        System.out.println("🔊 AudioMixer: Fixing audio tracks and mixing...");
+        return result;
+    }
+}
+
+// ============================================================================
+// Step 2: The Façade Class
+// ============================================================================
+class VideoConverter {
+    public File convert(String filename, String format) {
+        System.out.println("🚀 VideoConverter Facade: Starting conversion process...");
+        
+        VideoFile file = new VideoFile(filename);
+        Codec sourceCodec = new CodecFactory().extract(file);
+        Codec destinationCodec;
+        
+        if (format.equalsIgnoreCase("mp4")) {
+            destinationCodec = new MPEG4CompressionCodec();
+        } else {
+            destinationCodec = new OggCompressionCodec();
+        }
+        
+        Buffer buffer = BitrateReader.read(filename, sourceCodec);
+        VideoFile result = BitrateReader.convert(buffer, destinationCodec);
+        result = new AudioMixer().fix(result);
+        
+        System.out.println("✅ VideoConverter Facade: Conversion completed successfully!");
+        return new File(result.getFilename());
+    }
+}
+
+// ============================================================================
+// Step 3: Main Program (Client)
+// ============================================================================
+public class Application {
+    public static void main(String[] args) {
+        // The client interacts only with the clean simple interface of the Facade
+        VideoConverter converter = new VideoConverter();
+        File mp4 = converter.convert("funny-cats-video.ogg", "mp4");
+        
+        // Simulating the mp4.save() function call from the slide
+        System.out.println("💾 Saving file to: " + mp4.getName());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+==================================================
+
+
+
+Proxy:Proxy is a structural design pattern that lets you provide a substitute or placeholder for another 
+object. A proxy controls access to the original object, allowing you to perform something 
+either before or after the request gets through to the original object.
+
+code template:
+
+
+
+import java.util.*;
+
+// ============================================================================
+// 1. Interface (Target Interface)
+// ============================================================================
+interface ThirdPartyYouTubeLib {
+    List<String> listVideos();
+    String getVideoInfo(String id);
+    void downloadVideo(String id);
+}
+
+// ============================================================================
+// 2. Real Service (The Third-Party Library implementation)
+// ============================================================================
+class ThirdPartyYouTubeClass implements ThirdPartyYouTubeLib {
+    @Override
+    public List<String> listVideos() {
+        simulateNetworkDelay("Fetching video list");
+        return Arrays.asList("video1", "video2", "video3");
+    }
+
+    @Override
+    public String getVideoInfo(String id) {
+        simulateNetworkDelay("Getting info for " + id);
+        return "Info about " + id;
+    }
+
+    @Override
+    public void downloadVideo(String id) {
+        simulateNetworkDelay("Downloading " + id);
+        System.out.println("Downloaded video: " + id);
+    }
+
+    private void simulateNetworkDelay(String msg) {
+        System.out.println(msg + " ... (slow)");
+        try {
+            Thread.sleep(1000); // Simulate network latency delay
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+// ============================================================================
+// 3. Proxy Class (Handles Caching Layers)
+// ============================================================================
+class CachedYouTubeClass implements ThirdPartyYouTubeLib {
+    private ThirdPartyYouTubeLib realService;
+    private List<String> listCache;
+    private Map<String, String> videoInfoCache = new HashMap<>();
+    private Set<String> downloadedVideos = new HashSet<>();
+    private boolean needReset = false;
+
+    public CachedYouTubeClass(ThirdPartyYouTubeLib service) {
+        this.realService = service;
+    }
+
+    @Override
+    public List<String> listVideos() {
+        if (listCache == null || needReset) {
+            System.out.println("[Proxy] Caching video list...");
+            listCache = realService.listVideos();
+        } else {
+            System.out.println("[Proxy] Returning cached video list.");
+        }
+        return listCache;
+    }
+
+    @Override
+    public String getVideoInfo(String id) {
+        // If the video does not exist in cache or reset is forced
+        if (!videoInfoCache.containsKey(id) || needReset) {
+            System.out.println("[Proxy] Caching info for " + id);
+            String info = realService.getVideoInfo(id);
+            videoInfoCache.put(id, info);
+        } else {
+            // If it's cached before
+            System.out.println("[Proxy] Returning cached info for " + id);
+        }
+        return videoInfoCache.get(id);
+    }
+
+    @Override
+    public void downloadVideo(String id) {
+        // First time downloading a video
+        if (!downloadedVideos.contains(id) || needReset) {
+            System.out.println("[Proxy] Downloading (and caching) " + id);
+            realService.downloadVideo(id);
+            downloadedVideos.add(id);
+        } else {
+            // Video is downloaded before
+            System.out.println("[Proxy] Skipping download. Already downloaded: " + id);
+        }
+    }
+
+    public void resetCache() {
+        needReset = true;
+        listCache = null;
+        videoInfoCache.clear();
+        downloadedVideos.clear();
+        System.out.println("[Proxy] Cache has been reset.");
+        needReset = false;
+    }
+}
+
+// ============================================================================
+// 4. Client Class (Uses the service via its interface)
+// ============================================================================
+class YouTubeManager {
+    protected ThirdPartyYouTubeLib service;
+
+    public YouTubeManager(ThirdPartyYouTubeLib service) {
+        this.service = service;
+    }
+
+    public void renderVideoPage(String id) {
+        String info = service.getVideoInfo(id);
+        System.out.println("Rendering video page for: " + info);
+    }
+
+    public void renderListPanel() {
+        List<String> videos = service.listVideos();
+        System.out.println("Rendering video list: " + videos);
+    }
+
+    // Simulate User Action
+    public void reactOnUserInput() {
+        renderListPanel();
+        renderVideoPage("video1");
+        renderVideoPage("video1"); // Should use cache
+        service.downloadVideo("video1");
+        service.downloadVideo("video1"); // Should skip download
+    }
+}
+
+// ============================================================================
+// 5. Application (Configures and runs the system)
+// ============================================================================
+public class Application {
+    public static void main(String[] args) {
+        // Real service (3rd-party)
+        ThirdPartyYouTubeLib realService = new ThirdPartyYouTubeClass();
+        
+        // Proxy that adds caching
+        ThirdPartyYouTubeLib cachedService = new CachedYouTubeClass(realService);
+        
+        // Client uses the proxy instance instead of direct network class
+        YouTubeManager manager = new YouTubeManager(cachedService);
+        
+        // First pass: Values are fetched via network and then cached
+        manager.reactOnUserInput();
+        
+        System.out.println("\n--- Resetting Cache ---\n");
+        ((CachedYouTubeClass) cachedService).resetCache();
+        
+        // Test again after cache reset (will query network once more)
+        manager.reactOnUserInput();
+    }
+}
+
+=====================================================================================================
+behavioral Design Pattern:
+
+
+Chain of Responsibility lets you build a chain (or pipeline) of objects where each object (handler) can:
+• Handle a request
+• OR pass it along to the next handler in the chain
+You avoid tightly coupled code and instead create flexible, extensible pipelines.
+
+code templet :
+// Step 1: Define the Handler interface / abstract base handler
+abstract class ComplaintHandler {
+    protected ComplaintHandler next;
+    
+    public ComplaintHandler(ComplaintHandler next) {
+        this.next = next;
+    }
+    
+    public abstract void handleComplaint(String complaint);
+}
+
+// Step 2: Concrete handler: Cashier
+class Cashier extends ComplaintHandler {
+    public Cashier(ComplaintHandler next) { 
+        super(next); 
+    }
+    
+    @Override
+    public void handleComplaint(String complaint) {
+        if (complaint.equals("price issue")) {
+            System.out.println("Cashier: I can handle the price issue.");
+        } else if (next != null) {
+            System.out.println("Cashier: I can't handle this. Passing to Supervisor.");
+            next.handleComplaint(complaint);
+        } else {
+            System.out.println("Cashier: No one can handle this.");
+        }
+    }
+}
+
+// Concrete handler: Supervisor
+class Supervisor extends ComplaintHandler {
+    public Supervisor(ComplaintHandler next) {
+        super(next);
+    }
+    
+    @Override
+    public void handleComplaint(String complaint) {
+        if (complaint.equals("damaged product") || complaint.equals("refund request")) {
+            System.out.println("Supervisor: I can handle the " + complaint + ".");
+        } else if (next != null) {
+            System.out.println("Supervisor: I can't handle this. Passing to Manager.");
+            next.handleComplaint(complaint);
+        } else {
+            System.out.println("Supervisor: No one can handle this.");
+        }
+    }
+}
+
+// Concrete handler: Manager
+class Manager extends ComplaintHandler {
+    public Manager(ComplaintHandler next) {
+        super(next);
+    }
+    
+    @Override
+    public void handleComplaint(String complaint) {
+        if (complaint.equals("legal issue") || complaint.equals("major complaint")) {
+            System.out.println("Manager: I can handle the " + complaint + ".");
+        } else if (next != null) {
+            System.out.println("Manager: I can't handle this. Passing higher up.");
+            next.handleComplaint(complaint);
+        } else {
+            System.out.println("Manager: No one can handle this complaint.");
+        }
+    }
+}
+
+// Main Class - ComplaintSystem
+public class ComplaintSystem {
+    public static void main(String[] args) {
+        // Set up the chain: Manager (last) -> Supervisor -> Cashier (entry point)
+        ComplaintHandler manager = new Manager(null);
+        ComplaintHandler supervisor = new Supervisor(manager);
+        ComplaintHandler handlerChainCashier = new Cashier(supervisor);
+
+        // Test different complaints
+        System.out.println("Complaint: price issue");
+        handlerChainCashier.handleComplaint("price issue");
+        
+        System.out.println("\nComplaint: damaged product");
+        handlerChainCashier.handleComplaint("damaged product");
+        
+        System.out.println("\nComplaint: refund request");
+        handlerChainCashier.handleComplaint("refund request");
+        
+        System.out.println("\nComplaint: unknown issue");
+        handlerChainCashier.handleComplaint("unknown issue");
+    }
+}
+
+
+Observer Design Pattern
+The Observer Pattern is all about creating a smart notification system. It lets one object (the publisher)
+automatically alert many others (the subscribers) whenever something important happens — like an event
+or a change in state.
+
+code templet :
+import java.util.ArrayList;
+import java.util.List;
+
+// Step 1: Observer Interface
+interface NotificationListener {
+    void update(String productName);
+}
+
+// Step 2: Concrete Observers (Notification Methods)
+class EmailNotification implements NotificationListener {
+    private String email;
+    
+    public EmailNotification(String email) {
+        this.email = email;
+    }
+    
+    @Override
+    public void update(String productName) {
+        System.out.println("EMAIL to " + email + ": " + productName + " is now available!");
+    }
+}
+
+class SMSNotification implements NotificationListener {
+    private String phoneNumber;
+    
+    public SMSNotification(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    
+    @Override
+    public void update(String productName) {
+        System.out.println("SMS to " + phoneNumber + ": " + productName + " is now in stock!");
+    }
+}
+
+class AppPushNotification implements NotificationListener {
+    private String username;
+    
+    public AppPushNotification(String username) {
+        this.username = username;
+    }
+    
+    @Override
+    public void update(String productName) {
+        System.out.println("PUSH to " + username + ": " + productName + " is available to order!");
+    }
+}
+
+// Step 3: Subject (Observable)
+class Product {
+    private String name;
+    private List<NotificationListener> listeners = new ArrayList<>();
+    
+    public Product(String name) { 
+        this.name = name; 
+    }
+    
+    public void subscribe(NotificationListener listener) {
+        listeners.add(listener);
+        System.out.println(listener.getClass().getSimpleName() + " subscribed to " + name);
+    }
+    
+    public void unsubscribe(NotificationListener listener) {
+        listeners.remove(listener);
+        System.out.println(listener.getClass().getSimpleName() + " unsubscribed from " + name);
+    }
+    
+    public void restock() {
+        System.out.println("\n==> " + name + " is now in stock!");
+        for (NotificationListener listener : listeners) {
+            listener.update(name);
+        }
+    }
+}
+
+// Step 4: Client Code
+public class MobileShop {
+    public static void main(String[] args) {
+        // Products (Subjects)
+        Product iPhone15 = new Product("iPhone 15");
+        Product galaxyS24 = new Product("Samsung Galaxy S24");
+        
+        // Customers with different notification methods (Observers)
+        NotificationListener alice = new EmailNotification("alice@example.com");
+        NotificationListener bob = new SMSNotification("0123456789");
+        NotificationListener clara = new AppPushNotification("clara_user");
+        
+        // Subscriptions
+        System.out.println("=== Subscriptions ===");
+        iPhone15.subscribe(alice);
+        iPhone15.subscribe(bob);
+        galaxyS24.subscribe(bob);
+        galaxyS24.subscribe(clara);
+        
+        // Restock events - notify all subscribers
+        iPhone15.restock();    // Notifies Alice (Email) and Bob (SMS)
+        galaxyS24.restock();   // Notifies Bob (SMS) and Clara (Push)
+    }
+}
+
+
+
+
+
+
+===========================================================
+
+
+command: The Command Pattern is used to turn an action (like "copy", "paste", "save", etc.) into a separate object 
+that holds all the details about that action.
+
+code template:
+
+
+
+import java.util.Stack;
+
+// ============================================================================
+// Step 1: Command Base Class
+// ============================================================================
+// Command interface / abstract base
+abstract class Command {
+    protected Application app;
+    protected Editor editor;
+    protected String backup;
+
+    public Command(Application app, Editor editor) {
+        this.app = app;
+        this.editor = editor;
+    }
+
+    // Make a backup of the editor's state
+    public void saveBackup() {
+        backup = editor.getText();
+    }
+
+    // Restore the editor's state
+    public void undo() {
+        editor.setText(backup);
+    }
+
+    // Each command must implement execute() to carry out its operation
+    // Returns true if the command changes the editor state (needs history tracking)
+    public abstract boolean execute();
+}
+
+// ============================================================================
+// Step 2: Concrete Commands
+// ============================================================================
+class CopyCommand extends Command {
+    public CopyCommand(Application app, Editor editor) {
+        super(app, editor);
+    }
+
+    @Override
+    public boolean execute() {
+        app.setClipboard(editor.getSelection());
+        return false; // No state change to save for Copy command
+    }
+}
+
+// Concrete command for Cut operation
+class CutCommand extends Command {
+    public CutCommand(Application app, Editor editor) {
+        super(app, editor);
+    }
+
+    @Override
+    public boolean execute() {
+        saveBackup(); // Save the current state before cutting
+        app.setClipboard(editor.getSelection());
+        editor.deleteSelection();
+        return true; // State has changed
+    }
+}
+
+// Concrete command for Paste operation
+class PasteCommand extends Command {
+    public PasteCommand(Application app, Editor editor) {
+        super(app, editor);
+    }
+
+    @Override
+    public boolean execute() {
+        saveBackup(); // Save the current state before pasting
+        editor.replaceSelection(app.getClipboard());
+        return true; // State has changed
+    }
+}
+
+// Concrete command for Undo operation
+class UndoCommand extends Command {
+    public UndoCommand(Application app, Editor editor) {
+        super(app, editor);
+    }
+
+    @Override
+    public boolean execute() {
+        app.undo();
+        return false; // Undo doesn't change state directly, it reverts to previous state
+    }
+}
+
+// ============================================================================
+// Step 3: State Tracking & Receiver Classes
+// ============================================================================
+// CommandHistory class keeps track of the history of commands
+class CommandHistory {
+    private Stack<Command> history = new Stack<>();
+
+    // Push a command onto the history stack
+    public void push(Command command) {
+        history.push(command);
+    }
+
+    // Pop the most recent command from the stack
+    public Command pop() {
+        if (!history.isEmpty()) {
+            return history.pop();
+        }
+        return null;
+    }
+}
+
+// Editor class simulates the text editor that changes text (Receiver)
+class Editor {
+    private String text;
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    // Simulating selected text (simulated here as grabbing full text for simplicity)
+    public String getSelection() {
+        return text;
+    }
+
+    // Simulate deleting selected text
+    public void deleteSelection() {
+        text = "";
+    }
+
+    // Simulate replacing selected text with clipboard content
+    public void replaceSelection(String clipboard) {
+        this.text = clipboard;
+    }
+}
+
+// ============================================================================
+// Step 4: The Invoker Class
+// ============================================================================
+// Application class sets up the relationship between the commands and their invocations
+class Application {
+    private String clipboard;
+    private Editor activeEditor;
+    private CommandHistory history;
+
+    public Application() {
+        history = new CommandHistory();
+    }
+
+    // Set up the clipboard
+    public void setClipboard(String clipboard) {
+        this.clipboard = clipboard;
+    }
+
+    public String getClipboard() {
+        return clipboard;
+    }
+
+    public void setActiveEditor(Editor editor) {
+        this.activeEditor = editor;
+    }
+
+    // Execute a command and possibly add it to history
+    public void executeCommand(Command command) {
+        if (command.execute()) {
+            history.push(command);
+        }
+    }
+
+    // Perform an undo operation by popping the last command and executing its undo
+    public void undo() {
+        Command command = history.pop();
+        if (command != null) {
+            command.undo();
+        }
+    }
+}
+
+// ============================================================================
+// Step 5: Demo / Main Program
+// ============================================================================
+// Main class to demonstrate the Command Pattern in action
+public class CommandPatternDemo {
+    public static void main(String[] args) {
+        // Create the editor and set initial text
+        Editor editor = new Editor();
+        editor.setText("Hello, world!");
+
+        // Create the application and set the active editor
+        Application app = new Application();
+        app.setActiveEditor(editor);
+
+        // Show the initial state of the editor
+        System.out.println("Initial text: " + editor.getText());
+
+        // Simulate some operations: Copy, Cut, Paste, Undo
+        
+        // Copy operation (no change in text)
+        app.executeCommand(new CopyCommand(app, editor));
+        System.out.println("After Copy: " + editor.getText());
+
+        // Cut operation (removes the selection from the text)
+        app.executeCommand(new CutCommand(app, editor));
+        System.out.println("After Cut: " + editor.getText());
+
+        // Paste operation (replaces selection with clipboard content)
+        app.executeCommand(new PasteCommand(app, editor));
+        System.out.println("After Paste: " + editor.getText());
+
+        // Undo operation (restores the text to the previous state)
+        app.undo();
+        System.out.println("After Undo: " + editor.getText());
+
+        // Another operation to demonstrate Undo after multiple actions
+        // Paste operation again (replaces selection again)
+        app.executeCommand(new PasteCommand(app, editor));
+        System.out.println("After second Paste: " + editor.getText());
+
+        // Undo operation (restores the text to the previous state)
+        app.undo();
+        System.out.println("After second Undo: " + editor.getText());
+    }
+}
+
+
+
+
+
+
+
+
+==============================================
+Observer: The Observer Pattern is all about creating a smart notification system. It lets one object (the publisher) 
+automatically alert many others (the subscribers) whenever something important happens — like an event 
+or a change in state.
+
+
+code template:
+
+import java.util.ArrayList;
+import java.util.List;
+
+// ============================================================================
+// 1. The Observer Interface
+// ============================================================================
+interface NotificationListener {
+    void update(String productName);
+}
+
+// ============================================================================
+// 2. Concrete Observers (Notification Methods)
+// ============================================================================
+class EmailNotification implements NotificationListener {
+    private String email;
+
+    public EmailNotification(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public void update(String productName) {
+        System.out.println("EMAIL to " + email + ": " + productName + " is now available!");
+    }
+}
+
+class SMSNotification implements NotificationListener {
+    private String phoneNumber;
+
+    public SMSNotification(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    @Override
+    public void update(String productName) {
+        System.out.println("SMS to " + phoneNumber + ": " + productName + " is now in stock!");
+    }
+}
+
+class AppPushNotification implements NotificationListener {
+    private String username;
+
+    public AppPushNotification(String username) {
+        this.username = username;
+    }
+
+    @Override
+    public void update(String productName) {
+        System.out.println("PUSH to " + username + ": " + productName + " is available to order!");
+    }
+}
+
+// ============================================================================
+// 3. Publisher: Product in Mobile Shop
+// ============================================================================
+class Product {
+    private String name;
+    private List<NotificationListener> listeners = new ArrayList<>();
+
+    public Product(String name) {
+        this.name = name;
+    }
+
+    public void subscribe(NotificationListener listener) {
+        listeners.add(listener);
+    }
+
+    public void unsubscribe(NotificationListener listener) {
+        listeners.remove(listener);
+    }
+
+    public void restock() {
+        System.out.println("==> " + name + " is now in stock!");
+        for (NotificationListener listener : listeners) {
+            listener.update(name);
+        }
+    }
+}
+
+// ============================================================================
+// 4. Main Program
+// ============================================================================
+public class MobileShop {
+    public static void main(String[] args) {
+        // Products
+        Product iPhone15 = new Product("iPhone 15");
+        Product galaxyS24 = new Product("Samsung Galaxy S24");
+
+        // Customers with different notification methods
+        NotificationListener alice = new EmailNotification("alice@example.com");
+        NotificationListener bob = new SMSNotification("0123456789");
+        NotificationListener clara = new AppPushNotification("clara_user");
+
+        // Subscriptions
+        iPhone15.subscribe(alice);
+        iPhone15.subscribe(bob);
+
+        galaxyS24.subscribe(bob);
+        galaxyS24.subscribe(clara);
+
+        // Restock events
+        iPhone15.restock();   // Notify Alice and Bob
+        System.out.println();
+        galaxyS24.restock();  // Notify Bob and Clara
+    }
+}
+
+
+
+
+
+
+========================================
+Strategy:The Strategy Pattern is a behavioral design pattern that lets you define a group of related algorithms, put 
+each one in its own class, and make them easily switchable and reusable at runtime.
+
+code template:
+
+
+
+
+import java.util.Scanner;
+
+// ============================================================================
+// 1- Strategy Interface – The common behavior
+// ============================================================================
+interface PaymentStrategy { 
+    void pay(double amount); 
+}
+
+// ============================================================================
+// 2- Concrete Strategies – Implement how each method works
+// ============================================================================
+class CreditCardPayment implements PaymentStrategy {
+    private String cardNumber;
+    private String cvv;
+    private String expiry;
+
+    public CreditCardPayment(String cardNumber, String cvv, String expiry) {
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
+        this.expiry = expiry;
+    }
+
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid $" + amount + " using Credit Card.");
+    }
+}
+
+class PayPalPayment implements PaymentStrategy {
+    private String email;
+    private String password;
+
+    public PayPalPayment(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid $" + amount + " using PayPal.");
+    }
+}
+
+class CryptoPayment implements PaymentStrategy {
+    private String walletAddress;
+
+    public CryptoPayment(String walletAddress) {
+        this.walletAddress = walletAddress;
+    }
+
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid $" + amount + " using Cryptocurrency.");
+    }
+}
+
+// ============================================================================
+// 3- Context – The checkout system uses any payment method
+// ============================================================================
+class Checkout {
+    private PaymentStrategy paymentStrategy;
+
+    public void setPaymentStrategy(PaymentStrategy strategy) {
+        this.paymentStrategy = strategy;
+    }
+
+    public void processOrder(double amount) {
+        if (paymentStrategy == null) {
+            throw new IllegalStateException("No payment strategy selected.");
+        }
+        paymentStrategy.pay(amount);
+    }
+}
+
+// ============================================================================
+// 4- Client Code – User selects how to pay at runtime
+// ============================================================================
+public class ECommerceApp {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Checkout checkout = new Checkout();
+
+        System.out.print("Enter order amount: ");
+        double amount = scanner.nextDouble();
+
+        System.out.print("Choose payment method (card, paypal, crypto): ");
+        String method = scanner.next();
+
+        switch (method.toLowerCase()) {
+            case "card":
+                checkout.setPaymentStrategy(new CreditCardPayment("1234-5678", "123", "12/25"));
+                break;
+            case "paypal":
+                checkout.setPaymentStrategy(new PayPalPayment("user@example.com", "password123"));
+                break;
+            case "crypto":
+                checkout.setPaymentStrategy(new CryptoPayment("0xABC123XYZ"));
+                break;
+            default:
+                System.out.println("Invalid payment method.");
+                return;
+        }
+
+        checkout.processOrder(amount);
+        scanner.close();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+===============================================
+
+
+
+Template:Template Method is a behavioral design pattern that lays out the blueprint of an algorithm in a base class — 
+defining its structure step-by-step — while allowing subclasses to customize individual steps without 
+touching the overall process.
+
+cdoe template:
+
+
+
+
+
+
+package application;
+
+// ============================================================================
+// 1- Abstract Class: Defines the algorithm template
+// ============================================================================
+abstract class Beverage {
+    
+    // Template Method (final so subclasses cannot change the order of execution)
+    public final void prepareRecipe() {
+        boilWater();
+        brew();           // abstract step
+        pourInCup();
+        addCondiments();  // abstract step
+    }
+
+    // Common steps (same implementation for all beverages)
+    private void boilWater() {
+        System.out.println("Boiling water...");
+    }
+
+    private void pourInCup() {
+        System.out.println("Pouring into cup...");
+    }
+
+    // Steps that subclasses MUST implement individually
+    protected abstract void brew();
+    protected abstract void addCondiments();
+}
+
+// ============================================================================
+// 2- Concrete Classes: Implement specific steps of the template
+// ============================================================================
+// Concrete class for Coffee
+class Coffee extends Beverage {
+    @Override
+    protected void brew() {
+        System.out.println("Brewing coffee with filter...");
+    }
+
+    @Override
+    protected void addCondiments() {
+        System.out.println("Adding sugar and milk...");
+    }
+}
+
+// Concrete class for Tea
+class Tea extends Beverage {
+    @Override
+    protected void brew() {
+        System.out.println("Steeping tea leaves...");
+    }
+
+    @Override
+    protected void addCondiments() {
+        System.out.println("Adding lemon...");
+    }
+}
+
+// ============================================================================
+// 3- Client Code: Executes the template method
+// ============================================================================
+public class TemplateMethodDemo {
+    public static void main(String[] args) {
+        
+        System.out.println("Making Coffee:");
+        Beverage coffee = new Coffee();
+        coffee.prepareRecipe();
+        
+        System.out.println("\n-----------------------------\n");
+        
+        System.out.println("Making Tea:");
+        Beverage tea = new Tea();
+        tea.prepareRecipe();
+    }
+}
