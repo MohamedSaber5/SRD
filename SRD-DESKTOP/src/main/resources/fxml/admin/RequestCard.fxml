@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="16" styleClass="request-card"
+      nodeOrientation="RIGHT_TO_LEFT"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.aast.booking.admin.RequestCardController">
+
+    <padding><Insets bottom="20" left="24" right="24" top="20" /></padding>
+
+    <!-- Top Row: Title, Badges, Date -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label fx:id="lblTitle" styleClass="request-title" text="قاعة متعددة الأغراض" />
+        <Label fx:id="lblTypeBadge" styleClass="badge-blue-light" text="طلب جديد" />
+        <Label fx:id="lblRoomTypeBadge" styleClass="badge-blue-light" text="محاضرات" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="lblCreatedAt" styleClass="request-date-light" text="2026/05/15" />
+    </HBox>
+
+    <!-- Middle Row: 3 Boxes (Time, Responsible, Capacity) -->
+    <HBox spacing="16">
+        <!-- Date and Time Box -->
+        <VBox spacing="6" styleClass="info-box-blue" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label styleClass="icon-small" text="📅" />
+                <Label styleClass="info-box-title" text="التاريخ والوقت" />
+            </HBox>
+            <Label fx:id="lblDate" styleClass="info-box-value-dark" text="2026-05-16" />
+            <Label fx:id="lblTimeRange" styleClass="info-box-value-blue" text="1:00 PM - 3:00 PM" />
+        </VBox>
+
+        <!-- Responsible Box -->
+        <VBox spacing="6" styleClass="info-box-gray" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label styleClass="icon-small" text="👤" />
+                <Label styleClass="info-box-title" text="المسؤول عن الحدث" />
+            </HBox>
+            <Label fx:id="lblResponsibleJob" styleClass="info-box-subtitle" text="لا توجد صفة" />
+            <Label fx:id="lblResponsibleName" styleClass="info-box-value-dark" text="-" />
+        </VBox>
+
+        <!-- Capacity Box -->
+        <VBox spacing="6" styleClass="info-box-orange" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label styleClass="icon-small" text="👥" />
+                <Label styleClass="info-box-title-orange" text="السعة والنوع" />
+            </HBox>
+            <Label fx:id="lblCapacity" styleClass="info-box-value-dark" text="لم تحدد السعة" />
+            <Label fx:id="lblRoomTypeDesc" styleClass="info-box-subtitle-orange" text="قاعة محاضرات" />
+        </VBox>
+    </HBox>
+
+    <!-- Lower Middle Row: Purpose and Requester -->
+    <HBox spacing="16">
+        <VBox spacing="6" styleClass="info-box-gray" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label styleClass="icon-small" text="📝" />
+                <Label styleClass="info-box-title" text="الغرض من الاستخدام" />
+            </HBox>
+            <Label fx:id="lblPurpose" styleClass="info-box-value-italic" text="-" />
+        </VBox>
+
+        <VBox spacing="6" styleClass="info-box-gray" prefWidth="250">
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label styleClass="icon-small" text="💼" />
+                <Label styleClass="info-box-title" text="مقدم الطلب" />
+            </HBox>
+            <Label fx:id="lblRequester" styleClass="info-box-value-dark" text="-" />
+        </VBox>
+    </HBox>
+
+    <!-- Additional Requirements -->
+    <HBox alignment="CENTER_LEFT">
+        <Label styleClass="info-box-subtitle" text="لا توجد متطلبات إضافية" />
+    </HBox>
+
+    <Region prefHeight="8" />
+
+    <!-- Actions -->
+    <HBox spacing="16">
+        <Button fx:id="btnApprove" onAction="#handleApprove" onMouseClicked="#consumeClick" styleClass="btn-approve-card" text="✔  اعتماد وتخصيص قاعة" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        <Button fx:id="btnReject" onAction="#handleReject" onMouseClicked="#consumeClick" styleClass="btn-reject-card" text="⊗  رفض الطلب" prefWidth="200" />
+    </HBox>
+
+</VBox>

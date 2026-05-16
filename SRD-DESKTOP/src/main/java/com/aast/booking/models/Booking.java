@@ -129,8 +129,15 @@ public class Booking implements Cloneable {
         b.suggestedDate = doc.getString("suggestedDate");
         b.suggestedTimeFrom = doc.getString("suggestedTimeFrom");
         b.suggestedTimeTo = doc.getString("suggestedTimeTo");
-        if (doc.getTimestamp("createdAt") != null) {
-            b.createdAt = doc.getTimestamp("createdAt").toDate();
+        Object createdAtObj = doc.get("createdAt");
+        if (createdAtObj instanceof com.google.cloud.Timestamp) {
+            b.createdAt = ((com.google.cloud.Timestamp) createdAtObj).toDate();
+        } else if (createdAtObj instanceof String) {
+            try {
+                b.createdAt = Date.from(java.time.Instant.parse((String) createdAtObj));
+            } catch (Exception e) {
+                b.createdAt = new Date(); // Fallback if unparseable
+            }
         }
         return b;
     }

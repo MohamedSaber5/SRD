@@ -4,6 +4,9 @@ import com.aast.booking.auth.AuthService;
 import com.aast.booking.core.SessionManager;
 import com.aast.booking.models.Booking;
 import com.aast.booking.services.BranchManagerService;
+import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.ParallelTransition;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -15,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import com.google.cloud.firestore.*;
 import com.google.api.core.ApiFuture;
@@ -66,11 +70,43 @@ public class AdminDashboardController implements Initializable {
     @FXML private TableView<Booking> todayEventsTable;
     @FXML private TableColumn<Booking, String> evColRoom, evColType, evColUser, evColTime, evColPurpose;
 
+    // Pending Requests
+    @FXML private Label lblPendingCount;
+    @FXML private FlowPane requestsContainer;
+    
+    // Modals
+    @FXML private StackPane approveModalOverlay;
+    @FXML private Label lblApproveDetails;
+    @FXML private VBox vboxAvailableRooms;
+    @FXML private ComboBox<String> cmbAvailableRooms;
+    @FXML private CheckBox chkUrgent;
+    
+    @FXML private StackPane rejectModalOverlay;
+    @FXML private TextArea txtRejectReason;
+    @FXML private ComboBox<String> cmbSuggestedRoom;
+    @FXML private DatePicker dpSuggestedDate;
+    @FXML private ComboBox<String> cmbSuggestedSlot;
+
+    // Detail Overlay
+    @FXML private StackPane detailOverlay;
+    @FXML private VBox detailCard;
+    @FXML private Label detailTitle, detailStatusBadge, detailDate, detailTime;
+    @FXML private Label detailRequester, detailResponsible, detailCapacity, detailRoomType;
+    @FXML private Label detailPurpose, detailRequirements;
+    @FXML private VBox detailRequirementsBox;
+
     private boolean isRamadanMode = false;
     private final ObservableList<Booking> todayEvents = FXCollections.observableArrayList();
     private List<Booking> allBookings = new ArrayList<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final String todayStr = LocalDate.now().toString();
+
+    // Facade
+    private final com.aast.booking.admin.facade.AdminBookingFacade adminFacade = new com.aast.booking.admin.facade.AdminBookingFacade();
+    private Booking selectedRequest;
+    // Maps display label -> real Firestore docId for room selection
+    private final Map<String, String> approveRoomDocIdMap = new HashMap<>();
+    private final Map<String, String> rejectRoomDocIdMap  = new HashMap<>();
 
     // All views for navigation
     private VBox[] allViews;
@@ -93,6 +129,7 @@ public class AdminDashboardController implements Initializable {
         setupTodayEventsTable();
         fetchAllData();
         fetchRamadanMode();
+        startListeningToRequests();
         showDashboard();
     }
 
@@ -108,6 +145,7 @@ public class AdminDashboardController implements Initializable {
         switchView(1);
         pageTitle.setText("الطلبات المعلقة");
         pageSubtitle.setText("مراجعة وإدارة طلبات الحجز المعلقة");
+        startListeningToRequests(); // Refresh the data when view is opened
     }
 
     @FXML private void showNewBooking() {
@@ -169,10 +207,10 @@ public class AdminDashboardController implements Initializable {
         CompletableFuture.supplyAsync(() -> {
             try {
                 Firestore db = com.aast.booking.core.FirebaseService.getInstance().getFirestore();
-                if (db == null) return new Object[]{new ArrayList<>(), 0};
 
                 // Fetch all bookings
-                ApiFuture<QuerySnapshot> bookingsFuture = db.collection("bookings").get();
+                ApiFuture<QuerySnapshot> bookingsFuture = db.collection("bookings")
+                        .orderBy("createdAt", Query.Direction.DESCENDING).get();
 
                 // Fetch all rooms
                 ApiFuture<QuerySnapshot> roomsFuture = db.collection("rooms").get();
@@ -271,6 +309,230 @@ public class AdminDashboardController implements Initializable {
                 d.getValue().getPurpose() != null ? d.getValue().getPurpose() : "-"));
 
         todayEventsTable.setItems(todayEvents);
+    }
+
+    // ─── Pending Requests Logic ──────────────────────────────────────────
+
+    private void startListeningToRequests() {
+        adminFacade.listenToPendingRequests(bookings -> {
+            lblPendingCount.setText(String.valueOf(bookings.size()));
+            renderPendingRequests(bookings);
+        }, e -> {
+            System.err.println("Error listening to requests: " + e.getMessage());
+            Platform.runLater(() -> {
+                requestsContainer.getChildren().clear();
+                Label errorLabel = new Label("حدث خطأ في تحميل الطلبات:\n" + e.getMessage());
+                errorLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 14px;");
+                requestsContainer.getChildren().add(errorLabel);
+            });
+        });
+    }
+
+    private void renderPendingRequests(List<Booking> bookings) {
+        requestsContainer.getChildren().clear();
+        if (bookings.isEmpty()) {
+            Label empty = new Label("لا توجد طلبات معلقة حالياً.");
+            empty.getStyleClass().add("admin-empty-label");
+            empty.setStyle("-fx-font-size: 16px; -fx-text-fill: #555555; -fx-padding: 20px;");
+            requestsContainer.getChildren().add(empty);
+            return;
+        }
+
+        for (Booking b : bookings) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin/RequestCard.fxml"));
+                VBox card = loader.load();
+                RequestCardController controller = loader.getController();
+                controller.setBooking(b, this::handleApproveClick, this::handleRejectClick);
+                
+                // Fixed width like branch manager (420px) — FlowPane will auto-wrap them
+                card.setPrefWidth(420);
+                // Click anywhere on the card to open detail popup
+                card.setOnMouseClicked(evt -> showDetailOverlay(b));
+                card.setStyle(card.getStyle() + " -fx-cursor: hand;");
+                
+                requestsContainer.getChildren().add(card);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void handleApproveClick(Booking req) {
+        this.selectedRequest = req;
+        boolean isMulti = "multi".equals(req.getRoomType());
+        chkUrgent.setVisible(isMulti);
+
+        lblApproveDetails.setText("جاري البحث عن القاعات المتاحة لتاريخ " + req.getDate() + "...");
+        cmbAvailableRooms.getItems().clear();
+        approveRoomDocIdMap.clear();
+        vboxAvailableRooms.setVisible(false);
+        approveModalOverlay.setVisible(true);
+
+        adminFacade.getAvailableRooms(req.getDate(), req.getTimeFrom(), req.getTimeTo(),
+            req.getRoomType(), req.getRequiredCapacity(),
+            roomMap -> {
+                if (roomMap.isEmpty()) {
+                    lblApproveDetails.setText("لا توجد قاعات متاحة بهذا التوقيت وهذه السعة.");
+                } else {
+                    lblApproveDetails.setText("تم العثور على قاعات متاحة، يرجى الاختيار:");
+                    approveRoomDocIdMap.putAll(roomMap);  // display -> docId
+                    cmbAvailableRooms.getItems().addAll(roomMap.keySet());
+                    cmbAvailableRooms.getSelectionModel().selectFirst();
+                    vboxAvailableRooms.setVisible(true);
+                }
+            },
+            e -> lblApproveDetails.setText("حدث خطأ أثناء البحث عن القاعات.")
+        );
+    }
+
+    private void handleRejectClick(Booking req) {
+        this.selectedRequest = req;
+        txtRejectReason.clear();
+        cmbSuggestedRoom.getItems().clear();
+        rejectRoomDocIdMap.clear();
+        cmbSuggestedRoom.getSelectionModel().clearSelection();
+        dpSuggestedDate.setValue(null);
+
+        // Build 12-hour time slots
+        List<String> slots12h = new ArrayList<>();
+        String[] hours = {"08:00 ص","09:00 ص","10:00 ص","11:00 ص","12:00 م",
+                          "01:00 م","02:00 م","03:00 م","04:00 م","05:00 م","06:00 م"};
+        slots12h.addAll(Arrays.asList(hours));
+        cmbSuggestedSlot.getItems().setAll(slots12h);
+        cmbSuggestedSlot.getSelectionModel().clearSelection();
+
+        // Load available rooms (any type — show all available alternatives)
+        adminFacade.getAvailableRooms(
+            req.getDate(), req.getTimeFrom(), req.getTimeTo(), req.getRoomType(), 0,
+            roomMap -> {
+                rejectRoomDocIdMap.putAll(roomMap);  // display -> docId
+                cmbSuggestedRoom.getItems().setAll(roomMap.keySet());
+                if (!roomMap.isEmpty()) cmbSuggestedRoom.getSelectionModel().selectFirst();
+            },
+            e -> System.err.println("[Reject] getAvailableRooms error: " + e.getMessage())
+        );
+
+        rejectModalOverlay.setVisible(true);
+    }
+
+    @FXML private void confirmApprove() {
+        if (selectedRequest == null) return;
+        String displayName = cmbAvailableRooms.getValue();
+        if (displayName == null || displayName.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "تنبيه", "يرجى اختيار قاعة أولاً.");
+            return;
+        }
+        // Resolve display label to real Firestore document ID
+        String roomDocId = approveRoomDocIdMap.getOrDefault(displayName, displayName);
+        boolean isUrgent = chkUrgent.isSelected();
+        adminFacade.approveRequest(selectedRequest, roomDocId, isUrgent,
+            () -> {
+                showAlert(Alert.AlertType.INFORMATION, "نجاح", "تم التعامل مع الطلب بنجاح.");
+                closeModals();
+                startListeningToRequests();
+            },
+            e -> showAlert(Alert.AlertType.ERROR, "خطأ", "حدث خطأ أثناء حفظ التعديلات.")
+        );
+    }
+
+    @FXML private void confirmReject() {
+        if (selectedRequest == null) return;
+        String reason = txtRejectReason.getText();
+        if (reason == null || reason.trim().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "تنبيه", "يرجى إدخال سبب الرفض.");
+            return;
+        }
+        String room = cmbSuggestedRoom.getValue();
+        String date = dpSuggestedDate.getValue() != null ? dpSuggestedDate.getValue().toString() : null;
+        // Time slot is already in 12h display — store as-is or convert back
+        String slot = cmbSuggestedSlot.getValue();
+        // Map 12h display back to 24h for storage
+        String[] display12h = {"08:00 ص","09:00 ص","10:00 ص","11:00 ص","12:00 م",
+                               "01:00 م","02:00 م","03:00 م","04:00 م","05:00 م","06:00 م"};
+        String[] raw24h   = {"08:00","09:00","10:00","11:00","12:00",
+                             "13:00","14:00","15:00","16:00","17:00","18:00"};
+        String timeFrom = null, timeTo = null;
+        if (slot != null) {
+            for (int i = 0; i < display12h.length; i++) {
+                if (display12h[i].equals(slot)) { timeFrom = raw24h[i]; break; }
+            }
+            // Set timeTo to one hour later
+            if (timeFrom != null) {
+                for (int i = 0; i < raw24h.length - 1; i++) {
+                    if (raw24h[i].equals(timeFrom)) { timeTo = raw24h[i + 1]; break; }
+                }
+            }
+        }
+
+        adminFacade.rejectRequest(selectedRequest, reason, room, date, timeFrom, timeTo,
+            () -> {
+                showAlert(Alert.AlertType.INFORMATION, "نجاح", "تم رفض الطلب وإشعار الموظف بنجاح.");
+                closeModals();
+            },
+            e -> showAlert(Alert.AlertType.ERROR, "خطأ", "حدث خطأ أثناء الرفض.")
+        );
+    }
+
+    @FXML private void closeModals() {
+        approveModalOverlay.setVisible(false);
+        rejectModalOverlay.setVisible(false);
+        selectedRequest = null;
+    }
+
+    // ─── Detail Overlay ──────────────────────────────────────────────────
+
+    private void showDetailOverlay(Booking b) {
+        boolean isMulti = "multi".equals(b.getRoomType());
+        detailTitle.setText(isMulti ? "قاعة متعددة الأغراض" : "طلب قاعة استثنائية");
+        detailStatusBadge.setText("awaiting_manager_final".equals(b.getStatus()) ? "بانتظار المدير" : "بانتظار الاعتماد");
+        detailDate.setText(b.getDate() != null ? b.getDate() : "-");
+        detailTime.setText((b.getTimeFrom() != null ? b.getTimeFrom() : "-") + "  ←  " + (b.getTimeTo() != null ? b.getTimeTo() : "-"));
+        detailRequester.setText(b.getUserName() != null ? b.getUserName() : "-");
+        detailResponsible.setText(b.getResponsibleName() != null && !b.getResponsibleName().isEmpty() ?
+            b.getResponsibleJob() + " / " + b.getResponsibleName() : "لم يُحدد");
+        detailCapacity.setText(b.getRequiredCapacity() > 0 ? b.getRequiredCapacity() + " شخص" : "لم تحدد");
+        detailRoomType.setText(isMulti ? "قاعة متعددة الأغراض" : "قاعة محاضرات");
+        detailPurpose.setText(b.getPurpose() != null ? b.getPurpose() : "-");
+
+        // Requirements
+        List<String> reqs = new ArrayList<>();
+        if (b.isReqMic()) reqs.add("🎤 مايك × " + b.getReqMicQty());
+        if (b.isReqLaptop()) reqs.add("💻 لاب توب");
+        if (b.isReqVideoConf()) reqs.add("📹 فيديو كونفرنس");
+        if (b.isReqOther() && b.getReqOtherDetails() != null) reqs.add("🔧 " + b.getReqOtherDetails());
+        detailRequirements.setText(reqs.isEmpty() ? "لا توجد متطلبات إضافية" : String.join("  |  ", reqs));
+
+        // Animate in
+        detailOverlay.setVisible(true);
+        detailCard.setScaleX(0.85); detailCard.setScaleY(0.85);
+        detailCard.setOpacity(0);
+
+        FadeTransition fade = new FadeTransition(Duration.millis(250), detailCard);
+        fade.setFromValue(0); fade.setToValue(1);
+        ScaleTransition scale = new ScaleTransition(Duration.millis(250), detailCard);
+        scale.setFromX(0.85); scale.setToX(1.0);
+        scale.setFromY(0.85); scale.setToY(1.0);
+        new ParallelTransition(fade, scale).play();
+    }
+
+    @FXML private void closeDetailOverlay() {
+        FadeTransition fade = new FadeTransition(Duration.millis(180), detailCard);
+        fade.setFromValue(1); fade.setToValue(0);
+        ScaleTransition scale = new ScaleTransition(Duration.millis(180), detailCard);
+        scale.setFromX(1.0); scale.setToX(0.85);
+        scale.setFromY(1.0); scale.setToY(0.85);
+        ParallelTransition pt = new ParallelTransition(fade, scale);
+        pt.setOnFinished(e -> detailOverlay.setVisible(false));
+        pt.play();
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     // ─── Ramadan Mode ────────────────────────────────────────────────────
