@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    Advanced Room Search FXML
+    Controller: AdvancedSearchController
+    Mirrors: AdvancedRoomSearch.jsx
+
+    Layout:
+    ┌──────────────────────────────────────────────────────┐
+    │  Page Header (Title + Ramadan Banner)                │
+    ├──────────────────────────────────────────────────────┤
+    │  Search Card (white rounded)                         │
+    │   ┌──────────────┬──────────────┬──────────────┐    │
+    │   │  نوع القاعة  │ تاريخ البحث  │ السعة (اختياري)│  │
+    │   └──────────────┴──────────────┴──────────────┘    │
+    │   [Multi panel] OR [Fixed slot panel]               │
+    │   ─────────────────────────────────────────────     │
+    │   [ 🔍  بحث عن القاعات المتاحة         ]           │
+    ├──────────────────────────────────────────────────────┤
+    │  Results Section (hidden until search)              │
+    │   N قاعة متاحة                                      │
+    │   ┌──────┐ ┌──────┐ ┌──────┐ ...                   │
+    │   │ card │ │ card │ │ card │                        │
+    └──────────────────────────────────────────────────────┘
+-->
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+            style="-fx-background-color: #f2f4f6; -fx-background: #f2f4f6; -fx-border-color: transparent;"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.aast.booking.admin.search.AdvancedSearchController">
+
+    <VBox spacing="24" nodeOrientation="RIGHT_TO_LEFT"
+          style="-fx-background-color: #f2f4f6;">
+        <padding><Insets bottom="40" left="32" right="32" top="32" /></padding>
+
+        <!-- ═══ PAGE HEADER ═══════════════════════════════════════════════ -->
+        <VBox spacing="8">
+            <!-- Title row: heading + optional Ramadan badge -->
+            <HBox alignment="CENTER_RIGHT" spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="البحث المتقدم للقاعات"
+                           style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #001e40;" />
+                    <Label text="أداة متقدمة للاستعلام الدقيق عن شغور القاعات بناءً على نوعها وسعتها والفترات الزمنية."
+                           style="-fx-font-size: 13px; -fx-text-fill: #5a7698;" wrapText="true"/>
+                </VBox>
+
+                <!-- Ramadan Mode Badge (read-only, visible only when Ramadan mode ON) -->
+                <HBox fx:id="ramadanBanner" alignment="CENTER" spacing="8"
+                      visible="false" managed="false"
+                      style="-fx-background-color: #fff7ed; -fx-border-color: #fed7aa;
+                             -fx-border-radius: 12px; -fx-background-radius: 12px;
+                             -fx-padding: 8 16;">
+                    <Label text="🌙" style="-fx-font-size: 16px;" />
+                    <Label text="وضع رمضان مفعّل — مواعيد المحاضرات مُحدَّثة"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #c2410c;" />
+                </HBox>
+            </HBox>
+        </VBox>
+
+        <!-- ═══ SEARCH CARD ════════════════════════════════════════════════ -->
+        <VBox spacing="20" styleClass="admin-section-card">
+
+            <!-- Row 1: Room Type | Date | Capacity -->
+            <HBox spacing="16">
+
+                <!-- نوع القاعة -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="نوع القاعة"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                    <ComboBox fx:id="cmbRoomType" maxWidth="Infinity"
+                              styleClass="search-combo" />
+                </VBox>
+
+                <!-- تاريخ البحث -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="تاريخ البحث"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                    <DatePicker fx:id="dpSearchDate" maxWidth="Infinity"
+                                styleClass="search-datepicker" />
+                </VBox>
+
+                <!-- السعة المطلوبة (اختياري) -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="السعة المطلوبة (اختياري)"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                    <TextField fx:id="txtCapacity" promptText="مثال: 50"
+                               styleClass="search-textfield" maxWidth="Infinity" />
+                </VBox>
+            </HBox>
+
+            <!-- ─── Time Panel: MULTI-PURPOSE (free hours) ─────────────── -->
+            <HBox fx:id="paneMultiTime" spacing="16" visible="true" managed="true">
+
+                <!-- من الساعة -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="من الساعة"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                    <ComboBox fx:id="cmbTimeFrom" maxWidth="Infinity"
+                              promptText="اختر وقت البداية..."
+                              styleClass="search-combo" />
+                </VBox>
+
+                <!-- إلى الساعة -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <HBox spacing="6" alignment="CENTER_RIGHT">
+                        <Label text="إلى الساعة"
+                               style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                        <Label fx:id="lblRamadanToHint" visible="false" managed="false"
+                               style="-fx-font-size: 11px; -fx-text-fill: #ea580c; -fx-font-weight: bold;" />
+                    </HBox>
+                    <ComboBox fx:id="cmbTimeTo" maxWidth="Infinity"
+                              promptText="اختر وقت النهاية..."
+                              styleClass="search-combo" />
+                </VBox>
+            </HBox>
+
+            <!-- ─── Slot Panel: FIXED/LECTURE (predefined slots) ──────── -->
+            <VBox fx:id="paneFixedSlot" spacing="6" visible="false" managed="false">
+                <HBox spacing="6" alignment="CENTER_RIGHT">
+                    <Label text="فترة المحاضرة"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #5a7698;" />
+                    <Label fx:id="lblSlotRamadanHint" visible="false" managed="false"
+                           style="-fx-font-size: 11px; -fx-text-fill: #ea580c; -fx-font-weight: bold;" />
+                </HBox>
+                <ComboBox fx:id="cmbSlot" maxWidth="Infinity"
+                          promptText="اختر فترة المحاضرة..."
+                          styleClass="search-combo" />
+            </VBox>
+
+            <!-- Divider -->
+            <Region style="-fx-background-color: #e0e3e5; -fx-min-height: 1px; -fx-max-height: 1px;" maxWidth="Infinity" />
+
+            <!-- Search Button -->
+            <Button fx:id="btnSearch" text="🔍  بحث عن القاعات المتاحة"
+                    maxWidth="Infinity"
+                    onAction="#handleSearch"
+                    styleClass="search-btn-primary" />
+
+        </VBox>
+
+        <!-- ═══ RESULTS SECTION (hidden until search runs) ════════════════ -->
+        <VBox fx:id="resultsSection" spacing="16" visible="false" managed="false">
+
+            <!-- Results header -->
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+                <Label text="نتيجة البحث:"
+                       style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #001e40;" />
+                <Label fx:id="lblResultCount"
+                       style="-fx-background-color: #dcfce7; -fx-text-fill: #166534;
+                              -fx-font-size: 13px; -fx-font-weight: bold;
+                              -fx-background-radius: 20px; -fx-padding: 4 14;" text="0 قاعة متاحة" />
+            </HBox>
+
+            <!-- Room cards grid (FlowPane wraps automatically) -->
+            <FlowPane fx:id="resultsGrid"
+                      hgap="16" vgap="16"
+                      prefWrapLength="800"
+                      style="-fx-background-color: transparent;" />
+
+            <!-- Empty state -->
+            <VBox fx:id="emptyState" alignment="CENTER" spacing="12"
+                  visible="false" managed="false"
+                  style="-fx-background-color: #f8fafc; -fx-background-radius: 16px;
+                         -fx-border-color: #e0e3e5; -fx-border-radius: 16px; -fx-padding: 48;">
+                <Label text="🔍" style="-fx-font-size: 40px; -fx-text-fill: #c3c6d1;" />
+                <Label text="عذراً، لا توجد قاعات متاحة تطابق معايير البحث."
+                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #737780;" />
+                <Label text="جرب تغيير التاريخ أو الفترة الزمنية أو نوع القاعة."
+                       style="-fx-font-size: 12px; -fx-text-fill: #a0a5b1;" />
+            </VBox>
+
+        </VBox>
+
+    </VBox>
+</ScrollPane>

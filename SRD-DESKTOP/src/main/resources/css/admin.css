@@ -425,3 +425,147 @@
 .admin-choice-title { -fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827; }
 .admin-choice-subtitle { -fx-font-size: 11px; -fx-text-fill: #6b7280; }
 
+/* ══════════════════════════════════════════════════════════════
+   Advanced Search Screen — mirrors AdvancedRoomSearch.jsx
+   ══════════════════════════════════════════════════════════════ */
+
+/* Inputs / ComboBoxes */
+.search-combo {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+    -fx-padding: 8 12;
+    -fx-cursor: hand;
+}
+.search-combo:focused {
+    -fx-border-color: #001e40;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.15), 8, 0, 0, 0);
+}
+.search-combo .arrow-button {
+    -fx-background-color: transparent;
+}
+.search-combo .list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e3e5;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 12, 0, 0, 4);
+}
+.search-combo .list-cell {
+    -fx-font-size: 13px;
+    -fx-text-fill: #001e40;
+    -fx-padding: 8 14;
+}
+.search-combo .list-cell:hover {
+    -fx-background-color: #f2f4f6;
+}
+.search-combo .list-cell:selected {
+    -fx-background-color: #d5e3ff;
+    -fx-text-fill: #001e40;
+}
+
+/* Date Picker */
+.search-datepicker {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+}
+.search-datepicker:focused {
+    -fx-border-color: #001e40;
+}
+.search-datepicker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+    -fx-padding: 8 10;
+}
+.search-datepicker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 8;
+}
+
+/* Text Field */
+.search-textfield {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e0e3e5;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+    -fx-padding: 10 14;
+}
+.search-textfield:focused {
+    -fx-border-color: #001e40;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.15), 8, 0, 0, 0);
+}
+
+/* Primary Search Button — mirrors web's dark navy button */
+.search-btn-primary {
+    -fx-background-color: #001e40;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 14 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.3), 10, 0, 0, 3);
+}
+.search-btn-primary:hover {
+    -fx-background-color: #1e3a5f;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.45), 14, 0, 0, 5);
+}
+.search-btn-primary:disabled {
+    -fx-background-color: #8a9ab5;
+    -fx-effect: none;
+}
+
+/* Room Result Cards — mirrors web's green cards */
+.search-result-card {
+    -fx-background-color: #f0fdf4;
+    -fx-border-color: #bbf7d0;
+    -fx-border-radius: 14px;
+    -fx-background-radius: 14px;
+    -fx-border-width: 1.5;
+    -fx-padding: 16 12;
+    -fx-cursor: default;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 6, 0, 0, 2);
+}
+.search-result-card:hover {
+    -fx-background-color: #dcfce7;
+    -fx-effect: dropshadow(three-pass-box, rgba(22,101,52,0.12), 10, 0, 0, 4);
+}
+
+/* Card inner labels */
+.search-card-room-number {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #166534;
+    -fx-text-alignment: center;
+}
+.search-card-type {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #16a34a;
+    -fx-text-alignment: center;
+}
+.search-card-capacity {
+    -fx-background-color: rgba(187, 247, 208, 0.5);
+    -fx-background-radius: 6px;
+    -fx-text-fill: #15803d;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 10;
+    -fx-text-alignment: center;
+}
+

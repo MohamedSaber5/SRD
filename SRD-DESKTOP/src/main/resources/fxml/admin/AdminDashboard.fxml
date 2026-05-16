@@ -176,11 +176,8 @@
                     <VBox fx:id="roomMgmtView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
                         <fx:include source="RoomManagement.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
-                    <VBox fx:id="searchView" spacing="20" visible="false" alignment="CENTER">
-                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
-                        <Label style="-fx-font-size: 28px;" text="🔍" />
-                        <Label styleClass="admin-section-title" text="البحث المتقدم" />
-                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    <VBox fx:id="searchView" visible="false" VBox.vgrow="ALWAYS">
+                        <fx:include source="AdvancedSearch.fxml" VBox.vgrow="ALWAYS" />
                     </VBox>
                     <VBox fx:id="delegationView" visible="false" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
                         <fx:include source="AdminDelegation.fxml" VBox.vgrow="ALWAYS" />
