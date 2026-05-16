@@ -1,0 +1,492 @@
+crational design pattern :
+
+Factory Method: Defines an interface for creating an object, but lets subclasses alter the type of
+object that will be created.
+code template :
+// Define the Transport interface
+interface Transport { 
+    void deliver(); 
+}
+
+// Implement Truck and Ship classes
+class Truck implements Transport {
+    public void deliver() {
+        System.out.println("Truck delivering goods by land.");
+    }
+}
+
+class Ship implements Transport {
+    public void deliver() {
+        System.out.println("Ship delivering goods by sea.");
+    }
+}
+
+// Abstract Logistics class with a factory method that takes a control parameter
+abstract class Logistics {
+    // Factory method: it takes a 'mode' parameter to decide which Transport to create.
+    protected abstract Transport createTransport(String mode);
+    
+    public void deliverCargo(String mode) {
+        Transport t = createTransport(mode);
+        t.deliver();
+    }
+}
+
+// Instead of having separate subclasses for each product type, we use one subclass.
+class UniversalLogistics extends Logistics {
+    // Here we use the control parameter 'mode' to choose the correct Transport.
+    protected Transport createTransport(String mode) {
+        if (mode.equals("land")) {
+            return new Truck();
+        } else if (mode.equals("sea")) {
+            return new Ship();
+        } else {
+            throw new IllegalArgumentException("Unknown mode: " + mode);
+        }
+    }
+}
+
+// Client code
+public class FactoryMethodDemo {
+    public static void main(String[] args) {
+        Logistics logistics = new UniversalLogistics();
+        logistics.deliverCargo("sea");  // Output: Ship delivering goods by sea
+        logistics.deliverCargo("land"); // Output: Truck delivering goods by land
+    }
+}
+
+
+• Abstract Factory: Provides an interface for creating families of related or dependent objects without
+specifying their concrete classes.
+
+ 
+code template :
+// Step 1: Define abstract product interfaces
+interface Chair { 
+    void sitOn(); 
+}
+
+interface Sofa { 
+    void lieOn(); 
+}
+
+interface CoffeeTable { 
+    void placeItems(); 
+}
+
+// Step 2: Implement concrete product variants
+class ModernChair implements Chair {
+    public void sitOn() {
+        System.out.println("Sitting on a modern chair.");
+    }
+}
+
+class VictorianChair implements Chair {
+    public void sitOn() {
+        System.out.println("Sitting on a Victorian chair.");
+    }
+}
+
+class ArtDecoChair implements Chair {
+    public void sitOn() {
+        System.out.println("Sitting on an Art Deco chair.");
+    }
+}
+
+class ModernSofa implements Sofa {
+    public void lieOn() {
+        System.out.println("Lying on a modern sofa.");
+    }
+}
+
+class VictorianSofa implements Sofa {
+    public void lieOn() {
+        System.out.println("Lying on a Victorian sofa.");
+    }
+}
+
+class ArtDecoSofa implements Sofa {
+    public void lieOn() {
+        System.out.println("Lying on an Art Deco sofa.");
+    }
+}
+
+class ModernCoffeeTable implements CoffeeTable {
+    public void placeItems() {
+        System.out.println("Placing items on a modern coffee table.");
+    }
+}
+
+class VictorianCoffeeTable implements CoffeeTable {
+    public void placeItems() {
+        System.out.println("Placing items on a Victorian coffee table.");
+    }
+}
+
+class ArtDecoCoffeeTable implements CoffeeTable {
+    public void placeItems() {
+        System.out.println("Placing items on an Art Deco coffee table.");
+    }
+}
+
+// Step 3: Define the Abstract Factory interface
+interface FurnitureFactory {
+    Chair createChair();
+    Sofa createSofa();
+    CoffeeTable createCoffeeTable();
+}
+
+// Step 4: Implement concrete factory classes
+class ModernFurnitureFactory implements FurnitureFactory {
+    public Chair createChair() { return new ModernChair(); }
+    public Sofa createSofa() { return new ModernSofa(); }
+    public CoffeeTable createCoffeeTable() {
+        return new ModernCoffeeTable();
+    }
+}
+
+class VictorianFurnitureFactory implements FurnitureFactory {
+    public Chair createChair() { return new VictorianChair(); }
+    public Sofa createSofa() { return new VictorianSofa(); }
+    public CoffeeTable createCoffeeTable() {
+        return new VictorianCoffeeTable();
+    }
+}
+
+class ArtDecoFurnitureFactory implements FurnitureFactory {
+    public Chair createChair() { return new ArtDecoChair(); }
+    public Sofa createSofa() { return new ArtDecoSofa(); }
+    public CoffeeTable createCoffeeTable() {
+        return new ArtDecoCoffeeTable();
+    }
+}
+
+// Step 5: Client code (FurnitureStore)
+class FurnitureStore {
+    private Chair chair;
+    private Sofa sofa;
+    private CoffeeTable coffeeTable;
+    
+    public FurnitureStore(FurnitureFactory factory) {
+        this.chair = factory.createChair();
+        this.sofa = factory.createSofa();
+        this.coffeeTable = factory.createCoffeeTable();
+    }
+    
+    public void describeFurniture() {
+        chair.sitOn();
+        sofa.lieOn();
+        coffeeTable.placeItems();
+    }
+}
+
+// Step 6: Application setup
+public class Main {
+    public static void main(String[] args) {
+        FurnitureFactory factory;
+        
+        // Simulate user choice (Modern, Victorian, ArtDeco)
+        String userChoice = "Victorian"; // Change this to "Modern" or "ArtDeco" for different outputs
+        
+        if (userChoice.equals("Modern")) {
+            factory = new ModernFurnitureFactory();
+        } else if (userChoice.equals("Victorian")) {
+            factory = new VictorianFurnitureFactory();
+        } else {
+            factory = new ArtDecoFurnitureFactory();
+        }
+        
+        FurnitureStore store = new FurnitureStore(factory);
+        store.describeFurniture();
+    }
+}
+
+
+• Builder: Separates the construction of a complex object from its representation, allowing the same
+construction process to create different representations.
+code template :
+// Step 1: Product Classes
+class Car {
+    private int seats;
+    private String engine;
+    private boolean hasTripComputer;
+    private boolean hasGPS;
+    
+    public void setSeats(int seats) { this.seats = seats; }
+    public void setEngine(String engine) { this.engine = engine; }
+    public void setTripComputer(boolean hasTripComputer) { this.hasTripComputer = hasTripComputer; }
+    public void setGPS(boolean hasGPS) { this.hasGPS = hasGPS; }
+    
+    @Override
+    public String toString() {
+        return "Car [Seats=" + seats + ", Engine=" + engine + ", Trip Computer=" +
+               hasTripComputer + ", GPS=" + hasGPS + "]";
+    }
+}
+
+class Manual {
+    private StringBuilder content = new StringBuilder();
+    
+    public void addSection(String section) { 
+        content.append(section).append("\n");
+    }
+    
+    @Override
+    public String toString() { 
+        return "Manual:\n" + content.toString(); 
+    }
+}
+
+// Step 2: Builder Interface
+interface Builder {
+    void reset();
+    void setSeats(int seats);
+    void setEngine(String engine);
+    void setTripComputer(boolean hasTripComputer);  // Changed: bool -> boolean
+    void setGPS(boolean hasGPS);
+}
+
+// Step 3: Concrete Builders
+class CarBuilder implements Builder {
+    private Car car;
+    
+    public CarBuilder() { reset(); }
+    
+    public void reset() { car = new Car(); }
+    
+    public void setSeats(int seats) { car.setSeats(seats); }
+    
+    public void setEngine(String engine) { car.setEngine(engine); }
+    
+    public void setTripComputer(boolean hasTripComputer) { 
+        car.setTripComputer(hasTripComputer); 
+    }
+    
+    public void setGPS(boolean hasGPS) { car.setGPS(hasGPS); }
+    
+    public Car getProduct() {
+        Car product = this.car;
+        reset();  // Reset for next build
+        return product;
+    }
+}
+
+class CarManualBuilder implements Builder {
+    private Manual manual;
+    
+    public CarManualBuilder() { reset(); }
+    
+    public void reset() { manual = new Manual(); }
+    
+    public void setSeats(int seats) { 
+        manual.addSection("Seats: " + seats); 
+    }
+    
+    public void setEngine(String engine) { 
+        manual.addSection("Engine: " + engine); 
+    }
+    
+    public void setTripComputer(boolean hasTripComputer) {
+        manual.addSection("Trip Computer: " + (hasTripComputer ? "Included" : "Not Included"));
+    }
+    
+    public void setGPS(boolean hasGPS) { 
+        manual.addSection("GPS: " + (hasGPS ? "Included" : "Not Included"));  // Fixed missing parenthesis
+    }
+    
+    public Manual getProduct() {
+        Manual product = this.manual;
+        reset();
+        return product;
+    }
+}
+
+// Step 4: Director
+class Director {
+    public void constructSportsCar(Builder builder) {
+        builder.reset();
+        builder.setSeats(2);
+        builder.setEngine("V8 Engine");
+        builder.setTripComputer(true);
+        builder.setGPS(true);
+    }
+    
+    public void constructSUV(Builder builder) {
+        builder.reset();
+        builder.setSeats(5);
+        builder.setEngine("Diesel Engine");
+        builder.setTripComputer(false);
+        builder.setGPS(true);
+    }
+    
+    // Additional car types
+    public void constructEconomyCar(Builder builder) {
+        builder.reset();
+        builder.setSeats(4);
+        builder.setEngine("4-Cylinder Engine");
+        builder.setTripComputer(false);
+        builder.setGPS(false);
+    }
+    
+    public void constructElectricCar(Builder builder) {
+        builder.reset();
+        builder.setSeats(4);
+        builder.setEngine("Electric Motor");
+        builder.setTripComputer(true);
+        builder.setGPS(true);
+    }
+}
+
+// Step 5: Client Application
+public class Application {
+    public static void main(String[] args) {
+        Director director = new Director();
+        
+        System.out.println("=== Building Sports Car ===");
+        // Build a sports car
+        CarBuilder carBuilder = new CarBuilder();
+        director.constructSportsCar(carBuilder);
+        Car sportsCar = carBuilder.getProduct();
+        System.out.println(sportsCar);
+        
+        // Build a manual for the sports car
+        CarManualBuilder manualBuilder = new CarManualBuilder();
+        director.constructSportsCar(manualBuilder);
+        Manual sportsCarManual = manualBuilder.getProduct();
+        System.out.println(sportsCarManual);
+        
+        System.out.println("\n=== Building SUV ===");
+        // Build an SUV
+        CarBuilder suvBuilder = new CarBuilder();
+        director.constructSUV(suvBuilder);
+        Car suv = suvBuilder.getProduct();
+        System.out.println(suv);
+        
+        // Build manual for SUV
+        CarManualBuilder suvManualBuilder = new CarManualBuilder();
+        director.constructSUV(suvManualBuilder);
+        Manual suvManual = suvManualBuilder.getProduct();
+        System.out.println(suvManual);
+        
+        System.out.println("\n=== Building Economy Car (without Director) ===");
+        // Building without Director
+        CarBuilder economyBuilder = new CarBuilder();
+        economyBuilder.setSeats(4);
+        economyBuilder.setEngine("1.5L Engine");
+        economyBuilder.setTripComputer(false);
+        economyBuilder.setGPS(false);
+        Car economyCar = economyBuilder.getProduct();
+        System.out.println(economyCar);
+    }
+}
+
+
+• Prototype: Creates new objects by cloning an existing object (the prototype).
+
+code template :
+// Step 1: Prototype Interface
+interface Prototype {
+    Prototype clone();  // Fixed: removed incorrect `{}`
+}
+
+// Step 2: Concrete Prototypes
+class Circle implements Prototype {
+    private int x, y, radius;
+    
+    public Circle(int x, int y, int radius) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    @Override
+    public Prototype clone() {
+        return new Circle(x, y, radius);
+    }
+    
+    @Override
+    public String toString() {
+        return "Circle [x=" + x + ", y=" + y + ", radius=" + radius + "]";
+    }
+}
+
+class Rectangle implements Prototype {
+    private int width, height;
+    
+    public Rectangle(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public Prototype clone() {
+        return new Rectangle(width, height);
+    }
+    
+    @Override
+    public String toString() {
+        return "Rectangle [width=" + width + ", height=" + height + "]";
+    }
+}
+
+// Step 3: Client Code
+public class PrototypeDemo {
+    public static void main(String[] args) {
+        // Create original objects
+        Circle originalCircle = new Circle(10, 20, 30);
+        Rectangle originalRectangle = new Rectangle(50, 100);
+
+        // Clone the objects
+        Circle clonedCircle = (Circle) originalCircle.clone();
+        Rectangle clonedRectangle = (Rectangle) originalRectangle.clone();
+
+        // Print both original and cloned objects
+        System.out.println("Original: " + originalCircle);
+        System.out.println("Cloned: " + clonedCircle);
+        System.out.println("Original: " + originalRectangle);
+        System.out.println("Cloned: " + clonedRectangle);
+    }
+}
+
+
+• Singleton: Ensures that a class has only one instance and provides a global point of access to that
+instance
+code template :
+// Step 1: Create Singleton Class
+class Singleton {
+    // Step 2: Create a private static instance (Lazy Initialization)
+    private static Singleton instance;
+    
+    // Step 3: Private constructor to prevent direct instantiation
+    private Singleton() {
+        System.out.println("Singleton Instance Created");
+    }
+    
+    // Step 4: Public static method to provide a global access point
+    public static Singleton getInstance() {
+        if (instance == null) {
+            instance = new Singleton();
+        }
+        return instance;
+    }
+    
+    // Example method
+    public void showMessage() { 
+        System.out.println("Hello from Singleton!"); 
+    }
+}
+
+// Step 5: Test Singleton
+public class SingletonDemo {
+    public static void main(String[] args) {
+        // Try to create multiple instances
+        Singleton obj1 = Singleton.getInstance();
+        Singleton obj2 = Singleton.getInstance();
+
+        // Show message
+        obj1.showMessage();
+
+        // Check if obj1 and obj2 are the same
+        System.out.println("Are both instances the same? " + (obj1 == obj2));
+    }
+}

@@ -1,0 +1,793 @@
+behavioral Design Pattern:
+
+
+Chain of Responsibility lets you build a chain (or pipeline) of objects where each object (handler) can:
+• Handle a request
+• OR pass it along to the next handler in the chain
+You avoid tightly coupled code and instead create flexible, extensible pipelines.
+
+code templet :
+// Step 1: Define the Handler interface / abstract base handler
+abstract class ComplaintHandler {
+    protected ComplaintHandler next;
+    
+    public ComplaintHandler(ComplaintHandler next) {
+        this.next = next;
+    }
+    
+    public abstract void handleComplaint(String complaint);
+}
+
+// Step 2: Concrete handler: Cashier
+class Cashier extends ComplaintHandler {
+    public Cashier(ComplaintHandler next) { 
+        super(next); 
+    }
+    
+    @Override
+    public void handleComplaint(String complaint) {
+        if (complaint.equals("price issue")) {
+            System.out.println("Cashier: I can handle the price issue.");
+        } else if (next != null) {
+            System.out.println("Cashier: I can't handle this. Passing to Supervisor.");
+            next.handleComplaint(complaint);
+        } else {
+            System.out.println("Cashier: No one can handle this.");
+        }
+    }
+}
+
+// Concrete handler: Supervisor
+class Supervisor extends ComplaintHandler {
+    public Supervisor(ComplaintHandler next) {
+        super(next);
+    }
+    
+    @Override
+    public void handleComplaint(String complaint) {
+        if (complaint.equals("damaged product") || complaint.equals("refund request")) {
+            System.out.println("Supervisor: I can handle the " + complaint + ".");
+        } else if (next != null) {
+            System.out.println("Supervisor: I can't handle this. Passing to Manager.");
+            next.handleComplaint(complaint);
+        } else {
+            System.out.println("Supervisor: No one can handle this.");
+        }
+    }
+}
+
+// Concrete handler: Manager
+class Manager extends ComplaintHandler {
+    public Manager(ComplaintHandler next) {
+        super(next);
+    }
+    
+    @Override
+    public void handleComplaint(String complaint) {
+        if (complaint.equals("legal issue") || complaint.equals("major complaint")) {
+            System.out.println("Manager: I can handle the " + complaint + ".");
+        } else if (next != null) {
+            System.out.println("Manager: I can't handle this. Passing higher up.");
+            next.handleComplaint(complaint);
+        } else {
+            System.out.println("Manager: No one can handle this complaint.");
+        }
+    }
+}
+
+// Main Class - ComplaintSystem
+public class ComplaintSystem {
+    public static void main(String[] args) {
+        // Set up the chain: Manager (last) -> Supervisor -> Cashier (entry point)
+        ComplaintHandler manager = new Manager(null);
+        ComplaintHandler supervisor = new Supervisor(manager);
+        ComplaintHandler handlerChainCashier = new Cashier(supervisor);
+
+        // Test different complaints
+        System.out.println("Complaint: price issue");
+        handlerChainCashier.handleComplaint("price issue");
+        
+        System.out.println("\nComplaint: damaged product");
+        handlerChainCashier.handleComplaint("damaged product");
+        
+        System.out.println("\nComplaint: refund request");
+        handlerChainCashier.handleComplaint("refund request");
+        
+        System.out.println("\nComplaint: unknown issue");
+        handlerChainCashier.handleComplaint("unknown issue");
+    }
+}
+
+
+Observer Design Pattern
+The Observer Pattern is all about creating a smart notification system. It lets one object (the publisher)
+automatically alert many others (the subscribers) whenever something important happens — like an event
+or a change in state.
+
+code templet :
+import java.util.ArrayList;
+import java.util.List;
+
+// Step 1: Observer Interface
+interface NotificationListener {
+    void update(String productName);
+}
+
+// Step 2: Concrete Observers (Notification Methods)
+class EmailNotification implements NotificationListener {
+    private String email;
+    
+    public EmailNotification(String email) {
+        this.email = email;
+    }
+    
+    @Override
+    public void update(String productName) {
+        System.out.println("EMAIL to " + email + ": " + productName + " is now available!");
+    }
+}
+
+class SMSNotification implements NotificationListener {
+    private String phoneNumber;
+    
+    public SMSNotification(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    
+    @Override
+    public void update(String productName) {
+        System.out.println("SMS to " + phoneNumber + ": " + productName + " is now in stock!");
+    }
+}
+
+class AppPushNotification implements NotificationListener {
+    private String username;
+    
+    public AppPushNotification(String username) {
+        this.username = username;
+    }
+    
+    @Override
+    public void update(String productName) {
+        System.out.println("PUSH to " + username + ": " + productName + " is available to order!");
+    }
+}
+
+// Step 3: Subject (Observable)
+class Product {
+    private String name;
+    private List<NotificationListener> listeners = new ArrayList<>();
+    
+    public Product(String name) { 
+        this.name = name; 
+    }
+    
+    public void subscribe(NotificationListener listener) {
+        listeners.add(listener);
+        System.out.println(listener.getClass().getSimpleName() + " subscribed to " + name);
+    }
+    
+    public void unsubscribe(NotificationListener listener) {
+        listeners.remove(listener);
+        System.out.println(listener.getClass().getSimpleName() + " unsubscribed from " + name);
+    }
+    
+    public void restock() {
+        System.out.println("\n==> " + name + " is now in stock!");
+        for (NotificationListener listener : listeners) {
+            listener.update(name);
+        }
+    }
+}
+
+// Step 4: Client Code
+public class MobileShop {
+    public static void main(String[] args) {
+        // Products (Subjects)
+        Product iPhone15 = new Product("iPhone 15");
+        Product galaxyS24 = new Product("Samsung Galaxy S24");
+        
+        // Customers with different notification methods (Observers)
+        NotificationListener alice = new EmailNotification("alice@example.com");
+        NotificationListener bob = new SMSNotification("0123456789");
+        NotificationListener clara = new AppPushNotification("clara_user");
+        
+        // Subscriptions
+        System.out.println("=== Subscriptions ===");
+        iPhone15.subscribe(alice);
+        iPhone15.subscribe(bob);
+        galaxyS24.subscribe(bob);
+        galaxyS24.subscribe(clara);
+        
+        // Restock events - notify all subscribers
+        iPhone15.restock();    // Notifies Alice (Email) and Bob (SMS)
+        galaxyS24.restock();   // Notifies Bob (SMS) and Clara (Push)
+    }
+}
+
+
+
+
+
+
+===========================================================
+
+
+command: The Command Pattern is used to turn an action (like "copy", "paste", "save", etc.) into a separate object 
+that holds all the details about that action.
+
+code template:
+
+
+
+import java.util.Stack;
+
+// ============================================================================
+// Step 1: Command Base Class
+// ============================================================================
+// Command interface / abstract base
+abstract class Command {
+    protected Application app;
+    protected Editor editor;
+    protected String backup;
+
+    public Command(Application app, Editor editor) {
+        this.app = app;
+        this.editor = editor;
+    }
+
+    // Make a backup of the editor's state
+    public void saveBackup() {
+        backup = editor.getText();
+    }
+
+    // Restore the editor's state
+    public void undo() {
+        editor.setText(backup);
+    }
+
+    // Each command must implement execute() to carry out its operation
+    // Returns true if the command changes the editor state (needs history tracking)
+    public abstract boolean execute();
+}
+
+// ============================================================================
+// Step 2: Concrete Commands
+// ============================================================================
+class CopyCommand extends Command {
+    public CopyCommand(Application app, Editor editor) {
+        super(app, editor);
+    }
+
+    @Override
+    public boolean execute() {
+        app.setClipboard(editor.getSelection());
+        return false; // No state change to save for Copy command
+    }
+}
+
+// Concrete command for Cut operation
+class CutCommand extends Command {
+    public CutCommand(Application app, Editor editor) {
+        super(app, editor);
+    }
+
+    @Override
+    public boolean execute() {
+        saveBackup(); // Save the current state before cutting
+        app.setClipboard(editor.getSelection());
+        editor.deleteSelection();
+        return true; // State has changed
+    }
+}
+
+// Concrete command for Paste operation
+class PasteCommand extends Command {
+    public PasteCommand(Application app, Editor editor) {
+        super(app, editor);
+    }
+
+    @Override
+    public boolean execute() {
+        saveBackup(); // Save the current state before pasting
+        editor.replaceSelection(app.getClipboard());
+        return true; // State has changed
+    }
+}
+
+// Concrete command for Undo operation
+class UndoCommand extends Command {
+    public UndoCommand(Application app, Editor editor) {
+        super(app, editor);
+    }
+
+    @Override
+    public boolean execute() {
+        app.undo();
+        return false; // Undo doesn't change state directly, it reverts to previous state
+    }
+}
+
+// ============================================================================
+// Step 3: State Tracking & Receiver Classes
+// ============================================================================
+// CommandHistory class keeps track of the history of commands
+class CommandHistory {
+    private Stack<Command> history = new Stack<>();
+
+    // Push a command onto the history stack
+    public void push(Command command) {
+        history.push(command);
+    }
+
+    // Pop the most recent command from the stack
+    public Command pop() {
+        if (!history.isEmpty()) {
+            return history.pop();
+        }
+        return null;
+    }
+}
+
+// Editor class simulates the text editor that changes text (Receiver)
+class Editor {
+    private String text;
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    // Simulating selected text (simulated here as grabbing full text for simplicity)
+    public String getSelection() {
+        return text;
+    }
+
+    // Simulate deleting selected text
+    public void deleteSelection() {
+        text = "";
+    }
+
+    // Simulate replacing selected text with clipboard content
+    public void replaceSelection(String clipboard) {
+        this.text = clipboard;
+    }
+}
+
+// ============================================================================
+// Step 4: The Invoker Class
+// ============================================================================
+// Application class sets up the relationship between the commands and their invocations
+class Application {
+    private String clipboard;
+    private Editor activeEditor;
+    private CommandHistory history;
+
+    public Application() {
+        history = new CommandHistory();
+    }
+
+    // Set up the clipboard
+    public void setClipboard(String clipboard) {
+        this.clipboard = clipboard;
+    }
+
+    public String getClipboard() {
+        return clipboard;
+    }
+
+    public void setActiveEditor(Editor editor) {
+        this.activeEditor = editor;
+    }
+
+    // Execute a command and possibly add it to history
+    public void executeCommand(Command command) {
+        if (command.execute()) {
+            history.push(command);
+        }
+    }
+
+    // Perform an undo operation by popping the last command and executing its undo
+    public void undo() {
+        Command command = history.pop();
+        if (command != null) {
+            command.undo();
+        }
+    }
+}
+
+// ============================================================================
+// Step 5: Demo / Main Program
+// ============================================================================
+// Main class to demonstrate the Command Pattern in action
+public class CommandPatternDemo {
+    public static void main(String[] args) {
+        // Create the editor and set initial text
+        Editor editor = new Editor();
+        editor.setText("Hello, world!");
+
+        // Create the application and set the active editor
+        Application app = new Application();
+        app.setActiveEditor(editor);
+
+        // Show the initial state of the editor
+        System.out.println("Initial text: " + editor.getText());
+
+        // Simulate some operations: Copy, Cut, Paste, Undo
+        
+        // Copy operation (no change in text)
+        app.executeCommand(new CopyCommand(app, editor));
+        System.out.println("After Copy: " + editor.getText());
+
+        // Cut operation (removes the selection from the text)
+        app.executeCommand(new CutCommand(app, editor));
+        System.out.println("After Cut: " + editor.getText());
+
+        // Paste operation (replaces selection with clipboard content)
+        app.executeCommand(new PasteCommand(app, editor));
+        System.out.println("After Paste: " + editor.getText());
+
+        // Undo operation (restores the text to the previous state)
+        app.undo();
+        System.out.println("After Undo: " + editor.getText());
+
+        // Another operation to demonstrate Undo after multiple actions
+        // Paste operation again (replaces selection again)
+        app.executeCommand(new PasteCommand(app, editor));
+        System.out.println("After second Paste: " + editor.getText());
+
+        // Undo operation (restores the text to the previous state)
+        app.undo();
+        System.out.println("After second Undo: " + editor.getText());
+    }
+}
+
+
+
+
+
+
+
+
+==============================================
+Observer: The Observer Pattern is all about creating a smart notification system. It lets one object (the publisher) 
+automatically alert many others (the subscribers) whenever something important happens — like an event 
+or a change in state.
+
+
+code template:
+
+import java.util.ArrayList;
+import java.util.List;
+
+// ============================================================================
+// 1. The Observer Interface
+// ============================================================================
+interface NotificationListener {
+    void update(String productName);
+}
+
+// ============================================================================
+// 2. Concrete Observers (Notification Methods)
+// ============================================================================
+class EmailNotification implements NotificationListener {
+    private String email;
+
+    public EmailNotification(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public void update(String productName) {
+        System.out.println("EMAIL to " + email + ": " + productName + " is now available!");
+    }
+}
+
+class SMSNotification implements NotificationListener {
+    private String phoneNumber;
+
+    public SMSNotification(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    @Override
+    public void update(String productName) {
+        System.out.println("SMS to " + phoneNumber + ": " + productName + " is now in stock!");
+    }
+}
+
+class AppPushNotification implements NotificationListener {
+    private String username;
+
+    public AppPushNotification(String username) {
+        this.username = username;
+    }
+
+    @Override
+    public void update(String productName) {
+        System.out.println("PUSH to " + username + ": " + productName + " is available to order!");
+    }
+}
+
+// ============================================================================
+// 3. Publisher: Product in Mobile Shop
+// ============================================================================
+class Product {
+    private String name;
+    private List<NotificationListener> listeners = new ArrayList<>();
+
+    public Product(String name) {
+        this.name = name;
+    }
+
+    public void subscribe(NotificationListener listener) {
+        listeners.add(listener);
+    }
+
+    public void unsubscribe(NotificationListener listener) {
+        listeners.remove(listener);
+    }
+
+    public void restock() {
+        System.out.println("==> " + name + " is now in stock!");
+        for (NotificationListener listener : listeners) {
+            listener.update(name);
+        }
+    }
+}
+
+// ============================================================================
+// 4. Main Program
+// ============================================================================
+public class MobileShop {
+    public static void main(String[] args) {
+        // Products
+        Product iPhone15 = new Product("iPhone 15");
+        Product galaxyS24 = new Product("Samsung Galaxy S24");
+
+        // Customers with different notification methods
+        NotificationListener alice = new EmailNotification("alice@example.com");
+        NotificationListener bob = new SMSNotification("0123456789");
+        NotificationListener clara = new AppPushNotification("clara_user");
+
+        // Subscriptions
+        iPhone15.subscribe(alice);
+        iPhone15.subscribe(bob);
+
+        galaxyS24.subscribe(bob);
+        galaxyS24.subscribe(clara);
+
+        // Restock events
+        iPhone15.restock();   // Notify Alice and Bob
+        System.out.println();
+        galaxyS24.restock();  // Notify Bob and Clara
+    }
+}
+
+
+
+
+
+
+========================================
+Strategy:The Strategy Pattern is a behavioral design pattern that lets you define a group of related algorithms, put 
+each one in its own class, and make them easily switchable and reusable at runtime.
+
+code template:
+
+
+
+
+import java.util.Scanner;
+
+// ============================================================================
+// 1- Strategy Interface – The common behavior
+// ============================================================================
+interface PaymentStrategy { 
+    void pay(double amount); 
+}
+
+// ============================================================================
+// 2- Concrete Strategies – Implement how each method works
+// ============================================================================
+class CreditCardPayment implements PaymentStrategy {
+    private String cardNumber;
+    private String cvv;
+    private String expiry;
+
+    public CreditCardPayment(String cardNumber, String cvv, String expiry) {
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
+        this.expiry = expiry;
+    }
+
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid $" + amount + " using Credit Card.");
+    }
+}
+
+class PayPalPayment implements PaymentStrategy {
+    private String email;
+    private String password;
+
+    public PayPalPayment(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid $" + amount + " using PayPal.");
+    }
+}
+
+class CryptoPayment implements PaymentStrategy {
+    private String walletAddress;
+
+    public CryptoPayment(String walletAddress) {
+        this.walletAddress = walletAddress;
+    }
+
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid $" + amount + " using Cryptocurrency.");
+    }
+}
+
+// ============================================================================
+// 3- Context – The checkout system uses any payment method
+// ============================================================================
+class Checkout {
+    private PaymentStrategy paymentStrategy;
+
+    public void setPaymentStrategy(PaymentStrategy strategy) {
+        this.paymentStrategy = strategy;
+    }
+
+    public void processOrder(double amount) {
+        if (paymentStrategy == null) {
+            throw new IllegalStateException("No payment strategy selected.");
+        }
+        paymentStrategy.pay(amount);
+    }
+}
+
+// ============================================================================
+// 4- Client Code – User selects how to pay at runtime
+// ============================================================================
+public class ECommerceApp {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Checkout checkout = new Checkout();
+
+        System.out.print("Enter order amount: ");
+        double amount = scanner.nextDouble();
+
+        System.out.print("Choose payment method (card, paypal, crypto): ");
+        String method = scanner.next();
+
+        switch (method.toLowerCase()) {
+            case "card":
+                checkout.setPaymentStrategy(new CreditCardPayment("1234-5678", "123", "12/25"));
+                break;
+            case "paypal":
+                checkout.setPaymentStrategy(new PayPalPayment("user@example.com", "password123"));
+                break;
+            case "crypto":
+                checkout.setPaymentStrategy(new CryptoPayment("0xABC123XYZ"));
+                break;
+            default:
+                System.out.println("Invalid payment method.");
+                return;
+        }
+
+        checkout.processOrder(amount);
+        scanner.close();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+===============================================
+
+
+
+Template:Template Method is a behavioral design pattern that lays out the blueprint of an algorithm in a base class — 
+defining its structure step-by-step — while allowing subclasses to customize individual steps without 
+touching the overall process.
+
+cdoe template:
+
+
+
+
+
+
+package application;
+
+// ============================================================================
+// 1- Abstract Class: Defines the algorithm template
+// ============================================================================
+abstract class Beverage {
+    
+    // Template Method (final so subclasses cannot change the order of execution)
+    public final void prepareRecipe() {
+        boilWater();
+        brew();           // abstract step
+        pourInCup();
+        addCondiments();  // abstract step
+    }
+
+    // Common steps (same implementation for all beverages)
+    private void boilWater() {
+        System.out.println("Boiling water...");
+    }
+
+    private void pourInCup() {
+        System.out.println("Pouring into cup...");
+    }
+
+    // Steps that subclasses MUST implement individually
+    protected abstract void brew();
+    protected abstract void addCondiments();
+}
+
+// ============================================================================
+// 2- Concrete Classes: Implement specific steps of the template
+// ============================================================================
+// Concrete class for Coffee
+class Coffee extends Beverage {
+    @Override
+    protected void brew() {
+        System.out.println("Brewing coffee with filter...");
+    }
+
+    @Override
+    protected void addCondiments() {
+        System.out.println("Adding sugar and milk...");
+    }
+}
+
+// Concrete class for Tea
+class Tea extends Beverage {
+    @Override
+    protected void brew() {
+        System.out.println("Steeping tea leaves...");
+    }
+
+    @Override
+    protected void addCondiments() {
+        System.out.println("Adding lemon...");
+    }
+}
+
+// ============================================================================
+// 3- Client Code: Executes the template method
+// ============================================================================
+public class TemplateMethodDemo {
+    public static void main(String[] args) {
+        
+        System.out.println("Making Coffee:");
+        Beverage coffee = new Coffee();
+        coffee.prepareRecipe();
+        
+        System.out.println("\n-----------------------------\n");
+        
+        System.out.println("Making Tea:");
+        Beverage tea = new Tea();
+        tea.prepareRecipe();
+    }
+}

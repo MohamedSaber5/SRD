@@ -1,0 +1,934 @@
+structural design pattern :
+
+
+
+adpter:The adapter is a structural design pattern that allows objects with incompatible 
+interfaces to collaborate. 
+
+code template:
+// Common interface for pegs (Target Interface)
+interface Peg { 
+    double getRadius();
+}
+
+// RoundPeg implements Peg
+class RoundPeg implements Peg {
+    private double radius;
+    
+    public RoundPeg(double radius) {
+        this.radius = radius;
+    }
+    
+    @Override
+    public double getRadius() {
+        return radius;
+    }
+}
+
+// SquarePeg (Incompatible Class - Adaptee)
+class SquarePeg {
+    private double width;
+    
+    public SquarePeg(double width) {
+        this.width = width;
+    }
+    
+    public double getWidth() {
+        return width;
+    }
+}
+
+// RoundHole expects objects that implement Peg interface
+class RoundHole {
+    private double radius;
+    
+    public RoundHole(double radius) {
+        this.radius = radius;
+    }
+    
+    public boolean fits(Peg peg) {
+        return this.radius >= peg.getRadius();
+    }
+}
+
+// ==========================================
+// Adapter
+// ==========================================
+
+// Adapter: Makes SquarePeg compatible with RoundHole
+class SquarePegAdapter implements Peg {
+    private SquarePeg peg;
+    
+    public SquarePegAdapter(SquarePeg peg) {
+        this.peg = peg;
+    }
+    
+    @Override
+    public double getRadius() {
+        // Convert square peg width to equivalent radius
+        return (peg.getWidth() * Math.sqrt(2)) / 2;
+    }
+}
+
+// ==========================================
+// Main
+// ==========================================
+
+// Main class to test the Adapter Pattern
+public class AdapterPatternExample {
+    public static void main(String[] args) {
+        // Create a round hole with radius 5
+        RoundHole hole = new RoundHole(5);
+        
+        // Create a round peg of radius 5
+        RoundPeg roundPeg = new RoundPeg(5);
+        System.out.println("Round peg fits: " + hole.fits(roundPeg)); // true
+        
+        // Create square pegs
+        SquarePeg smallSquarePeg = new SquarePeg(5);
+        SquarePeg largeSquarePeg = new SquarePeg(10);
+        
+        // Can't use SquarePeg directly in RoundHole
+        // hole.fits(smallSquarePeg); // This won't compile!
+        
+        // Use the adapter
+        SquarePegAdapter smallAdapter = new SquarePegAdapter(smallSquarePeg);
+        SquarePegAdapter largeAdapter = new SquarePegAdapter(largeSquarePeg);
+        
+        // Now the square pegs fit into the round hole
+        System.out.println("Small square peg fits: " + hole.fits(smallAdapter)); // true
+        System.out.println("Large square peg fits: " + hole.fits(largeAdapter)); // false
+    }
+}
+---------------------------------------
+// RoundPeg class (Compatible)
+class RoundPeg {
+    private double radius;
+    
+    public RoundPeg(double radius) {
+        this.radius = radius;
+    }
+    
+    public double getRadius() {
+        return radius;
+    }
+}
+
+// RoundHole class (Compatible)
+class RoundHole {
+    private double radius;
+    
+    public RoundHole(double radius) {
+        this.radius = radius;
+    }
+    
+    public double getRadius() {
+        return radius;
+    }
+    
+    public boolean fits(RoundPeg peg) {
+        return this.getRadius() >= peg.getRadius();
+    }
+}
+
+// SquarePeg class (Incompatible)
+class SquarePeg {
+    private double width;
+    
+    public SquarePeg(double width) {
+        this.width = width;
+    }
+    
+    public double getWidth() {
+        return width;
+    }
+}
+
+// ==========================================
+// Adapter
+// ==========================================
+
+// Adapter class: Converts SquarePeg to RoundPeg
+class SquarePegAdapter extends RoundPeg {
+    private SquarePeg peg;
+    
+    public SquarePegAdapter(SquarePeg peg) {
+        // Calculate equivalent radius and pass it to super class
+        super((peg.getWidth() * Math.sqrt(2)) / 2);
+        this.peg = peg;
+    }
+    
+    @Override
+    public double getRadius() {
+        return peg.getWidth() * Math.sqrt(2) / 2;
+    }
+}
+
+// ==========================================
+// Client Code
+// ==========================================
+
+public class AdapterPatternExample {
+    public static void main(String[] args) {
+        RoundHole hole = new RoundHole(5.0);
+        RoundPeg rpeg = new RoundPeg(5.0);
+        
+        System.out.println("Round peg fits: " + (hole.fits(rpeg) ? "Yes" : "No")); // Expected: Yes
+        
+        SquarePeg smallSqPeg = new SquarePeg(5.0);
+        SquarePeg largeSqPeg = new SquarePeg(10.0);
+        
+        // Using the adapter to fit square pegs
+        SquarePegAdapter smallSqPegAdapter = new SquarePegAdapter(smallSqPeg);
+        SquarePegAdapter largeSqPegAdapter = new SquarePegAdapter(largeSqPeg);
+        
+        System.out.println("Small square peg fits: " + (hole.fits(smallSqPegAdapter) ? "Yes" : "No")); // Expected: Yes
+        System.out.println("Large square peg fits: " + (hole.fits(largeSqPegAdapter) ? "Yes" : "No")); // Expected: No
+    }
+}
+
+
+
+
+
+
+===========================================================
+
+
+
+bridge:✔ Decouples Abstraction from Implementation – Remotes and Devices evolve separately. 
+✔ Allows adding new Remotes and Devices independently – No need for complex hierarchies. 
+✔ Reduces code duplication – Code is reused effectively. 
+✔ Promotes flexibility and scalability – New types of remotes or devices can be added easily. 
+By separating the concerns of remotes and devices, the Bridge pattern makes our system more modular, 
+maintainable, and scalable. 
+
+code template:
+
+// ============================================================================
+// Step 1: The Implementation Interface
+// ============================================================================
+// Interface for all devices
+interface Device {
+    boolean isEnabled();
+    void enable();
+    void disable();
+    int getVolume();
+    void setVolume(int percent);
+    int getChannel();
+    void setChannel(int channel);
+}
+
+// ============================================================================
+// Step 2: Concrete Implementations (TV & Radio)
+// ============================================================================
+// TV Implementation
+class TV implements Device {
+    private boolean powerOn = false;
+    private int volume = 50;
+    private int channel = 1;
+
+    @Override
+    public boolean isEnabled() {
+        return powerOn;
+    }
+
+    @Override
+    public void enable() {
+        powerOn = true;
+        System.out.println("TV is now ON");
+    }
+
+    @Override
+    public void disable() {
+        powerOn = false;
+        System.out.println("TV is now OFF");
+    }
+
+    @Override
+    public int getVolume() {
+        return volume;
+    }
+
+    @Override
+    public void setVolume(int percent) {
+        volume = Math.max(0, Math.min(100, percent)); // Ensure 0-100 range
+        System.out.println("TV volume set to " + volume);
+    }
+
+    @Override
+    public int getChannel() {
+        return channel;
+    }
+
+    @Override
+    public void setChannel(int channel) {
+        this.channel = channel;
+        System.out.println("TV channel set to " + channel);
+    }
+}
+
+// Radio Implementation
+class Radio implements Device {
+    private boolean powerOn = false;
+    private int volume = 30;
+    private int channel = 1;
+
+    @Override
+    public boolean isEnabled() {
+        return powerOn;
+    }
+
+    @Override
+    public void enable() {
+        powerOn = true;
+        System.out.println("Radio is now ON");
+    }
+
+    @Override
+    public void disable() {
+        powerOn = false;
+        System.out.println("Radio is now OFF");
+    }
+
+    @Override
+    public int getVolume() {
+        return volume;
+    }
+
+    @Override
+    public void setVolume(int percent) {
+        volume = Math.max(0, Math.min(100, percent));
+        System.out.println("Radio volume set to " + volume);
+    }
+
+    @Override
+    public int getChannel() {
+        return channel;
+    }
+
+    @Override
+    public void setChannel(int channel) {
+        this.channel = channel;
+        System.out.println("Radio channel set to " + channel);
+    }
+}
+
+// ============================================================================
+// Step 3: Create the Remote Control Abstraction
+// ============================================================================
+// This class acts as a bridge between the device and the remote control controls
+class RemoteControl {
+    protected Device device;
+
+    public RemoteControl(Device device) {
+        this.device = device;
+    }
+
+    public void togglePower() {
+        if (device.isEnabled()) {
+            device.disable();
+        } else {
+            device.enable();
+        }
+    }
+
+    public void volumeDown() {
+        device.setVolume(device.getVolume() - 10);
+    }
+
+    public void volumeUp() {
+        device.setVolume(device.getVolume() + 10);
+    }
+
+    public void channelDown() {
+        device.setChannel(device.getChannel() - 10);
+    }
+
+    public void channelUp() {
+        device.setChannel(device.getChannel() + 10);
+    }
+}
+
+// ============================================================================
+// Step 4: Extend the Remote Control for Advanced Features
+// ============================================================================
+// This class adds extra functionality like muting.
+class AdvancedRemoteControl extends RemoteControl {
+    
+    public AdvancedRemoteControl(Device device) {
+        super(device);
+    }
+
+    public void mute() {
+        device.setVolume(0);
+        System.out.println("Device has been muted");
+    }
+}
+
+// ============================================================================
+// Step 5: Demonstration in main()
+// ============================================================================
+public class BridgePatternExample {
+    public static void main(String[] args) {
+        // Using a basic remote with TV
+        Device tv = new TV();
+        RemoteControl remote = new RemoteControl(tv);
+        
+        System.out.println("Using Remote Control with TV:");
+        remote.togglePower();
+        remote.volumeUp();
+        remote.channelUp();
+        remote.togglePower();
+        
+        System.out.println("\n---------------------------------------------\n");
+        
+        // Using an advanced remote with Radio
+        Device radio = new Radio();
+        AdvancedRemoteControl advancedRemote = new AdvancedRemoteControl(radio);
+        
+        System.out.println("Using Advanced Remote Control with Radio:");
+        advancedRemote.togglePower();
+        advancedRemote.volumeDown();
+        advancedRemote.mute();
+        advancedRemote.channelDown();
+    }
+}
+
+
+
+======================================
+
+
+
+
+
+
+
+
+
+
+
+Composite:Composite is a structural design pattern that lets you compose objects into tree 
+structures and then work with these structures as if they were individual objects. 
+
+code template:
+
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+// ============================================================================
+// Step 1: Component Interface
+// ============================================================================
+interface Item {
+    double getPrice();
+}
+
+// ============================================================================
+// Step 2: A single product (Leaf / Product)
+// ============================================================================
+class Product implements Item {
+    private final String name;
+    private final double price;
+
+    public Product(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public double getPrice() {
+        System.out.printf("📦 Item: %s, Price: $%.2f%n", name, price);
+        return price;
+    }
+}
+
+// ============================================================================
+// Step 3: A Box that contains multiple items (Composite / Box)
+// ============================================================================
+class Box implements Item {
+    private final String name;
+    private final List<Item> items = new ArrayList<>();
+
+    public Box(String name) {
+        this.name = name;
+    }
+
+    public void addItem(Item item) {
+        items.add(item);
+    }
+
+    @Override
+    public double getPrice() {
+        System.out.println("📥 Opening box: " + name);
+        double total = 0;
+        
+        for (Item item : items) {
+            total += item.getPrice();
+        }
+        
+        System.out.printf("📥 Total price of '%s': $%.2f%n", name, total);
+        return total;
+    }
+}
+
+// ============================================================================
+// Step 4: Putting everything together (Main method)
+// ============================================================================
+public class AmazonOrderDemo {
+    public static void main(String[] args) {
+        // Single products
+        Product phone = new Product("Phone", 500);
+        Product book = new Product("Book", 20);
+        Product pen = new Product("Pen", 2);
+        Product toy = new Product("Toy", 15);
+        Product ring = new Product("Ring", 200);
+
+        // Tiny box containing a ring
+        Box tinyBox = new Box("Tiny Box");
+        tinyBox.addItem(ring);
+
+        // Medium box containing a toy and tiny box
+        Box mediumBox = new Box("Medium Box");
+        mediumBox.addItem(toy);
+        mediumBox.addItem(tinyBox);
+
+        // Small box containing a book and pen
+        Box smallBox = new Box("Small Box");
+        smallBox.addItem(book);
+        smallBox.addItem(pen);
+
+        // Big box (main box) containing phone, small box, medium box
+        Box bigBox = new Box("Big Box");
+        bigBox.addItem(phone);
+        bigBox.addItem(smallBox);
+        bigBox.addItem(mediumBox);
+
+        // Now we simply ask the big box the total price
+        System.out.println("\n--- Finding total Amazon order price ---");
+        double totalOrderPrice = bigBox.getPrice();
+        
+        System.out.printf("%n💰 Your Total Order Price: $%.2f%n", totalOrderPrice);
+    }
+}
+
+
+
+
+
+===================================================================
+
+
+
+
+
+
+Decorator:Decorator is a design pattern that lets you add new features to an object without changing 
+its code — by wrapping it inside another object. 
+
+code template:
+
+
+
+// ============================================================================
+// Step 1: Create a Component interface
+// ============================================================================
+interface Notifier {
+    void send(String message);
+}
+
+// ============================================================================
+// Step 2: Create the base email notifier (Concrete Component)
+// ============================================================================
+class EmailNotifier implements Notifier {
+    @Override
+    public void send(String message) {
+        System.out.println("Sending EMAIL: " + message);
+    }
+}
+
+// ============================================================================
+// Step 3: Create decorator classes
+// ============================================================================
+class SMSDecorator implements Notifier {
+    private Notifier wrapped;
+
+    public SMSDecorator(Notifier notifier) {
+        this.wrapped = notifier;
+    }
+
+    @Override
+    public void send(String message) {
+        wrapped.send(message); // delegate to wrapped notifier
+        System.out.println("Sending SMS: " + message);
+    }
+}
+
+class SlackDecorator implements Notifier {
+    private Notifier wrapped;
+
+    public SlackDecorator(Notifier notifier) {
+        this.wrapped = notifier;
+    }
+
+    @Override
+    public void send(String message) {
+        wrapped.send(message); // delegate to wrapped notifier
+        System.out.println("Sending SLACK: " + message);
+    }
+}
+
+// Add decorator "you want to add facebook"
+class FacebookDecorator implements Notifier {
+    private Notifier wrapped;
+
+    public FacebookDecorator(Notifier notifier) {
+        this.wrapped = notifier;
+    }
+
+    @Override
+    public void send(String message) {
+        wrapped.send(message); // delegate to wrapped notifier
+        System.out.println("🟦 Sending FACEBOOK: " + message);
+    }
+}
+
+// ============================================================================
+// Client Scenario 1: Initial Client Code (Email + SMS + Slack)
+// ============================================================================
+class NotificationApp {
+    public static void main(String[] args) {
+        System.out.println("--- Running Client Scenario 1 ---");
+        
+        // Basic email notifier
+        Notifier notifier = new EmailNotifier();
+        
+        // Wrap it with SMS support
+        notifier = new SMSDecorator(notifier);
+        
+        // Then wrap with Slack support too
+        notifier = new SlackDecorator(notifier);
+        
+        // Send message via all channels!
+        notifier.send("⚠️ ALERT: Server down!");
+    }
+}
+
+// ============================================================================
+// Client Scenario 2: Client Code with Different Notifiers (Including Facebook)
+// ============================================================================
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("\n--- Running Client Scenario 2 (With Facebook) ---");
+        
+        // Step 1: Start with basic email notifier
+        Notifier notifier = new EmailNotifier();
+        Notifier notifier2 = new EmailNotifier();
+        
+        // Step 2: Wrap with SMS
+        notifier = new SMSDecorator(notifier);
+        notifier2 = new SMSDecorator(notifier2);
+        
+        // Step 3: Wrap with Slack
+        notifier = new SlackDecorator(notifier);
+        
+        // Step 4: Wrap with Facebook
+        notifier = new FacebookDecorator(notifier);
+        notifier2 = new FacebookDecorator(notifier2);
+        
+        // Final step: Send one message through all channels
+        System.out.println("[Notifier 1 Pipeline]:");
+        notifier.send("⚠️ ALERT: Server is down!");
+        
+        System.out.println("\n[Notifier 2 Pipeline (Skips Slack)]:");
+        notifier2.send("⚠️ ALERT: Server is down!");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+=============================================================
+
+Facade:To hide complexity behind a simple, easy-to-use interface. 
+Imagine a big, complicated machine with tons of buttons, wires, and levers. You don’t want 
+to deal with all that mess. You just want one big green button that says “Start”. 
+That’s what a Facade gives you. 
+
+code template:
+
+
+import java.io.File;
+
+// ============================================================================
+// Step 1: Subsystem Classes (Complex Video Processing Library)
+// ============================================================================
+class VideoFile {
+    private String filename;
+    public VideoFile(String filename) { this.filename = filename; }
+    public String getFilename() { return filename; }
+}
+
+interface Codec {}
+class OggCompressionCodec implements Codec {}
+class MPEG4CompressionCodec implements Codec {}
+
+class CodecFactory {
+    public Codec extract(VideoFile file) {
+        System.out.println("🎬 CodecFactory: Extracting source codec from file...");
+        return new OggCompressionCodec(); // Stub implementation
+    }
+}
+
+class Buffer {}
+
+class BitrateReader {
+    public static Buffer read(String filename, Codec sourceCodec) {
+        System.out.println("📖 BitrateReader: Reading file into buffer using source codec...");
+        return new Buffer();
+    }
+    
+    public static VideoFile convert(Buffer buffer, Codec destinationCodec) {
+        System.out.println("🔄 BitrateReader: Converting buffer to destination codec...");
+        return new VideoFile("converted_video.mp4");
+    }
+}
+
+class AudioMixer {
+    public VideoFile fix(VideoFile result) {
+        System.out.println("🔊 AudioMixer: Fixing audio tracks and mixing...");
+        return result;
+    }
+}
+
+// ============================================================================
+// Step 2: The Façade Class
+// ============================================================================
+class VideoConverter {
+    public File convert(String filename, String format) {
+        System.out.println("🚀 VideoConverter Facade: Starting conversion process...");
+        
+        VideoFile file = new VideoFile(filename);
+        Codec sourceCodec = new CodecFactory().extract(file);
+        Codec destinationCodec;
+        
+        if (format.equalsIgnoreCase("mp4")) {
+            destinationCodec = new MPEG4CompressionCodec();
+        } else {
+            destinationCodec = new OggCompressionCodec();
+        }
+        
+        Buffer buffer = BitrateReader.read(filename, sourceCodec);
+        VideoFile result = BitrateReader.convert(buffer, destinationCodec);
+        result = new AudioMixer().fix(result);
+        
+        System.out.println("✅ VideoConverter Facade: Conversion completed successfully!");
+        return new File(result.getFilename());
+    }
+}
+
+// ============================================================================
+// Step 3: Main Program (Client)
+// ============================================================================
+public class Application {
+    public static void main(String[] args) {
+        // The client interacts only with the clean simple interface of the Facade
+        VideoConverter converter = new VideoConverter();
+        File mp4 = converter.convert("funny-cats-video.ogg", "mp4");
+        
+        // Simulating the mp4.save() function call from the slide
+        System.out.println("💾 Saving file to: " + mp4.getName());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+==================================================
+
+
+
+Proxy:Proxy is a structural design pattern that lets you provide a substitute or placeholder for another 
+object. A proxy controls access to the original object, allowing you to perform something 
+either before or after the request gets through to the original object.
+
+code template:
+
+
+
+import java.util.*;
+
+// ============================================================================
+// 1. Interface (Target Interface)
+// ============================================================================
+interface ThirdPartyYouTubeLib {
+    List<String> listVideos();
+    String getVideoInfo(String id);
+    void downloadVideo(String id);
+}
+
+// ============================================================================
+// 2. Real Service (The Third-Party Library implementation)
+// ============================================================================
+class ThirdPartyYouTubeClass implements ThirdPartyYouTubeLib {
+    @Override
+    public List<String> listVideos() {
+        simulateNetworkDelay("Fetching video list");
+        return Arrays.asList("video1", "video2", "video3");
+    }
+
+    @Override
+    public String getVideoInfo(String id) {
+        simulateNetworkDelay("Getting info for " + id);
+        return "Info about " + id;
+    }
+
+    @Override
+    public void downloadVideo(String id) {
+        simulateNetworkDelay("Downloading " + id);
+        System.out.println("Downloaded video: " + id);
+    }
+
+    private void simulateNetworkDelay(String msg) {
+        System.out.println(msg + " ... (slow)");
+        try {
+            Thread.sleep(1000); // Simulate network latency delay
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+// ============================================================================
+// 3. Proxy Class (Handles Caching Layers)
+// ============================================================================
+class CachedYouTubeClass implements ThirdPartyYouTubeLib {
+    private ThirdPartyYouTubeLib realService;
+    private List<String> listCache;
+    private Map<String, String> videoInfoCache = new HashMap<>();
+    private Set<String> downloadedVideos = new HashSet<>();
+    private boolean needReset = false;
+
+    public CachedYouTubeClass(ThirdPartyYouTubeLib service) {
+        this.realService = service;
+    }
+
+    @Override
+    public List<String> listVideos() {
+        if (listCache == null || needReset) {
+            System.out.println("[Proxy] Caching video list...");
+            listCache = realService.listVideos();
+        } else {
+            System.out.println("[Proxy] Returning cached video list.");
+        }
+        return listCache;
+    }
+
+    @Override
+    public String getVideoInfo(String id) {
+        // If the video does not exist in cache or reset is forced
+        if (!videoInfoCache.containsKey(id) || needReset) {
+            System.out.println("[Proxy] Caching info for " + id);
+            String info = realService.getVideoInfo(id);
+            videoInfoCache.put(id, info);
+        } else {
+            // If it's cached before
+            System.out.println("[Proxy] Returning cached info for " + id);
+        }
+        return videoInfoCache.get(id);
+    }
+
+    @Override
+    public void downloadVideo(String id) {
+        // First time downloading a video
+        if (!downloadedVideos.contains(id) || needReset) {
+            System.out.println("[Proxy] Downloading (and caching) " + id);
+            realService.downloadVideo(id);
+            downloadedVideos.add(id);
+        } else {
+            // Video is downloaded before
+            System.out.println("[Proxy] Skipping download. Already downloaded: " + id);
+        }
+    }
+
+    public void resetCache() {
+        needReset = true;
+        listCache = null;
+        videoInfoCache.clear();
+        downloadedVideos.clear();
+        System.out.println("[Proxy] Cache has been reset.");
+        needReset = false;
+    }
+}
+
+// ============================================================================
+// 4. Client Class (Uses the service via its interface)
+// ============================================================================
+class YouTubeManager {
+    protected ThirdPartyYouTubeLib service;
+
+    public YouTubeManager(ThirdPartyYouTubeLib service) {
+        this.service = service;
+    }
+
+    public void renderVideoPage(String id) {
+        String info = service.getVideoInfo(id);
+        System.out.println("Rendering video page for: " + info);
+    }
+
+    public void renderListPanel() {
+        List<String> videos = service.listVideos();
+        System.out.println("Rendering video list: " + videos);
+    }
+
+    // Simulate User Action
+    public void reactOnUserInput() {
+        renderListPanel();
+        renderVideoPage("video1");
+        renderVideoPage("video1"); // Should use cache
+        service.downloadVideo("video1");
+        service.downloadVideo("video1"); // Should skip download
+    }
+}
+
+// ============================================================================
+// 5. Application (Configures and runs the system)
+// ============================================================================
+public class Application {
+    public static void main(String[] args) {
+        // Real service (3rd-party)
+        ThirdPartyYouTubeLib realService = new ThirdPartyYouTubeClass();
+        
+        // Proxy that adds caching
+        ThirdPartyYouTubeLib cachedService = new CachedYouTubeClass(realService);
+        
+        // Client uses the proxy instance instead of direct network class
+        YouTubeManager manager = new YouTubeManager(cachedService);
+        
+        // First pass: Values are fetched via network and then cached
+        manager.reactOnUserInput();
+        
+        System.out.println("\n--- Resetting Cache ---\n");
+        ((CachedYouTubeClass) cachedService).resetCache();
+        
+        // Test again after cache reset (will query network once more)
+        manager.reactOnUserInput();
+    }
+}
