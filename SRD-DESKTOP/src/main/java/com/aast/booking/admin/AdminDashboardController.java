@@ -130,6 +130,13 @@ public class AdminDashboardController implements Initializable {
         fetchAllData();
         fetchRamadanMode();
         startListeningToRequests();
+ 
+        // Hide Delegation feature for Temporary Admins
+        if ("temp_admin".equals(user.getRole())) {
+            btnDelegation.setVisible(false);
+            btnDelegation.setManaged(false);
+        }
+ 
         showDashboard();
     }
 

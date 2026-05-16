@@ -30,6 +30,7 @@ public class AdminDelegationController implements Initializable {
     @FXML private javafx.scene.layout.HBox dateTimeRangeBox;
     @FXML private Label statusLabel;
     @FXML private TableView<Object> activeDelegationsTable;
+    @FXML private TableColumn<Object, String> colUser, colPermission, colType, colStatus, colAction;
  
     private ObservableList<User> allUsers = FXCollections.observableArrayList();
     private javafx.collections.transformation.FilteredList<User> filteredUsers;
@@ -44,7 +45,17 @@ public class AdminDelegationController implements Initializable {
         setupRoleToggles();
         setupColleges();
         setupTimeSpinners();
+        setupTableColumns();
         fetchUsers();
+        fetchDelegations();
+    }
+ 
+    private void setupTableColumns() {
+        colUser.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("userName"));
+        colPermission.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("permissionName"));
+        colType.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("type"));
+        colStatus.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty("نشط"));
+        // Action column could be added later for delete/revoke
     }
  
     private void setupTimeSpinners() {
@@ -150,7 +161,6 @@ public class AdminDelegationController implements Initializable {
         ));
     }
  
-    
     @FXML
     private void handleDelegate() {
         // PROXY PATTERN: Check if current user can delegate
@@ -176,8 +186,8 @@ public class AdminDelegationController implements Initializable {
             // VALIDATION: Each college allows only one secretary
             try {
                 QuerySnapshot existing = db.collection("users")
-                    .whereEqualTo("role", "SECRETARY")
-                    .whereEqualTo("department", college)
+                    .whereEqualTo("role", "secretary")
+                    .whereEqualTo("collegeName", college)
                     .get().get();
                 
                 if (!existing.isEmpty()) {
@@ -191,10 +201,11 @@ public class AdminDelegationController implements Initializable {
             // Proceed with Secretary Delegation
             PermissionComponent perm = new LeafPermission("SECRETARY", "صلاحيات سكرتير جهة: " + college);
             DelegationStrategy strategy = new PermanentValidationStrategy();
-            PermissionCommand command = new DelegateCommand(selectedUser.getUid(), perm, strategy);
+            PermissionCommand command = new DelegateCommand(selectedUser.getUid(), selectedUser.getDisplayName(), perm, strategy);
             command.execute();
             commandHistory.push(command);
             showAlert("نجاح", "تم تعيين " + selectedUser.getDisplayName() + " كسكرتير لـ " + college);
+            fetchDelegations();
  
         } else if (rbTempAdmin.isSelected()) {
             if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
@@ -215,11 +226,33 @@ public class AdminDelegationController implements Initializable {
  
             PermissionComponent perm = new PermissionGroup("TEMP_ADMIN", "صلاحيات مسؤول مؤقت");
             DelegationStrategy strategy = new TemporaryValidationStrategy(start, end);
-            PermissionCommand command = new DelegateCommand(selectedUser.getUid(), perm, strategy);
+            PermissionCommand command = new DelegateCommand(selectedUser.getUid(), selectedUser.getDisplayName(), perm, strategy);
             command.execute();
             commandHistory.push(command);
             showAlert("نجاح", "تم منح صلاحيات أدمن مؤقت بنجاح لـ: " + selectedUser.getDisplayName());
+            fetchDelegations();
         }
+    }
+ 
+    private void fetchDelegations() {
+        Firestore db = FirebaseService.getInstance().getFirestore();
+        if (db == null) return;
+ 
+        db.collection("delegations")
+          .orderBy("timestamp", Query.Direction.DESCENDING)
+          .limit(10)
+          .addSnapshotListener((snapshots, e) -> {
+              if (e != null) return;
+              List<com.aast.booking.models.Delegation> list = new ArrayList<>();
+              for (QueryDocumentSnapshot doc : snapshots) {
+                  com.aast.booking.models.Delegation d = doc.toObject(com.aast.booking.models.Delegation.class);
+                  d.setId(doc.getId());
+                  list.add(d);
+              }
+              Platform.runLater(() -> {
+                  activeDelegationsTable.setItems(FXCollections.observableArrayList(list));
+              });
+          });
     }
  
     @FXML

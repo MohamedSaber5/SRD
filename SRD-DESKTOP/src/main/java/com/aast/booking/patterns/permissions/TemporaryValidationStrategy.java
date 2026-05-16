@@ -21,6 +21,9 @@ public class TemporaryValidationStrategy implements DelegationStrategy {
         return !now.isBefore(start) && !now.isAfter(end);
     }
  
+    public LocalDateTime getStart() { return start; }
+    public LocalDateTime getEnd() { return end; }
+ 
     @Override
     public String getType() {
         return "temporary";

@@ -11,11 +11,13 @@ import java.util.Map;
  */
 public class DelegateCommand implements PermissionCommand {
     private String targetUserId;
+    private String userName;
     private PermissionComponent permission;
     private DelegationStrategy strategy;
  
-    public DelegateCommand(String targetUserId, PermissionComponent permission, DelegationStrategy strategy) {
+    public DelegateCommand(String targetUserId, String userName, PermissionComponent permission, DelegationStrategy strategy) {
         this.targetUserId = targetUserId;
+        this.userName = userName;
         this.permission = permission;
         this.strategy = strategy;
     }
@@ -28,21 +30,26 @@ public class DelegateCommand implements PermissionCommand {
         // 1. Save delegation record
         Map<String, Object> data = new HashMap<>();
         data.put("targetUserId", targetUserId);
+        data.put("userName", userName);
         data.put("permissionName", permission.getName());
         data.put("type", strategy.getType());
         data.put("timestamp", System.currentTimeMillis());
  
         db.collection("delegations").add(data);
  
-        // 2. Update User document for role/department (to reflect in system)
+        // 2. Update User document (to reflect in system)
         Map<String, Object> userUpdate = new HashMap<>();
         if (permission.getName().equals("TEMP_ADMIN")) {
-            userUpdate.put("role", "ADMIN");
+            userUpdate.put("role", "temp_admin");
+            if (strategy instanceof TemporaryValidationStrategy) {
+                TemporaryValidationStrategy ts = (TemporaryValidationStrategy) strategy;
+                userUpdate.put("tempAccessStart", ts.getStart().toString());
+                userUpdate.put("tempAccessEnd", ts.getEnd().toString());
+            }
         } else if (permission.getName().equals("SECRETARY")) {
-            userUpdate.put("role", "SECRETARY");
-            // Extract department from description or use strategy
+            userUpdate.put("role", "secretary");
             String dept = permission.getDescription().replace("صلاحيات سكرتير جهة: ", "");
-            userUpdate.put("department", dept);
+            userUpdate.put("collegeName", dept);
         }
         
         if (!userUpdate.isEmpty()) {
