@@ -302,3 +302,74 @@
 .btn-reject-card:hover {
     -fx-background-color: #f2f4f6;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Statistics View Styles
+   ══════════════════════════════════════════════════════════════ */
+
+/* Chart card — same background + radius as section card */
+.stats-chart-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #001e40;
+}
+
+/* ── JavaFX Chart Overrides ── */
+
+/* Remove grey plot background */
+.stats-chart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+/* Subtle horizontal grid lines only */
+.stats-chart .chart-horizontal-grid-lines {
+    -fx-stroke: #f1f5f9;
+    -fx-stroke-width: 1;
+}
+.stats-chart .chart-vertical-grid-lines {
+    -fx-stroke: transparent;
+}
+
+/* Axis lines */
+.stats-chart .axis {
+    -fx-tick-label-fill: #94a3b8;
+    -fx-font-size: 11px;
+}
+.stats-chart .axis-label {
+    -fx-text-fill: transparent;
+}
+.stats-chart .chart-alternative-row-fill {
+    -fx-background-color: transparent;
+}
+
+/* Default series colors — matched to palette */
+.stats-chart .default-color0.chart-bar   { -fx-bar-fill: #1e3a5f; }
+.stats-chart .default-color1.chart-bar   { -fx-bar-fill: #b58b4b; }
+.stats-chart .default-color2.chart-bar   { -fx-bar-fill: #e2c58a; }
+.stats-chart .default-color3.chart-bar   { -fx-bar-fill: #5a7698; }
+
+/* Line chart series color */
+.stats-chart .default-color0.chart-series-line {
+    -fx-stroke: #1e3a5f;
+    -fx-stroke-width: 2.5;
+}
+.stats-chart .chart-series-area-fill.default-color0 {
+    -fx-fill: rgba(30,58,95,0.15);
+}
+
+/* Pie chart slice colors */
+.stats-chart .default-color0.chart-pie { -fx-pie-color: #22c55e; }
+.stats-chart .default-color1.chart-pie { -fx-pie-color: #eab308; }
+.stats-chart .default-color2.chart-pie { -fx-pie-color: #f59e0b; }
+.stats-chart .default-color3.chart-pie { -fx-pie-color: #ef4444; }
+
+/* Legend */
+.stats-chart .chart-legend {
+    -fx-background-color: transparent;
+    -fx-font-size: 11px;
+    -fx-text-fill: #5a7698;
+}
+
+/* Bar radius — JavaFX doesn't support border-radius on bars natively */
+/* but we can use custom cell factory if needed; left for now */
+

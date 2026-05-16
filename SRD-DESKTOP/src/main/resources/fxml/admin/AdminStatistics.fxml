@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+            style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.aast.booking.admin.AdminStatisticsController">
+
+    <stylesheets>
+        <String fx:value="/css/admin.css" />
+    </stylesheets>
+
+    <VBox spacing="24" nodeOrientation="RIGHT_TO_LEFT" style="-fx-background-color: #f2f4f6;">
+        <padding><Insets bottom="32" left="30" right="30" top="24" /></padding>
+
+        <!-- ── Section Title ── -->
+        <VBox spacing="4">
+            <Label text="📊  الإحصائيات والتقارير" styleClass="admin-section-title" />
+            <Label text="تحليل شامل لاستخدام القاعات ومعدلات الطلب" styleClass="admin-section-subtitle" />
+        </VBox>
+
+        <!-- ── KPI Cards Row ── -->
+        <HBox spacing="16">
+            <!-- Card 1: Total Requests -->
+            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Label style="-fx-font-size: 20px;" text="📋" />
+                    <Region HBox.hgrow="ALWAYS" />
+                </HBox>
+                <Label styleClass="admin-stat-label" text="إجمالي الطلبات" />
+                <Label fx:id="kpiTotal" styleClass="admin-stat-value" text="—" />
+            </VBox>
+
+            <!-- Card 2: Approved -->
+            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Label style="-fx-font-size: 20px;" text="✓" />
+                    <Region HBox.hgrow="ALWAYS" />
+                </HBox>
+                <Label styleClass="admin-stat-label" text="الطلبات المقبولة" />
+                <Label fx:id="kpiApproved" styleClass="admin-stat-value-green" text="—" />
+            </VBox>
+
+            <!-- Card 3: Emergency -->
+            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Label style="-fx-font-size: 20px;" text="⚠" />
+                    <Region HBox.hgrow="ALWAYS" />
+                </HBox>
+                <Label styleClass="admin-stat-label" text="الطلبات الطارئة (أقل من 48 ساعة)" />
+                <Label fx:id="kpiEmergency" styleClass="admin-stat-value-gold" text="—" />
+            </VBox>
+
+            <!-- Card 4: Most Booked Room -->
+            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Label style="-fx-font-size: 20px;" text="🏆" />
+                    <Region HBox.hgrow="ALWAYS" />
+                </HBox>
+                <Label styleClass="admin-stat-label" text="القاعة الأكثر طلباً" />
+                <Label fx:id="kpiTopRoom" styleClass="admin-stat-value" text="—" style="-fx-font-size: 18px;" />
+            </VBox>
+        </HBox>
+
+        <!-- ── Charts Grid ── -->
+        <GridPane hgap="16" vgap="16">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="320" />
+                <RowConstraints minHeight="320" />
+                <RowConstraints minHeight="320" />
+            </rowConstraints>
+
+            <!-- Row 0, Col 0: Peak Hours (LineChart) -->
+            <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <Label text="⏰  ساعات الذروة" styleClass="stats-chart-title" />
+                <LineChart fx:id="peakHoursChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
+                           animated="false" legendVisible="false" createSymbols="false">
+                    <xAxis><CategoryAxis label="" tickLabelRotation="0" /></xAxis>
+                    <yAxis><NumberAxis label="" /></yAxis>
+                </LineChart>
+            </VBox>
+
+            <!-- Row 0, Col 1: Busiest Days (BarChart) -->
+            <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label text="📅  الأيام الأكثر ازدحاماً" styleClass="stats-chart-title" />
+                <BarChart fx:id="busiestDaysChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
+                          animated="false" legendVisible="false" barGap="4" categoryGap="12">
+                    <xAxis><CategoryAxis /></xAxis>
+                    <yAxis><NumberAxis /></yAxis>
+                </BarChart>
+            </VBox>
+
+            <!-- Row 1, Col 0: Top Rooms (Horizontal BarChart) -->
+            <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <Label text="🏢  القاعات الأكثر طلباً" styleClass="stats-chart-title" />
+                <BarChart fx:id="topRoomsChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
+                          animated="false" legendVisible="false" barGap="4" categoryGap="16">
+                    <xAxis><CategoryAxis /></xAxis>
+                    <yAxis><NumberAxis /></yAxis>
+                </BarChart>
+            </VBox>
+
+            <!-- Row 1, Col 1: Building Pressure (BarChart) -->
+            <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <Label text="🏛  الضغط على المباني" styleClass="stats-chart-title" />
+                <BarChart fx:id="buildingChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
+                          animated="false" legendVisible="false" barGap="4" categoryGap="20">
+                    <xAxis><CategoryAxis /></xAxis>
+                    <yAxis><NumberAxis /></yAxis>
+                </BarChart>
+            </VBox>
+
+            <!-- Row 2, Col 0: Status Distribution (PieChart) -->
+            <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                <Label text="🍩  توزيع حالة الطلبات" styleClass="stats-chart-title" />
+                <PieChart fx:id="statusPieChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
+                          animated="false" legendVisible="true" labelsVisible="false"
+                          startAngle="90" clockwise="false" />
+            </VBox>
+
+            <!-- Row 2, Col 1: Emergency vs Normal (PieChart) -->
+            <VBox spacing="10" styleClass="admin-section-card" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <Label text="⏱  الطلبات الطارئة مقابل الطبيعية" styleClass="stats-chart-title" />
+                <PieChart fx:id="leadTimePieChart" VBox.vgrow="ALWAYS" styleClass="stats-chart"
+                          animated="false" legendVisible="true" labelsVisible="false"
+                          startAngle="90" clockwise="false" />
+            </VBox>
+
+        </GridPane>
+
+    </VBox>
+</ScrollPane>

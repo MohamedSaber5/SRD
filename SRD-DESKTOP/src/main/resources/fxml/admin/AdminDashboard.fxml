@@ -195,11 +195,8 @@
                         <Label styleClass="admin-section-title" text="الإعدادات" />
                         <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
                     </VBox>
-                    <VBox fx:id="statsView" spacing="20" visible="false" alignment="CENTER">
-                        <padding><Insets bottom="60" left="60" right="60" top="60" /></padding>
-                        <Label style="-fx-font-size: 28px;" text="📊" />
-                        <Label styleClass="admin-section-title" text="الإحصائيات والتقارير" />
-                        <Label styleClass="admin-section-subtitle" text="هذا القسم سيتم تفعيله قريباً" />
+                    <VBox fx:id="statsView" visible="false" VBox.vgrow="ALWAYS">
+                        <fx:include source="AdminStatistics.fxml" />
                     </VBox>
 
                     <!-- OVERLAYS / MODALS -->
