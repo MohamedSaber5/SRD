@@ -19,7 +19,7 @@ This directory contains comprehensive documentation of all 13 design patterns id
 | 9 | [Command](pattern_09_Command.md) | Behavioral | `patterns/command/` | Command, ApproveBookingCommand, RejectBookingCommand | Encapsulate booking actions as objects |
 | 10 | [Strategy](pattern_10_Strategy.md) | Behavioral | `admin/search/`, `admin/strategies/` | RoomSearchStrategy, IApprovalStrategy, SearchStrategyFactory | Different algorithms for room search and approval |
 | 11 | [Prototype](pattern_11_Prototype.md) | Creational | `models/` | Booking.clone() | Clone bookings for resubmission |
-| 12 | [Prpxy] | Structural | `patterns/permissions/` | AdminDelegationController ,handleDelegate() ,securityProxy.canAccess("DELEGATE_PERMISSION")  | Clone bookings for resubmission |Provide a surrogate or placeholder for another object to control access to it.|
+| 12 | [Proxy] | Structural | `patterns/permissions/` | AdminDelegationController ,handleDelegate() ,securityProxy.canAccess("DELEGATE_PERMISSION")  | Clone bookings for resubmission |Provide a surrogate or placeholder for another object to control access to it.|
 
 
 -----
