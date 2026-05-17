@@ -129,7 +129,6 @@ public class AdminDashboardController implements Initializable {
         setupTodayEventsTable();
         fetchAllData();
         fetchRamadanMode();
-        fetchPendingRequestsOnly();
  
         // Hide features based on granular permissions for Temporary Admins
         if ("temp_admin".equals(user.getRole())) {
@@ -239,12 +238,6 @@ public class AdminDashboardController implements Initializable {
             try {
                 Firestore db = com.aast.booking.core.FirebaseService.getInstance().getFirestore();
 
-                // Fetch only last 300 bookings for the dashboard summary (reduced from 500)
-                ApiFuture<QuerySnapshot> bookingsFuture = db.collection("bookings")
-                        .orderBy("createdAt", Query.Direction.DESCENDING)
-                        .limit(300)
-                        .get();
-
                 // Get room count (using cache if available to save reads)
                 int roomCount = 0;
                 if (!com.aast.booking.services.GlobalDataService.getInstance().isRoomCacheStale()) {
@@ -259,29 +252,36 @@ public class AdminDashboardController implements Initializable {
                     roomCount = rooms.size();
                 }
 
-                QuerySnapshot bookingsSnap = bookingsFuture.get();
-
                 List<Booking> bookings = new ArrayList<>();
-                for (DocumentSnapshot doc : bookingsSnap.getDocuments()) {
-                    Booking b = new Booking();
-                    b.setId(doc.getId());
-                    b.setRoomId(doc.getString("roomId"));
-                    b.setRoomType(doc.getString("roomType"));
-                    b.setDate(doc.getString("date"));
-                    b.setTimeFrom(doc.getString("timeFrom"));
-                    b.setTimeTo(doc.getString("timeTo"));
-                    b.setStatus(doc.getString("status"));
-                    b.setPurpose(doc.getString("purpose"));
-                    b.setResponsibleName(doc.getString("responsibleName"));
-                    b.setUserName(doc.getString("userName"));
-                    Boolean is16 = doc.getBoolean("is16WeekFixed");
-                    String courseName = doc.getString("courseName");
-                    b.setPurpose(courseName != null ? courseName : b.getPurpose());
-                    if (is16 != null && is16) b.setRoomType("fixed");
-                    bookings.add(b);
+                if (!com.aast.booking.services.GlobalDataService.getInstance().isBookingCacheStale()) {
+                    bookings = com.aast.booking.services.GlobalDataService.getInstance().getCachedBookings();
+                } else {
+                    // Fetch only last 300 bookings for the dashboard summary (reduced from 500)
+                    ApiFuture<QuerySnapshot> bookingsFuture = db.collection("bookings")
+                            .orderBy("createdAt", Query.Direction.DESCENDING)
+                            .limit(300)
+                            .get();
+                    QuerySnapshot bookingsSnap = bookingsFuture.get();
+                    for (DocumentSnapshot doc : bookingsSnap.getDocuments()) {
+                        Booking b = new Booking();
+                        b.setId(doc.getId());
+                        b.setRoomId(doc.getString("roomId"));
+                        b.setRoomType(doc.getString("roomType"));
+                        b.setDate(doc.getString("date"));
+                        b.setTimeFrom(doc.getString("timeFrom"));
+                        b.setTimeTo(doc.getString("timeTo"));
+                        b.setStatus(doc.getString("status"));
+                        b.setPurpose(doc.getString("purpose"));
+                        b.setResponsibleName(doc.getString("responsibleName"));
+                        b.setUserName(doc.getString("userName"));
+                        Boolean is16 = doc.getBoolean("is16WeekFixed");
+                        String courseName = doc.getString("courseName");
+                        b.setPurpose(courseName != null ? courseName : b.getPurpose());
+                        if (is16 != null && is16) b.setRoomType("fixed");
+                        bookings.add(b);
+                    }
+                    com.aast.booking.services.GlobalDataService.getInstance().setCachedBookings(bookings);
                 }
-
-
 
                 return new Object[]{bookings, roomCount};
             } catch (Exception e) {

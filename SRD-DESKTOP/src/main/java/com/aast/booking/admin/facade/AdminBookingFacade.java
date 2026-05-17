@@ -84,6 +84,7 @@ public class AdminBookingFacade {
 
                 boolean success = strategy.approve(booking, roomId, isUrgent);
                 if (success) {
+                    com.aast.booking.services.GlobalDataService.getInstance().invalidateBookings();
                     Platform.runLater(onSuccess);
                 } else {
                     Platform.runLater(() -> onError.accept(new Exception("Approval strategy failed.")));
@@ -138,6 +139,7 @@ public class AdminBookingFacade {
 
                 db.collection("notifications").add(notification).get();
 
+                com.aast.booking.services.GlobalDataService.getInstance().invalidateBookings();
                 Platform.runLater(onSuccess);
             } catch (Exception e) {
                 e.printStackTrace();

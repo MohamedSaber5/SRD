@@ -3,9 +3,9 @@ REM Script to download JDK 17 and setup the project
 
 setlocal enabledelayedexpansion
 
-set JDK_INSTALL_PATH=C:\Program Files\Java\jdk-17
+set JDK_INSTALL_PATH=C:\Users\ModernComputer\Downloads\jdk-17
 set MAVEN_PATH=C:\Users\ModernComputer\Downloads\apache-maven-3.9.6
-set PROJECT_PATH=C:\Users\ModernComputer\Desktop\SRD\SRD-DESKTOP
+set PROJECT_PATH=%~dp0
 
 echo.
 echo ============================================
@@ -29,19 +29,7 @@ if not exist "C:\Program Files\Java" mkdir "C:\Program Files\Java"
 
 REM Download JDK 17 using PowerShell
 echo Downloading... هذا قد يستغرق وقتاً
-powershell -Command "^
-    $url = 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.10+7/OpenJDK17U-jdk_x64_windows_hotspot_17.0.10_7.zip'; ^
-    $output = 'C:\OpenJDK17.zip'; ^
-    Write-Host 'جاري التحميل...' ; ^
-    (New-Object System.Net.ServicePointManager).SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; ^
-    (New-Object System.Net.WebClient).DownloadFile($url, $output); ^
-    Write-Host 'تم التحميل، جاري فك الضغط...'; ^
-    Expand-Archive -Path $output -DestinationPath 'C:\Program Files\Java' -Force; ^
-    Rename-Item -Path 'C:\Program Files\Java\jdk-17.0.10+7' -NewName 'jdk-17' -Force; ^
-    Remove-Item -Path $output -Force; ^
-    Write-Host 'تم اكمال التثبيت ✓'
-"
-
+powershell -Command "$url = 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.10+7/OpenJDK17U-jdk_x64_windows_hotspot_17.0.10_7.zip'; $output = 'C:\Users\ModernComputer\Downloads\OpenJDK17.zip'; Write-Host 'جاري التحميل...' ; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile($url, $output); Write-Host 'تم التحميل، جاري فك الضغط...'; Expand-Archive -Path $output -DestinationPath 'C:\Users\ModernComputer\Downloads' -Force; Rename-Item -Path 'C:\Users\ModernComputer\Downloads\jdk-17.0.10+7' -NewName 'jdk-17' -Force; Remove-Item -Path $output -Force; Write-Host 'تم اكمال التثبيت ✓'"
 if %ERRORLEVEL% neq 0 (
     echo.
     echo خطأ في التحميل. حاول يدوياً:
