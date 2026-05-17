@@ -67,30 +67,34 @@ public class AdminBookingFormController {
     private AdminBookingCaretaker caretaker = new AdminBookingCaretaker();
     private Booking lastBooking; // For Prototype cloning
 
+    // STRATEGY PATTERN (Prompt 10): availability context for time slot switching
+    private final com.aast.booking.patterns.strategy.AvailabilityContext availabilityContext =
+        new com.aast.booking.patterns.strategy.AvailabilityContext();
+
     @FXML
     public void initialize() {
         setupTimeCombos();
         setupRequirementsLogic();
         refreshStepUI();
-
-        // Admin always books multi-purpose halls — set up UI accordingly
         selectMultiCategory();
+
+        // STRATEGY PATTERN (Prompt 10): fetch Ramadan mode and apply strategy
+        com.aast.booking.patterns.facade.SystemFacade.getInstance().fetchRamadanMode(isRamadan -> {
+            availabilityContext.setStrategy(isRamadan);
+            refreshTimeSlots();
+        });
     }
 
     private void setupTimeCombos() {
-        if (slotComboBox != null) {
-            List<String> slots = Arrays.asList("الفترة الأولى (8:30 - 10:00)", "الفترة الثانية (10:15 - 11:45)",
-                                             "الفترة الثالثة (12:00 - 1:30)", "الفترة الرابعة (1:45 - 3:15)");
-            slotComboBox.setItems(FXCollections.observableArrayList(slots));
-        }
+        // Initial population using the default strategy (Normal mode)
+        refreshTimeSlots();
+    }
 
-        List<String> hours = Arrays.asList(
-            "08:00 ص", "09:00 ص", "10:00 ص", "11:00 ص",
-            "12:00 م", "01:00 م", "02:00 م", "03:00 م",
-            "04:00 م", "05:00 م", "06:00 م"
-        );
-        timeFromCombo.setItems(FXCollections.observableArrayList(hours));
-        timeToCombo.setItems(FXCollections.observableArrayList(hours));
+    /** Rebuilds time ComboBoxes from the active AvailabilityContext strategy. */
+    private void refreshTimeSlots() {
+        java.util.List<String> slots = availabilityContext.getSlots();
+        if (timeFromCombo != null) timeFromCombo.setItems(FXCollections.observableArrayList(slots));
+        if (timeToCombo   != null) timeToCombo.setItems(FXCollections.observableArrayList(slots));
     }
 
     private void setupRequirementsLogic() {

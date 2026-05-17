@@ -99,6 +99,9 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     // FACADE PATTERN (Prompt 7): unified entry-point replacing direct service calls
     private final com.aast.booking.patterns.facade.SystemFacade systemFacade =
         com.aast.booking.patterns.facade.SystemFacade.getInstance();
+    // STRATEGY PATTERN (Prompt 10): availability context for time slot switching
+    private final com.aast.booking.patterns.strategy.AvailabilityContext availabilityContext =
+        new com.aast.booking.patterns.strategy.AvailabilityContext();
 
     @Override
     protected void setupObservers() {
@@ -120,13 +123,15 @@ public class SecretaryDashboardController extends BaseDashboardController implem
         }
         
         if (timeFromCombo != null && timeToCombo != null) {
-            String[] times = {
-                "08:00 ص", "09:00 ص", "10:00 ص", "11:00 ص",
-                "12:00 م", "01:00 م", "02:00 م", "03:00 م",
-                "04:00 م", "05:00 م"
-            };
-            timeFromCombo.getItems().addAll(times);
-            timeToCombo.getItems().addAll(times);
+            // STRATEGY PATTERN (Prompt 10): fetch Ramadan mode then apply strategy slots
+            systemFacade.fetchRamadanMode(isRamadan -> {
+                availabilityContext.setStrategy(isRamadan);
+                java.util.List<String> slots = availabilityContext.getSlots();
+                javafx.application.Platform.runLater(() -> {
+                    timeFromCombo.getItems().setAll(slots);
+                    timeToCombo.getItems().setAll(slots);
+                });
+            });
         }
         
         if (datePicker != null) {

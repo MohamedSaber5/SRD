@@ -62,12 +62,9 @@ public class BranchManagerDashboardController implements Initializable {
     private ObservableList<Booking> historyBookings = FXCollections.observableArrayList();
     private Map<String, Map<String, Object>> roomsCache = new HashMap<>();
 
-    private static final List<String> REGULAR_TIMES = Arrays.asList(
-        "08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"
-    );
-    private static final List<String> RAMADAN_TIMES = Arrays.asList(
-        "08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","17:25"
-    );
+    // STRATEGY PATTERN (Prompt 10): replaces hardcoded REGULAR_TIMES / RAMADAN_TIMES
+    private final com.aast.booking.patterns.strategy.AvailabilityContext availabilityContext =
+        new com.aast.booking.patterns.strategy.AvailabilityContext();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -441,19 +438,24 @@ public class BranchManagerDashboardController implements Initializable {
 
     private void applyRamadanState(boolean on) {
         isRamadanMode = on;
+        // STRATEGY PATTERN (Prompt 10): switch strategy based on Ramadan mode
+        availabilityContext.setStrategy(on);
+        java.util.List<String> slots = availabilityContext.getSlots();
+
         if (ramadanBtn != null) {
             if (on) {
                 ramadanBtn.setText("🌙  وضع رمضان: مفعّل");
                 ramadanBtn.getStyleClass().removeAll("bm-ramadan-off");
                 ramadanBtn.getStyleClass().add("bm-ramadan-on");
-                if(bookEndTimeCombo != null) bookEndTimeCombo.getItems().setAll(RAMADAN_TIMES);
             } else {
                 ramadanBtn.setText("🌙  تفعيل وضع رمضان");
                 ramadanBtn.getStyleClass().removeAll("bm-ramadan-on");
                 ramadanBtn.getStyleClass().add("bm-ramadan-off");
-                if(bookEndTimeCombo != null) bookEndTimeCombo.getItems().setAll(REGULAR_TIMES);
             }
         }
+        // Refresh time combos using the active strategy's slot list
+        if (bookStartTimeCombo != null) bookStartTimeCombo.getItems().setAll(slots);
+        if (bookEndTimeCombo   != null) bookEndTimeCombo.getItems().setAll(slots);
     }
 
     // ─── History ──────────────────────────────────────────────────────────
