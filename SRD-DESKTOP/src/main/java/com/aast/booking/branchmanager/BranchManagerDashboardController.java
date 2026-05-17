@@ -392,8 +392,9 @@ public class BranchManagerDashboardController implements Initializable {
     // ─── Instant Booking ──────────────────────────────────────────────────
 
     private void setupInstantBookingForm() {
-        if(bookStartTimeCombo != null) bookStartTimeCombo.getItems().addAll(REGULAR_TIMES);
-        if(bookEndTimeCombo != null) bookEndTimeCombo.getItems().addAll(REGULAR_TIMES);
+        java.util.List<String> slots = availabilityContext.getSlots();
+        if(bookStartTimeCombo != null) bookStartTimeCombo.getItems().addAll(slots);
+        if(bookEndTimeCombo != null) bookEndTimeCombo.getItems().addAll(slots);
     }
 
     @FXML private void handleInstantBooking() {

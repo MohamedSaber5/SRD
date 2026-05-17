@@ -41,4 +41,4 @@ if not exist "%MAVEN_WRAPPER_PROPERTIES%" (
     echo distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip > "%MAVEN_WRAPPER_PROPERTIES%"
 )
 
-java -cp "%MAVEN_WRAPPER_JAR%" org.apache.maven.wrapper.MavenWrapperMain %*
+java -Dmaven.multiModuleProjectDirectory="%APP_HOME:\=/%" -cp "%MAVEN_WRAPPER_JAR%" org.apache.maven.wrapper.MavenWrapperMain %*

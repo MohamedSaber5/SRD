@@ -7,6 +7,7 @@ import {
   setDoc, 
   deleteDoc, 
   getDocs, 
+  getDoc,
   where, 
   writeBatch,
   serverTimestamp,
@@ -34,9 +35,17 @@ class RoomService {
    * Add a new room
    */
   async addRoom(roomData, currentUser) {
-    const newRoomRef = doc(collection(db, 'rooms'));
+    // Use roomNumber as the document ID instead of auto-generating one
+    const newRoomRef = doc(db, 'rooms', roomData.roomNumber);
+    
+    // Check if room already exists
+    const roomSnap = await getDoc(newRoomRef);
+    if (roomSnap.exists()) {
+        throw new Error('قاعة بنفس الرقم موجودة بالفعل.');
+    }
+
     const newRoom = {
-      id: newRoomRef.id,
+      id: roomData.roomNumber, // the ID is now the room number
       roomNumber: roomData.roomNumber,
       type: roomData.type, // 'fixed' or 'multi'
       building: roomData.building,

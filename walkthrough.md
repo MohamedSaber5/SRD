@@ -15,3 +15,14 @@ The implementation of the **Exceptional Bookings and Alternative Rejection Cycle
 - Validated that the `BookingForm.jsx` dynamically loads the rooms before setting the correct `roomType` and `hallCategory` when instantiated dynamically via React Router state mappings.
 - Validated the pre-fill indexing of the `timeSlot` dropdown.
 - This creates a **new** booking log (preventing database inconsistencies with old timestamps and maintaining a clean paper-trail of rejected history versus newly submitted suggestions).
+
+## Java Desktop App Compilation Fixes
+
+1. **Fixed BranchManagerDashboardController Compilation Error**:
+   - The variable `REGULAR_TIMES` was undefined in [BranchManagerDashboardController.java](file:///d:/term%206/SRD/SRD-DESKTOP/src/main/java/com/aast/booking/branchmanager/BranchManagerDashboardController.java#L393-L398).
+   - This was fixed by dynamically calling `availabilityContext.getSlots()` which correctly returns the time slots based on the active strategy (Normal Mode or Ramadan Mode).
+
+2. **Fixed `mvnw.cmd` space path escaping issue**:
+   - The path contains a space (`term 6`), which was causing the Windows batch script quote escaping bug for the `-Dmaven.multiModuleProjectDirectory` setting.
+   - Fixed by converting backslashes to forward-slashes in the script: `-Dmaven.multiModuleProjectDirectory="%APP_HOME:\=/%"`.
+   - Verified that `./mvnw clean compile` now successfully compiles the entire project with **BUILD SUCCESS**.

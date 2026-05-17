@@ -89,8 +89,8 @@ public class RoomService {
                     return;
                 }
                 
-                DocumentReference docRef = db.collection("rooms").document();
-                room.setId(docRef.getId());
+                DocumentReference docRef = db.collection("rooms").document(room.getRoomNumber());
+                room.setId(room.getRoomNumber());
                 docRef.set(room).get();
                 Platform.runLater(() -> onSuccess.accept(null));
             } catch (Exception e) {
