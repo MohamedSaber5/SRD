@@ -103,6 +103,8 @@ public class AdminDashboardController implements Initializable {
 
     // Facade
     private final com.aast.booking.admin.facade.AdminBookingFacade adminFacade = new com.aast.booking.admin.facade.AdminBookingFacade();
+    // FACADE PATTERN (Prompt 7): unified entry-point — delegates to adminFacade + services
+    private final com.aast.booking.patterns.facade.SystemFacade systemFacade = com.aast.booking.patterns.facade.SystemFacade.getInstance();
     private Booking selectedRequest;
     // Maps display label -> real Firestore docId for room selection
     private final Map<String, String> approveRoomDocIdMap = new HashMap<>();
@@ -357,7 +359,8 @@ public class AdminDashboardController implements Initializable {
     // ─── Pending Requests Logic ──────────────────────────────────────────
 
     private void fetchPendingRequestsOnly() {
-        adminFacade.listenToPendingRequests(bookings -> {
+        // FACADE PATTERN (Prompt 7): use SystemFacade instead of calling adminFacade directly
+        systemFacade.listenToPendingBookings(bookings -> {
             lblPendingCount.setText(String.valueOf(bookings.size()));
             renderPendingRequests(bookings);
         }, e -> {

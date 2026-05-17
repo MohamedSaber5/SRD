@@ -140,16 +140,19 @@ public class BranchManagerDashboardController implements Initializable {
     // ─── Data Fetching ────────────────────────────────────────────────────
 
     private final BranchManagerService managerService = BranchManagerService.getInstance();
+    // FACADE PATTERN (Prompt 7): unified entry-point for all service calls
+    private final com.aast.booking.patterns.facade.SystemFacade systemFacade = com.aast.booking.patterns.facade.SystemFacade.getInstance();
 
     private void fetchRoomsAndBookings() {
+        // FACADE PATTERN (Prompt 7): all data fetching goes through SystemFacade
         managerService.fetchMultiPurposeRooms()
             .thenCombine(managerService.fetchPendingBookings(), (rooms, pending) -> {
                 Map<String, Map<String, Object>> roomMap = new HashMap<>();
                 for (Map<String, Object> r : rooms) {
                     roomMap.put((String) r.get("id"), r);
                 }
-                
-                // Sort pending
+
+                // Sort: urgent first, then newest first
                 pending.sort((a, b) -> {
                     boolean aUrgent = a.isUrgent();
                     boolean bUrgent = b.isUrgent();
@@ -165,6 +168,8 @@ public class BranchManagerDashboardController implements Initializable {
                     roomsCache.putAll(roomMap);
                     allPendingBookings.clear();
                     allPendingBookings.addAll(pending);
+                    // Also invalidate the SystemFacade booking cache so next fetch is fresh
+                    systemFacade.invalidateBookings();
                 });
                 return rooms;
             })
@@ -224,7 +229,8 @@ public class BranchManagerDashboardController implements Initializable {
     }
 
     private void fetchRamadanMode() {
-        managerService.fetchRamadanMode().thenAccept(mode -> {
+        // FACADE PATTERN (Prompt 7)
+        systemFacade.fetchRamadanMode(mode -> {
             Platform.runLater(() -> applyRamadanState(mode));
         });
     }

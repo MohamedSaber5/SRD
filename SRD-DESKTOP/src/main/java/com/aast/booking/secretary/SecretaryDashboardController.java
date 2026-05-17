@@ -96,6 +96,9 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     private BookingCaretaker caretaker;
     private BookingRequest lastSubmittedBooking; // For Prototype
     private NotificationSender inAppNotifier;
+    // FACADE PATTERN (Prompt 7): unified entry-point replacing direct service calls
+    private final com.aast.booking.patterns.facade.SystemFacade systemFacade =
+        com.aast.booking.patterns.facade.SystemFacade.getInstance();
 
     @Override
     protected void setupObservers() {

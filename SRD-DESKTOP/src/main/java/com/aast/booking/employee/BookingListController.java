@@ -37,6 +37,9 @@ public class BookingListController implements Initializable {
     @FXML private ProgressIndicator loadingIndicator;
 
     private EmployeeDashboardController shellController;
+    // FACADE PATTERN (Prompt 7): unified service entry-point
+    private final com.aast.booking.patterns.facade.SystemFacade systemFacade =
+        com.aast.booking.patterns.facade.SystemFacade.getInstance();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -51,13 +54,13 @@ public class BookingListController implements Initializable {
     }
 
     public void fetchBookings() {
-        // Start real-time listener (mirrors useEffect + onSnapshot in UserDashboard.jsx)
+        // FACADE PATTERN (Prompt 7): getMyBookings() delegates to BookingService internally
         loadingIndicator.setVisible(true);
         loadingIndicator.setManaged(true);
         emptyStateLabel.setVisible(false);
         emptyStateLabel.setManaged(false);
 
-        BookingService.listenToMyBookings(
+        systemFacade.getMyBookings(
             this::renderBookings,
             err -> Platform.runLater(() -> {
                 loadingIndicator.setVisible(false);
