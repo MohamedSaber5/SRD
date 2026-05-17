@@ -340,38 +340,18 @@ public class RoomManagementController implements Initializable {
 
     private void deleteRoom(Room room) {
         RoomService.fetchRoomBookings(room.getId(), bookings -> {
-            List<Booking> active = bookings.stream().filter(b -> 
-                "pending".equals(b.getStatus()) || "approved".equals(b.getStatus()) || 
+            List<Booking> active = bookings.stream().filter(b ->
+                "pending".equals(b.getStatus()) || "approved".equals(b.getStatus()) ||
                 "awaiting_manager_final".equals(b.getStatus()) || "approved_by_branch".equals(b.getStatus())
             ).toList();
 
             Platform.runLater(() -> {
                 if (!active.isEmpty()) {
-                    com.aast.booking.services.RoomReplacementService.getEligibleReplacementRooms(room, active, allRooms, validRooms -> {
-                        if (validRooms.isEmpty()) {
-                            showAlert("لا يمكن الحذف", "القاعة بها " + active.size() + " حجوزات نشطة، ولا توجد قاعة بديلة متاحة حالياً تلبي السعة المطلوبة ولا تتعارض في المواعيد.");
-                            return;
-                        }
-
-                        ChoiceDialog<Room> dialog = new ChoiceDialog<>(validRooms.get(0), validRooms);
-                        dialog.setTitle("ترحيل الحجوزات");
-                        dialog.setHeaderText("القاعة " + room.getRoomNumber() + " بها " + active.size() + " حجوزات نشطة.");
-                        dialog.setContentText("اختر قاعة بديلة (متاحة وتلبي نفس السعة وبدون تعارض):");
-                        
-                        // Custom formatting for choice items
-                        dialog.setResultConverter(dialogButton -> {
-                            if (dialogButton == ButtonType.OK) return dialog.getSelectedItem();
-                            return null;
-                        });
-
-                        Optional<Room> res = dialog.showAndWait();
-                        if (res.isPresent()) {
-                            Room altRoom = res.get();
-                            RoomService.deleteRoom(room.getId(), altRoom.getId(), v -> loadRooms(), err -> showAlert("خطأ", err.getMessage()));
-                        }
-                    }, err -> showAlert("خطأ", "فشل جلب القاعات البديلة: " + err.getMessage()));
+                    // ── Styled "cannot delete" popup ──────────────────────────
+                    showBookedRoomAlert(room.getRoomNumber(), active.size());
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "هل أنت متأكد من حذف القاعة " + room.getRoomNumber() + "؟");
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                        "هل أنت متأكد من حذف القاعة " + room.getRoomNumber() + "؟");
                     alert.showAndWait().ifPresent(res -> {
                         if (res == ButtonType.OK) {
                             RoomService.deleteRoom(room.getId(), null, v -> loadRooms(), e -> showAlert("خطأ", e.getMessage()));
@@ -381,6 +361,108 @@ public class RoomManagementController implements Initializable {
             });
         }, e -> showAlert("خطأ", "فشل التحقق من حجوزات القاعة: " + e.getMessage()));
     }
+
+    /**
+     * Shows a premium styled alert informing the admin that a booked room cannot be deleted.
+     */
+    private void showBookedRoomAlert(String roomNumber, int bookingCount) {
+        javafx.stage.Stage popup = new javafx.stage.Stage();
+        popup.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        popup.initStyle(javafx.stage.StageStyle.UNDECORATED);
+        popup.setResizable(false);
+
+        // ── Layout ──────────────────────────────────────────────
+        VBox root = new VBox(0);
+        root.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        root.setStyle(
+            "-fx-background-color: #ffffff;" +
+            "-fx-background-radius: 18;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 40, 0, 0, 8);"
+        );
+        root.setPrefWidth(420);
+
+        // Header bar (red)
+        VBox header = new VBox(10);
+        header.setAlignment(javafx.geometry.Pos.CENTER);
+        header.setStyle(
+            "-fx-background-color: #b91c1c;" +
+            "-fx-background-radius: 18 18 0 0;" +
+            "-fx-padding: 22 24 18 24;"
+        );
+        Label iconLbl = new Label("🚫");
+        iconLbl.setStyle("-fx-font-size: 40px;");
+        Label titleLbl = new Label("لا يمكن حذف قاعة محجوزة");
+        titleLbl.setStyle(
+            "-fx-font-size: 18px; -fx-font-weight: bold;" +
+            "-fx-text-fill: #ffffff; -fx-font-family: 'Arial';"
+        );
+        titleLbl.setWrapText(true);
+        header.getChildren().addAll(iconLbl, titleLbl);
+
+        // Body
+        VBox body = new VBox(14);
+        body.setAlignment(javafx.geometry.Pos.CENTER);
+        body.setStyle("-fx-padding: 24 28 10 28;");
+
+        Label roomLbl = new Label("القاعة:  " + roomNumber);
+        roomLbl.setStyle(
+            "-fx-font-size: 15px; -fx-font-weight: bold;" +
+            "-fx-text-fill: #1e293b; -fx-background-color: #fee2e2;" +
+            "-fx-background-radius: 8; -fx-padding: 8 16;"
+        );
+
+        Label msgLbl = new Label(
+            "هذه القاعة لديها " + bookingCount + " حجز" + (bookingCount > 1 ? "ات" : "") +
+            " نشطة.\nيجب إلغاء أو إنهاء جميع الحجوزات النشطة\nقبل حذف هذه القاعة."
+        );
+        msgLbl.setStyle(
+            "-fx-font-size: 14px; -fx-text-fill: #475569;" +
+            "-fx-line-spacing: 4; -fx-text-alignment: center;"
+        );
+        msgLbl.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        msgLbl.setWrapText(true);
+
+        // Divider
+        javafx.scene.layout.Region divider = new javafx.scene.layout.Region();
+        divider.setStyle("-fx-background-color: #fee2e2; -fx-min-height: 1; -fx-max-height: 1;");
+        divider.setMaxWidth(Double.MAX_VALUE);
+
+        body.getChildren().addAll(roomLbl, msgLbl, divider);
+
+        // Footer with close button
+        HBox footer = new HBox();
+        footer.setAlignment(javafx.geometry.Pos.CENTER);
+        footer.setStyle("-fx-padding: 16 28 24 28;");
+        Button closeBtn = new Button("حسناً، فهمت");
+        closeBtn.setStyle(
+            "-fx-background-color: #b91c1c; -fx-text-fill: white;" +
+            "-fx-font-size: 14px; -fx-font-weight: bold;" +
+            "-fx-background-radius: 10; -fx-padding: 10 40;" +
+            "-fx-cursor: hand;"
+        );
+        closeBtn.setOnMouseEntered(e -> closeBtn.setStyle(
+            "-fx-background-color: #991b1b; -fx-text-fill: white;" +
+            "-fx-font-size: 14px; -fx-font-weight: bold;" +
+            "-fx-background-radius: 10; -fx-padding: 10 40;" +
+            "-fx-cursor: hand;"
+        ));
+        closeBtn.setOnMouseExited(e -> closeBtn.setStyle(
+            "-fx-background-color: #b91c1c; -fx-text-fill: white;" +
+            "-fx-font-size: 14px; -fx-font-weight: bold;" +
+            "-fx-background-radius: 10; -fx-padding: 10 40;" +
+            "-fx-cursor: hand;"
+        ));
+        closeBtn.setOnAction(e -> popup.close());
+        footer.getChildren().add(closeBtn);
+
+        root.getChildren().addAll(header, body, footer);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        popup.setScene(scene);
+        popup.showAndWait();
+    }
+
 
     private void openDetails(Room room) {
         viewingRoom = room;

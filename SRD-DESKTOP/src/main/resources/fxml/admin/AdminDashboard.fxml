@@ -64,6 +64,7 @@
 
     <!-- CENTER CONTENT -->
     <center>
+        <StackPane>
         <ScrollPane fitToWidth="true" fitToHeight="false" styleClass="admin-main-scroll"
                     hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
             <VBox spacing="0" style="-fx-background-color: #f2f4f6;">
@@ -196,118 +197,121 @@
                         <fx:include fx:id="stats" source="AdminStatistics.fxml" />
                     </VBox>
 
-                    <!-- OVERLAYS / MODALS -->
-                    <!-- Approve Modal -->
-                    <StackPane fx:id="approveModalOverlay" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
-                        <VBox alignment="CENTER" maxWidth="500" maxHeight="350" spacing="20" styleClass="admin-section-card" style="-fx-background-color: #ffffff;">
-                            <Label styleClass="admin-section-title" text="اعتماد وتخصيص قاعة" />
-                            <Label fx:id="lblApproveDetails" styleClass="admin-section-subtitle" text="جاري البحث عن القاعات المتاحة..." wrapText="true" />
-                            
-                            <VBox spacing="8" alignment="CENTER_RIGHT" fx:id="vboxAvailableRooms">
-                                <Label styleClass="info-box-title" text="اختر القاعة المناسبة" />
-                                <javafx.scene.control.ComboBox fx:id="cmbAvailableRooms" prefWidth="400" />
-                            </VBox>
-                            
-                            <HBox alignment="CENTER_RIGHT" nodeOrientation="RIGHT_TO_LEFT">
-                                <javafx.scene.control.CheckBox fx:id="chkUrgent" text="🚨 تحديد كطلب عاجل جداً (أولوية قصوى لمدير الفرع)" visible="false" style="-fx-text-fill: #ba1a1a; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10;" />
-                            </HBox>
-                            
-                            <HBox spacing="16" alignment="CENTER">
-                                <Button onAction="#confirmApprove" styleClass="admin-primary-btn" text="تأكيد الاعتماد" prefWidth="150" />
-                                <Button onAction="#closeModals" styleClass="btn-reject-card" text="إلغاء" prefWidth="100" />
-                            </HBox>
-                        </VBox>
-                    </StackPane>
-
-                    <!-- Reject Modal -->
-                    <StackPane fx:id="rejectModalOverlay" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
-                        <VBox alignment="CENTER" maxWidth="520" spacing="16" styleClass="admin-section-card" style="-fx-background-color: #ffffff; -fx-padding: 28;">
-                            <Label styleClass="admin-section-title" text="رفض الطلب واقتراح بدائل" />
-                            
-                            <VBox spacing="6" alignment="CENTER_RIGHT">
-                                <Label styleClass="info-box-title" text="سبب الرفض *" />
-                                <javafx.scene.control.TextArea fx:id="txtRejectReason" prefRowCount="3" promptText="أدخل سبب الرفض هنا..." maxWidth="Infinity" />
-                            </VBox>
-                            
-                            <Label styleClass="admin-section-subtitle" text="خيارات بديلة (اختياري)" />
-                            
-                            <HBox spacing="10">
-                                <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label styleClass="info-box-title" text="قاعة بديلة" />
-                                    <javafx.scene.control.ComboBox fx:id="cmbSuggestedRoom" promptText="اختر قاعة بديلة" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
-                                </VBox>
-                                <VBox spacing="4">
-                                    <Label styleClass="info-box-title" text="تاريخ بديل" />
-                                    <javafx.scene.control.DatePicker fx:id="dpSuggestedDate" promptText="تاريخ بديل" />
-                                </VBox>
-                            </HBox>
-                            
-                            <VBox spacing="4">
-                                <Label styleClass="info-box-title" text="وقت بديل" />
-                                <javafx.scene.control.ComboBox fx:id="cmbSuggestedSlot" promptText="اختر وقتاً بديلاً" maxWidth="Infinity" />
-                            </VBox>
-                            
-                            <HBox spacing="16" alignment="CENTER" style="-fx-padding: 8 0 0 0;">
-                                <Button onAction="#confirmReject" styleClass="btn-reject-card" style="-fx-text-fill: #ba1a1a; -fx-border-color: #ba1a1a;" text="تأكيد الرفض" prefWidth="150" />
-                                <Button onAction="#closeModals" styleClass="btn-reject-card" text="إلغاء" prefWidth="100" />
-                            </HBox>
-                        </VBox>
-                    </StackPane>
-
-                    <!-- Booking Detail Popup Overlay -->
-                    <StackPane fx:id="detailOverlay" style="-fx-background-color: rgba(15,23,42,0.55);" visible="false">
-                        <VBox fx:id="detailCard" alignment="TOP_RIGHT" maxWidth="560" spacing="0"
-                              style="-fx-background-color: #ffffff; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 40, 0, 0, 8); -fx-opacity: 0;">
-                            <!-- Header -->
-                            <HBox alignment="CENTER_RIGHT" spacing="10"
-                                  style="-fx-background-color: #1a2a4a; -fx-background-radius: 20 20 0 0; -fx-padding: 18 24;">
-                                <Label fx:id="detailTitle" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: white;" text="تفاصيل الطلب" />
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="detailStatusBadge" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #f59e0b; -fx-background-radius: 20; -fx-padding: 4 12;" text="قيد الانتظار" />
-                                <Button onAction="#closeDetailOverlay" style="-fx-background-color: transparent; -fx-text-fill: #aab; -fx-font-size: 18px; -fx-cursor: hand; -fx-padding: 0 4;" text="✕" />
-                            </HBox>
-                            <!-- Body -->
-                            <VBox spacing="14" style="-fx-padding: 22 24;">
-                                <!-- Row 1: Date/Time + Requester -->
-                                <HBox spacing="14">
-                                    <VBox spacing="4" style="-fx-background-color: #eef4ff; -fx-background-radius: 10; -fx-padding: 12;" HBox.hgrow="ALWAYS">
-                                        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="📅  التاريخ والوقت" />
-                                        <Label fx:id="detailDate" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1e3a6e;" text="-" />
-                                        <Label fx:id="detailTime" style="-fx-font-size: 13px; -fx-text-fill: #3b82f6;" text="-" />
-                                    </VBox>
-                                    <VBox spacing="4" style="-fx-background-color: #f0fdf4; -fx-background-radius: 10; -fx-padding: 12;" HBox.hgrow="ALWAYS">
-                                        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="👤  مقدم الطلب" />
-                                        <Label fx:id="detailRequester" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #166534;" text="-" wrapText="true" />
-                                        <Label fx:id="detailResponsible" style="-fx-font-size: 12px; -fx-text-fill: #4ade80;" text="-" wrapText="true" />
-                                    </VBox>
-                                </HBox>
-                                <!-- Row 2: Capacity + Room Type -->
-                                <HBox spacing="14">
-                                    <VBox spacing="4" style="-fx-background-color: #fff7ed; -fx-background-radius: 10; -fx-padding: 12;" HBox.hgrow="ALWAYS">
-                                        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="👥  السعة المطلوبة" />
-                                        <Label fx:id="detailCapacity" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #c2410c;" text="-" />
-                                    </VBox>
-                                    <VBox spacing="4" style="-fx-background-color: #faf5ff; -fx-background-radius: 10; -fx-padding: 12;" HBox.hgrow="ALWAYS">
-                                        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="🏢  نوع القاعة" />
-                                        <Label fx:id="detailRoomType" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #7c3aed;" text="-" />
-                                    </VBox>
-                                </HBox>
-                                <!-- Purpose -->
-                                <VBox spacing="4" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 12;">
-                                    <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="📝  الغرض من الاستخدام" />
-                                    <Label fx:id="detailPurpose" style="-fx-font-size: 14px; -fx-text-fill: #334155;" text="-" wrapText="true" />
-                                </VBox>
-                                <!-- Requirements -->
-                                <VBox fx:id="detailRequirementsBox" spacing="6" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 12;">
-                                    <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="⚙  المتطلبات" />
-                                    <Label fx:id="detailRequirements" style="-fx-font-size: 13px; -fx-text-fill: #475569;" text="-" wrapText="true" />
-                                </VBox>
-                            </VBox>
-                        </VBox>
-                    </StackPane>
                 </StackPane>
             </VBox>
         </ScrollPane>
+
+        <!-- OVERLAYS / MODALS (outside ScrollPane so they cover the full center area) -->
+        <!-- Approve Modal -->
+        <StackPane fx:id="approveModalOverlay" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
+            <VBox alignment="CENTER" maxWidth="500" maxHeight="400" spacing="20" styleClass="admin-section-card" style="-fx-background-color: #ffffff;">
+                <Label styleClass="admin-section-title" text="اعتماد وتخصيص قاعة" />
+                <Label fx:id="lblApproveDetails" styleClass="admin-section-subtitle" text="جاري البحث عن القاعات المتاحة..." wrapText="true" />
+                
+                <VBox spacing="8" alignment="CENTER_RIGHT" fx:id="vboxAvailableRooms">
+                    <Label styleClass="info-box-title" text="اختر القاعة المناسبة" />
+                    <javafx.scene.control.ComboBox fx:id="cmbAvailableRooms" prefWidth="400" />
+                </VBox>
+                
+                <HBox alignment="CENTER_RIGHT" nodeOrientation="RIGHT_TO_LEFT">
+                    <javafx.scene.control.CheckBox fx:id="chkUrgent" text="🚨 تحديد كطلب عاجل جداً (أولوية قصوى لمدير الفرع)" visible="false" style="-fx-text-fill: #ba1a1a; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10;" />
+                </HBox>
+                
+                <HBox spacing="16" alignment="CENTER">
+                    <Button onAction="#confirmApprove" styleClass="admin-primary-btn" text="تأكيد الاعتماد" prefWidth="150" />
+                    <Button onAction="#closeModals" styleClass="btn-reject-card" text="إلغاء" prefWidth="100" />
+                </HBox>
+            </VBox>
+        </StackPane>
+
+        <!-- Reject Modal -->
+        <StackPane fx:id="rejectModalOverlay" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
+            <VBox alignment="CENTER" maxWidth="520" spacing="16" styleClass="admin-section-card" style="-fx-background-color: #ffffff; -fx-padding: 28;">
+                <Label styleClass="admin-section-title" text="رفض الطلب واقتراح بدائل" />
+                
+                <VBox spacing="6" alignment="CENTER_RIGHT">
+                    <Label styleClass="info-box-title" text="سبب الرفض *" />
+                    <javafx.scene.control.TextArea fx:id="txtRejectReason" prefRowCount="3" promptText="أدخل سبب الرفض هنا..." maxWidth="Infinity" />
+                </VBox>
+                
+                <Label styleClass="admin-section-subtitle" text="خيارات بديلة (اختياري)" />
+                
+                <HBox spacing="10">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label styleClass="info-box-title" text="قاعة بديلة" />
+                        <javafx.scene.control.ComboBox fx:id="cmbSuggestedRoom" promptText="اختر قاعة بديلة" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                    </VBox>
+                    <VBox spacing="4">
+                        <Label styleClass="info-box-title" text="تاريخ بديل" />
+                        <javafx.scene.control.DatePicker fx:id="dpSuggestedDate" promptText="تاريخ بديل" />
+                    </VBox>
+                </HBox>
+                
+                <VBox spacing="4">
+                    <Label styleClass="info-box-title" text="وقت بديل" />
+                    <javafx.scene.control.ComboBox fx:id="cmbSuggestedSlot" promptText="اختر وقتاً بديلاً" maxWidth="Infinity" />
+                </VBox>
+                
+                <HBox spacing="16" alignment="CENTER" style="-fx-padding: 8 0 0 0;">
+                    <Button onAction="#confirmReject" styleClass="btn-reject-card" style="-fx-text-fill: #ba1a1a; -fx-border-color: #ba1a1a;" text="تأكيد الرفض" prefWidth="150" />
+                    <Button onAction="#closeModals" styleClass="btn-reject-card" text="إلغاء" prefWidth="100" />
+                </HBox>
+            </VBox>
+        </StackPane>
+
+        <!-- Booking Detail Popup Overlay -->
+        <StackPane fx:id="detailOverlay" style="-fx-background-color: rgba(15,23,42,0.55);" visible="false">
+            <VBox fx:id="detailCard" alignment="TOP_RIGHT" maxWidth="560" spacing="0"
+                  style="-fx-background-color: #ffffff; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 40, 0, 0, 8); -fx-opacity: 0;">
+                <!-- Header -->
+                <HBox alignment="CENTER_RIGHT" spacing="10"
+                      style="-fx-background-color: #1a2a4a; -fx-background-radius: 20 20 0 0; -fx-padding: 18 24;">
+                    <Label fx:id="detailTitle" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: white;" text="تفاصيل الطلب" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label fx:id="detailStatusBadge" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #f59e0b; -fx-background-radius: 20; -fx-padding: 4 12;" text="قيد الانتظار" />
+                    <Button onAction="#closeDetailOverlay" style="-fx-background-color: transparent; -fx-text-fill: #aab; -fx-font-size: 18px; -fx-cursor: hand; -fx-padding: 0 4;" text="✕" />
+                </HBox>
+                <!-- Body -->
+                <VBox spacing="14" style="-fx-padding: 22 24;">
+                    <!-- Row 1: Date/Time + Requester -->
+                    <HBox spacing="14">
+                        <VBox spacing="4" style="-fx-background-color: #eef4ff; -fx-background-radius: 10; -fx-padding: 12;" HBox.hgrow="ALWAYS">
+                            <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="📅  التاريخ والوقت" />
+                            <Label fx:id="detailDate" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1e3a6e;" text="-" />
+                            <Label fx:id="detailTime" style="-fx-font-size: 13px; -fx-text-fill: #3b82f6;" text="-" />
+                        </VBox>
+                        <VBox spacing="4" style="-fx-background-color: #f0fdf4; -fx-background-radius: 10; -fx-padding: 12;" HBox.hgrow="ALWAYS">
+                            <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="👤  مقدم الطلب" />
+                            <Label fx:id="detailRequester" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #166534;" text="-" wrapText="true" />
+                            <Label fx:id="detailResponsible" style="-fx-font-size: 12px; -fx-text-fill: #4ade80;" text="-" wrapText="true" />
+                        </VBox>
+                    </HBox>
+                    <!-- Row 2: Capacity + Room Type -->
+                    <HBox spacing="14">
+                        <VBox spacing="4" style="-fx-background-color: #fff7ed; -fx-background-radius: 10; -fx-padding: 12;" HBox.hgrow="ALWAYS">
+                            <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="👥  السعة المطلوبة" />
+                            <Label fx:id="detailCapacity" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #c2410c;" text="-" />
+                        </VBox>
+                        <VBox spacing="4" style="-fx-background-color: #faf5ff; -fx-background-radius: 10; -fx-padding: 12;" HBox.hgrow="ALWAYS">
+                            <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="🏢  نوع القاعة" />
+                            <Label fx:id="detailRoomType" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #7c3aed;" text="-" />
+                        </VBox>
+                    </HBox>
+                    <!-- Purpose -->
+                    <VBox spacing="4" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 12;">
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="📝  الغرض من الاستخدام" />
+                        <Label fx:id="detailPurpose" style="-fx-font-size: 14px; -fx-text-fill: #334155;" text="-" wrapText="true" />
+                    </VBox>
+                    <!-- Requirements -->
+                    <VBox fx:id="detailRequirementsBox" spacing="6" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 12;">
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="⚙  المتطلبات" />
+                        <Label fx:id="detailRequirements" style="-fx-font-size: 13px; -fx-text-fill: #475569;" text="-" wrapText="true" />
+                    </VBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+
+        </StackPane>
     </center>
 
 </BorderPane>

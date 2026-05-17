@@ -30,13 +30,15 @@ public class AdminBookingFormController {
 
     // Step 1: Basics
     @FXML private VBox step1Pane;
-    @FXML private Button btnCategoryLecture, btnCategoryMulti;
+    private Button btnCategoryLecture, btnCategoryMulti; // removed from FXML (multi-only)
     @FXML private DatePicker datePicker;
-    @FXML private HBox slotBox, multiTimeBox;
-    @FXML private ComboBox<String> slotComboBox, timeFromCombo, timeToCombo;
+    private HBox slotBox; // removed from FXML (multi-only)
+    @FXML private HBox multiTimeBox;
+    private ComboBox<String> slotComboBox; // removed from FXML (multi-only)
+    @FXML private ComboBox<String> timeFromCombo, timeToCombo;
     @FXML private TextArea purposeField;
     @FXML private TextField capacityField;
-    @FXML private Label leadTimeErrorLabel;
+    private Label leadTimeErrorLabel; // not present in admin FXML
 
     // Step 2: Responsible Person
     @FXML private VBox step2Pane;
@@ -56,8 +58,10 @@ public class AdminBookingFormController {
     @FXML private Label step1Indicator, step2Indicator, step3Indicator;
     @FXML private javafx.scene.layout.StackPane step1IndicatorCircle, step2IndicatorCircle, step3IndicatorCircle;
 
+    @FXML private CheckBox chkUrgentBooking;
+
     private int currentStep = 1;
-    private String selectedCategory = "lecture"; // default
+    private String selectedCategory = "multi"; // Admin: multi-purpose only
 
     // Pattern-related
     private AdminBookingCaretaker caretaker = new AdminBookingCaretaker();
@@ -68,17 +72,23 @@ public class AdminBookingFormController {
         setupTimeCombos();
         setupRequirementsLogic();
         refreshStepUI();
-        
-        // Default category selection
-        selectLectureCategory();
+
+        // Admin always books multi-purpose halls — set up UI accordingly
+        selectMultiCategory();
     }
 
     private void setupTimeCombos() {
-        List<String> slots = Arrays.asList("الفترة الأولى (8:30 - 10:00)", "الفترة الثانية (10:15 - 11:45)", 
-                                         "الفترة الثالثة (12:00 - 1:30)", "الفترة الرابعة (1:45 - 3:15)");
-        slotComboBox.setItems(FXCollections.observableArrayList(slots));
+        if (slotComboBox != null) {
+            List<String> slots = Arrays.asList("الفترة الأولى (8:30 - 10:00)", "الفترة الثانية (10:15 - 11:45)",
+                                             "الفترة الثالثة (12:00 - 1:30)", "الفترة الرابعة (1:45 - 3:15)");
+            slotComboBox.setItems(FXCollections.observableArrayList(slots));
+        }
 
-        List<String> hours = Arrays.asList("08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00");
+        List<String> hours = Arrays.asList(
+            "08:00 ص", "09:00 ص", "10:00 ص", "11:00 ص",
+            "12:00 م", "01:00 م", "02:00 م", "03:00 م",
+            "04:00 م", "05:00 م", "06:00 م"
+        );
         timeFromCombo.setItems(FXCollections.observableArrayList(hours));
         timeToCombo.setItems(FXCollections.observableArrayList(hours));
     }
@@ -116,10 +126,15 @@ public class AdminBookingFormController {
 
         if (currentStep == 1) {
             if (datePicker.getValue() == null) missingFields.add("تاريخ الفعالية");
-            if (selectedCategory.equals("lecture")) {
-                if (slotComboBox.getValue() == null) missingFields.add("الفترة الزمنية");
+            // Admin is always multi-purpose: validate from/to time
+            if (timeFromCombo.getValue() == null || timeToCombo.getValue() == null) {
+                missingFields.add("الفترة الزمنية (من/إلى)");
             } else {
-                if (timeFromCombo.getValue() == null || timeToCombo.getValue() == null) missingFields.add("الفترة الزمنية (من/إلى)");
+                int fromMin = parseTimeToMinutes(timeFromCombo.getValue());
+                int toMin   = parseTimeToMinutes(timeToCombo.getValue());
+                if (fromMin >= 0 && toMin >= 0 && toMin <= fromMin) {
+                    missingFields.add("وقت النهاية يجب أن يكون بعد وقت البداية");
+                }
             }
             if (purposeField.getText().trim().isEmpty()) missingFields.add("الغرض من الاستخدام");
             if (capacityField.getText().trim().isEmpty()) missingFields.add("السعة المطلوبة");
@@ -179,20 +194,18 @@ public class AdminBookingFormController {
 
     @FXML
     private void selectLectureCategory() {
-        selectedCategory = "lecture";
-        btnCategoryLecture.getStyleClass().add("toggle-active");
-        btnCategoryMulti.getStyleClass().remove("toggle-active");
-        slotBox.setVisible(true);
-        multiTimeBox.setVisible(false);
+        // Admin form is multi-only; lecture category no longer applicable
+        selectMultiCategory();
     }
 
     @FXML
     private void selectMultiCategory() {
         selectedCategory = "multi";
-        btnCategoryMulti.getStyleClass().add("toggle-active");
-        btnCategoryLecture.getStyleClass().remove("toggle-active");
-        slotBox.setVisible(false);
-        multiTimeBox.setVisible(true);
+        // Buttons and slotBox removed from FXML (multi-only admin form)
+        if (btnCategoryMulti != null) btnCategoryMulti.getStyleClass().add("toggle-active");
+        if (btnCategoryLecture != null) btnCategoryLecture.getStyleClass().remove("toggle-active");
+        if (slotBox != null) { slotBox.setVisible(false); slotBox.setManaged(false); }
+        if (multiTimeBox != null) { multiTimeBox.setVisible(true); multiTimeBox.setManaged(true); }
     }
 
     @FXML private void onDateChanged() {}
@@ -214,7 +227,7 @@ public class AdminBookingFormController {
     @FXML
     private void handleReset() {
         datePicker.setValue(null);
-        slotComboBox.setValue(null);
+        if (slotComboBox != null) slotComboBox.setValue(null);
         timeFromCombo.setValue(null);
         timeToCombo.setValue(null);
         purposeField.clear();
@@ -234,10 +247,10 @@ public class AdminBookingFormController {
 
     private void saveStateToMemento() {
         AdminBookingMemento memento = new AdminBookingMemento(
-            selectedCategory,
+            "multi", // Admin is always multi-purpose
             datePicker.getValue() != null ? datePicker.getValue().toString() : "",
-            selectedCategory.equals("lecture") ? slotComboBox.getValue() : timeFromCombo.getValue(),
-            selectedCategory.equals("lecture") ? "" : timeToCombo.getValue(),
+            timeFromCombo.getValue(), // always use multi time fields
+            timeToCombo.getValue(),
             purposeField.getText(),
             capacityField.getText(),
             respNameField.getText(),
@@ -254,13 +267,11 @@ public class AdminBookingFormController {
     }
 
     private void restoreFromMemento(AdminBookingMemento m) {
-        if (m.getHallCategory().equals("lecture")) selectLectureCategory(); else selectMultiCategory();
+        selectMultiCategory(); // Admin is always multi
         if (!m.getDate().isEmpty()) datePicker.setValue(LocalDate.parse(m.getDate()));
-        if (m.getHallCategory().equals("lecture")) slotComboBox.setValue(m.getTimeFrom());
-        else {
-            timeFromCombo.setValue(m.getTimeFrom());
-            timeToCombo.setValue(m.getTimeTo());
-        }
+        // Always restore time from/to (multi-purpose only)
+        timeFromCombo.setValue(m.getTimeFrom());
+        timeToCombo.setValue(m.getTimeTo());
         purposeField.setText(m.getPurpose());
         capacityField.setText(m.getCapacity());
         respNameField.setText(m.getRespName());
@@ -297,23 +308,16 @@ public class AdminBookingFormController {
             boolean other = reqOtherCheck.isSelected();
             String otherDet = reqOtherDetailsField.getText();
 
-            if (selectedCategory.equals("multi")) {
-                com.aast.booking.patterns.builder.BookingDirector director = new com.aast.booking.patterns.builder.BookingDirector();
-                booking = director.buildAdminMultiPurposeRequest(
-                    builder, d, timeFromCombo.getValue(), timeToCombo.getValue(),
-                    purp, cap, rName, rJob, rMob, mic, micQty, laptop, video, other, otherDet,
-                    uId, uName
-                );
-            } else {
-                builder.userRole("admin")
-                       .userId(uId).userName(uName)
-                       .hallCategory(selectedCategory).roomType("fixed")
-                       .date(d).purpose(purp).requiredCapacity(cap)
-                       .responsibleName(rName).responsibleJob(rJob).responsibleMobile(rMob)
-                       .reqLaptop(laptop).reqVideoConf(video)
-                       .reqMic(mic, micQty).reqOther(other, otherDet)
-                       .timeFrom(slotComboBox.getValue());
-                booking = builder.build();
+            // Admin always submits multi-purpose hall requests
+            com.aast.booking.patterns.builder.BookingDirector director = new com.aast.booking.patterns.builder.BookingDirector();
+            booking = director.buildAdminMultiPurposeRequest(
+                builder, d, timeFromCombo.getValue(), timeToCombo.getValue(),
+                purp, cap, rName, rJob, rMob, mic, micQty, laptop, video, other, otherDet,
+                uId, uName
+            );
+            // Apply urgent flag if selected
+            if (chkUrgentBooking != null && chkUrgentBooking.isSelected()) {
+                booking.setUrgent(true);
             }
 
             // 2. DECORATOR PATTERN
@@ -336,6 +340,25 @@ public class AdminBookingFormController {
         } catch (Exception e) {
             showAlert("يرجى التأكد من ملء جميع الحقول بشكل صحيح: " + e.getMessage(), AlertType.ERROR);
         }
+    }
+
+    /**
+     * Parses a time string in either "HH:mm" (24h) or "hh:mm a" (12h AM/PM) format
+     * and returns total minutes since midnight, or -1 on failure.
+     */
+    private int parseTimeToMinutes(String time) {
+        if (time == null || time.trim().isEmpty()) return -1;
+        try {
+            java.time.format.DateTimeFormatter fmt24 = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+            java.time.LocalTime t = java.time.LocalTime.parse(time.trim(), fmt24);
+            return t.getHour() * 60 + t.getMinute();
+        } catch (java.time.format.DateTimeParseException ignored) {}
+        try {
+            java.time.format.DateTimeFormatter fmt12 = java.time.format.DateTimeFormatter.ofPattern("hh:mm a");
+            java.time.LocalTime t = java.time.LocalTime.parse(time.trim().toUpperCase(), fmt12);
+            return t.getHour() * 60 + t.getMinute();
+        } catch (java.time.format.DateTimeParseException ignored) {}
+        return -1;
     }
 
     private void showAlert(String message, AlertType type) {

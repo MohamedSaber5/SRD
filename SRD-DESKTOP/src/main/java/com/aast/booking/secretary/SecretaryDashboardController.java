@@ -117,7 +117,11 @@ public class SecretaryDashboardController extends BaseDashboardController implem
         }
         
         if (timeFromCombo != null && timeToCombo != null) {
-            String[] times = {"08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"};
+            String[] times = {
+                "08:00 ص", "09:00 ص", "10:00 ص", "11:00 ص",
+                "12:00 م", "01:00 م", "02:00 م", "03:00 م",
+                "04:00 م", "05:00 م"
+            };
             timeFromCombo.getItems().addAll(times);
             timeToCombo.getItems().addAll(times);
         }
@@ -596,6 +600,20 @@ public class SecretaryDashboardController extends BaseDashboardController implem
             alert.showAndWait();
             return;
         }
+
+        // Validate that end time is after start time (supports both HH:mm and hh:mm a formats)
+        if (!tFrom.isEmpty() && !tTo.isEmpty()) {
+            int fromMin = parseTimeToMinutes(tFrom);
+            int toMin   = parseTimeToMinutes(tTo);
+            if (fromMin >= 0 && toMin >= 0 && toMin <= fromMin) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("وقت غير صالح");
+                alert.setHeaderText("خطأ في الفترة الزمنية");
+                alert.setContentText("وقت النهاية يجب أن يكون بعد وقت البداية.");
+                alert.showAndWait();
+                return;
+            }
+        }
         
         goToStep2();
     }
@@ -623,6 +641,27 @@ public class SecretaryDashboardController extends BaseDashboardController implem
         }
         
         goToStep3();
+    }
+
+    /**
+     * Parses a time string in either "HH:mm" or "hh:mm a" (AM/PM) format
+     * and returns the total minutes since midnight, or -1 on parse failure.
+     */
+    private int parseTimeToMinutes(String time) {
+        if (time == null || time.trim().isEmpty()) return -1;
+        try {
+            // Try 24-hour format first: "HH:mm"
+            java.time.format.DateTimeFormatter fmt24 = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+            java.time.LocalTime t = java.time.LocalTime.parse(time.trim(), fmt24);
+            return t.getHour() * 60 + t.getMinute();
+        } catch (java.time.format.DateTimeParseException ignored) {}
+        try {
+            // Try 12-hour AM/PM format: "hh:mm a" or "h:mm a"
+            java.time.format.DateTimeFormatter fmt12 = java.time.format.DateTimeFormatter.ofPattern("hh:mm a");
+            java.time.LocalTime t = java.time.LocalTime.parse(time.trim().toUpperCase(), fmt12);
+            return t.getHour() * 60 + t.getMinute();
+        } catch (java.time.format.DateTimeParseException ignored) {}
+        return -1;
     }
 
     private void updateStepUI(int step) {

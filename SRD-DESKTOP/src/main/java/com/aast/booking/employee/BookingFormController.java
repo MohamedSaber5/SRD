@@ -217,9 +217,39 @@ public class BookingFormController implements Initializable {
         checkLeadTimeError();
     }
 
+    @FXML
+    private void onTimeToChanged() {
+        checkLeadTimeError();
+    }
+
     /** Mirrors checkLeadTimeError() in useBookingForm.js */
     private void checkLeadTimeError() {
-        if (datePicker == null || datePicker.getValue() == null) return;
+        if (leadTimeErrorLabel == null) return;
+
+        // ── 1. End-time must be after start-time (multi-purpose only) ──
+        if ("multi".equals(selectedHallCategory)
+                && timeFromCombo != null && timeFromCombo.getValue() != null
+                && timeToCombo   != null && timeToCombo.getValue()   != null) {
+            try {
+                String[] fromParts = timeFromCombo.getValue().split(":");
+                String[] toParts   = timeToCombo.getValue().split(":");
+                int fromMin = Integer.parseInt(fromParts[0]) * 60 + Integer.parseInt(fromParts[1]);
+                int toMin   = Integer.parseInt(toParts[0])   * 60 + Integer.parseInt(toParts[1]);
+                if (toMin <= fromMin) {
+                    leadTimeErrorLabel.setVisible(true);
+                    leadTimeErrorLabel.setManaged(true);
+                    leadTimeErrorLabel.setText("⚠️ وقت النهاية يجب أن يكون بعد وقت البداية.");
+                    return;
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // ── 2. Lead-time check ──
+        if (datePicker == null || datePicker.getValue() == null) {
+            leadTimeErrorLabel.setVisible(false);
+            leadTimeErrorLabel.setManaged(false);
+            return;
+        }
         var user = SessionManager.getInstance().getCurrentUser();
         if (user == null) return;
 
@@ -231,7 +261,11 @@ public class BookingFormController implements Initializable {
             timeFrom = timeFromCombo.getValue();
         }
 
-        if (timeFrom == null) return;
+        if (timeFrom == null) {
+            leadTimeErrorLabel.setVisible(false);
+            leadTimeErrorLabel.setManaged(false);
+            return;
+        }
 
         LocalDate date = datePicker.getValue();
         String[] parts = timeFrom.split(":");
@@ -242,12 +276,11 @@ public class BookingFormController implements Initializable {
         int requiredHours = "secretary".equals(user.getRole()) ? 48 : 24;
         boolean isError = diffHours < requiredHours;
 
-        if (leadTimeErrorLabel != null) {
-            leadTimeErrorLabel.setVisible(isError);
-            leadTimeErrorLabel.setText(
-                "⚠️ يجب أن يكون الحجز قبل الموعد بـ " + requiredHours + " ساعة على الأقل."
-            );
-        }
+        leadTimeErrorLabel.setVisible(isError);
+        leadTimeErrorLabel.setManaged(isError);
+        leadTimeErrorLabel.setText(
+            "⚠️ يجب أن يكون الحجز قبل الموعد بـ " + requiredHours + " ساعة على الأقل."
+        );
     }
 
     private void setupRoleNotice() {

@@ -88,7 +88,7 @@
                             <HBox fx:id="multiTimeBox" alignment="CENTER_RIGHT" spacing="10" visible="false">
                                 <ComboBox fx:id="timeFromCombo" maxWidth="Infinity" onAction="#onTimeFromChanged" promptText="من..." styleClass="form-combo" HBox.hgrow="ALWAYS" />
                                 <Label alignment="CENTER" minWidth="24" style="-fx-font-size: 16px; -fx-text-fill: #737780;" text="→" />
-                                <ComboBox fx:id="timeToCombo" maxWidth="Infinity" promptText="إلى..." styleClass="form-combo" HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="timeToCombo" maxWidth="Infinity" onAction="#onTimeToChanged" promptText="إلى..." styleClass="form-combo" HBox.hgrow="ALWAYS" />
                             </HBox>
                             <Label fx:id="leadTimeErrorLabel" styleClass="error-label" text="" visible="false" wrapText="true" />
                         </VBox>

@@ -24,6 +24,18 @@ public class BookingValidator {
         if (timeFrom == null || timeFrom.isEmpty() || timeTo == null || timeTo.isEmpty()) {
             return "يرجى تحديد وقت البداية والنهاية للحجز";
         }
+        // Validate that end time is after start time (only relevant for multi-purpose where both are free fields)
+        if (timeFrom != null && !timeFrom.isEmpty() && timeTo != null && !timeTo.isEmpty()) {
+            try {
+                String[] fromParts = timeFrom.split(":");
+                String[] toParts   = timeTo.split(":");
+                int fromMinutes = Integer.parseInt(fromParts[0]) * 60 + Integer.parseInt(fromParts[1]);
+                int toMinutes   = Integer.parseInt(toParts[0])   * 60 + Integer.parseInt(toParts[1]);
+                if (toMinutes <= fromMinutes) {
+                    return "وقت النهاية يجب أن يكون بعد وقت البداية";
+                }
+            } catch (NumberFormatException ignored) {}
+        }
         if (timeFrom != null && !timeFrom.isEmpty()) {
             String[] parts = timeFrom.split(":");
             LocalDateTime selectedDT = date.atTime(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
