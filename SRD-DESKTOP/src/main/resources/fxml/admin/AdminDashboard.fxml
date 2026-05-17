@@ -64,9 +64,9 @@
 
     <!-- CENTER CONTENT -->
     <center>
-        <StackPane>
+        <StackPane alignment="CENTER">
         <ScrollPane fitToWidth="true" fitToHeight="false" styleClass="admin-main-scroll"
-                    hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                    hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
             <VBox spacing="0" style="-fx-background-color: #f2f4f6;">
 
                 <!-- Top Header -->
@@ -203,8 +203,8 @@
 
         <!-- OVERLAYS / MODALS (outside ScrollPane so they cover the full center area) -->
         <!-- Approve Modal -->
-        <StackPane fx:id="approveModalOverlay" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
-            <VBox alignment="CENTER" maxWidth="500" maxHeight="400" spacing="20" styleClass="admin-section-card" style="-fx-background-color: #ffffff;">
+        <StackPane fx:id="approveModalOverlay" alignment="CENTER" prefWidth="Infinity" prefHeight="Infinity" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
+            <VBox alignment="CENTER" maxWidth="500" maxHeight="420" spacing="20" styleClass="admin-section-card" style="-fx-background-color: #ffffff; -fx-background-radius: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 30, 0, 0, 6);">
                 <Label styleClass="admin-section-title" text="اعتماد وتخصيص قاعة" />
                 <Label fx:id="lblApproveDetails" styleClass="admin-section-subtitle" text="جاري البحث عن القاعات المتاحة..." wrapText="true" />
                 
@@ -225,8 +225,8 @@
         </StackPane>
 
         <!-- Reject Modal -->
-        <StackPane fx:id="rejectModalOverlay" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
-            <VBox alignment="CENTER" maxWidth="520" spacing="16" styleClass="admin-section-card" style="-fx-background-color: #ffffff; -fx-padding: 28;">
+        <StackPane fx:id="rejectModalOverlay" alignment="CENTER" prefWidth="Infinity" prefHeight="Infinity" style="-fx-background-color: rgba(0,0,0,0.4);" visible="false">
+            <VBox alignment="CENTER" maxWidth="520" maxHeight="520" spacing="16" styleClass="admin-section-card" style="-fx-background-color: #ffffff; -fx-background-radius: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 30, 0, 0, 6); -fx-padding: 28;">
                 <Label styleClass="admin-section-title" text="رفض الطلب واقتراح بدائل" />
                 
                 <VBox spacing="6" alignment="CENTER_RIGHT">

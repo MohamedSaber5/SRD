@@ -142,6 +142,9 @@ public class BranchManagerDashboardController implements Initializable {
     private final BranchManagerService managerService = BranchManagerService.getInstance();
     // FACADE PATTERN (Prompt 7): unified entry-point for all service calls
     private final com.aast.booking.patterns.facade.SystemFacade systemFacade = com.aast.booking.patterns.facade.SystemFacade.getInstance();
+    // PROXY PATTERN (Prompt 8): role-based access guard
+    private final com.aast.booking.patterns.permissions.SecurityProxy securityProxy =
+        new com.aast.booking.patterns.permissions.SecurityProxy();
 
     private void fetchRoomsAndBookings() {
         // FACADE PATTERN (Prompt 7): all data fetching goes through SystemFacade
@@ -364,6 +367,9 @@ public class BranchManagerDashboardController implements Initializable {
     // ─── Actions ──────────────────────────────────────────────────────────
 
     private void handleApprove(Booking b) {
+        // PROXY PATTERN (Prompt 8): only branch_manager can final-approve
+        if (!securityProxy.canAccess("final_approve")) return;
+
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "تأكيد اعتماد الحجز؟", ButtonType.YES, ButtonType.NO);
         confirm.showAndWait().ifPresent(btn -> {
             if (btn == ButtonType.YES) {
@@ -394,6 +400,9 @@ public class BranchManagerDashboardController implements Initializable {
     }
 
     @FXML private void handleInstantBooking() {
+        // PROXY PATTERN (Prompt 8): only branch_manager can do instant bookings
+        if (!securityProxy.canAccess("instant_booking")) return;
+
         if (bookDatePicker.getValue() == null || bookHallCombo.getValue() == null
             || bookStartTimeCombo.getValue() == null || bookEndTimeCombo.getValue() == null) return;
 

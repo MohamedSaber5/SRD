@@ -44,6 +44,9 @@ public class RoomManagementController implements Initializable {
     private FilteredList<Room> filteredRooms;
     private Room editingRoom = null;
     private Room viewingRoom = null;
+    // PROXY PATTERN (Prompt 8): role-based guard for room deletion and management
+    private final com.aast.booking.patterns.permissions.SecurityProxy securityProxy =
+        new com.aast.booking.patterns.permissions.SecurityProxy();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -339,6 +342,9 @@ public class RoomManagementController implements Initializable {
     }
 
     private void deleteRoom(Room room) {
+        // PROXY PATTERN (Prompt 8): only admin / authorised roles can delete rooms
+        if (!securityProxy.canAccess("manage_rooms")) return;
+
         RoomService.fetchRoomBookings(room.getId(), bookings -> {
             List<Booking> active = bookings.stream().filter(b ->
                 "pending".equals(b.getStatus()) || "approved".equals(b.getStatus()) ||

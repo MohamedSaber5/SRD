@@ -7,6 +7,8 @@ import com.aast.booking.models.Booking;
 import com.aast.booking.admin.strategies.IApprovalStrategy;
 import com.aast.booking.admin.strategies.LectureApprovalStrategy;
 import com.aast.booking.admin.strategies.MultiPurposeApprovalStrategy;
+import com.aast.booking.core.observer.BookingEvent;
+import com.aast.booking.core.observer.BookingNotifierSubject;
 import com.aast.booking.patterns.decorator.BaseBookingComponent;
 import com.aast.booking.patterns.decorator.IBookingComponent;
 import com.aast.booking.patterns.decorator.UrgentRequestDecorator;
@@ -83,6 +85,13 @@ public class ApproveBookingCommand implements ICommand {
                     boolean success = strategy.approve(decoratedBooking, roomId, isUrgent);
                     if (success) {
                         GlobalDataService.getInstance().invalidateBookings();
+                        // OBSERVER PATTERN (Prompt 9): fire APPROVED_BY_ADMIN event
+                        // FirestoreNotificationObserver will write the notification to Firestore
+                        BookingNotifierSubject.getInstance().publish(
+                            new BookingEvent(decoratedBooking,
+                                isUrgent ? BookingEvent.Type.URGENT
+                                         : BookingEvent.Type.APPROVED_BY_ADMIN)
+                        );
                         Platform.runLater(onSuccess);
                     } else {
                         Platform.runLater(() -> onError.accept(new Exception("Approval strategy failed.")));
@@ -103,6 +112,10 @@ public class ApproveBookingCommand implements ICommand {
                 BranchManagerService.getInstance().approveBookingViaChain(booking)
                     .thenRun(() -> {
                         GlobalDataService.getInstance().invalidateBookings();
+                        // OBSERVER PATTERN (Prompt 9): fire APPROVED (final) event
+                        BookingNotifierSubject.getInstance().publish(
+                            new BookingEvent(booking, BookingEvent.Type.APPROVED)
+                        );
                         if (onSuccess != null) onSuccess.run();
                     })
                     .exceptionally(ex -> {

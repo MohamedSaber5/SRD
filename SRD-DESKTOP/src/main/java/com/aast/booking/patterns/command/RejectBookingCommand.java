@@ -5,6 +5,8 @@ import com.aast.booking.services.BranchManagerService;
 import com.aast.booking.services.GlobalDataService;
 import com.aast.booking.models.Booking;
 import com.aast.booking.core.FirebaseService;
+import com.aast.booking.core.observer.BookingEvent;
+import com.aast.booking.core.observer.BookingNotifierSubject;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FieldValue;
 import javafx.application.Platform;
@@ -93,6 +95,12 @@ public class RejectBookingCommand implements ICommand {
                     db.collection("notifications").add(notification).get();
 
                     GlobalDataService.getInstance().invalidateBookings();
+                    // OBSERVER PATTERN (Prompt 9): fire REJECTED event
+                    // Set reason on booking so FirestoreNotificationObserver can read it
+                    booking.setRejectReason(reason);
+                    BookingNotifierSubject.getInstance().publish(
+                        new BookingEvent(booking, BookingEvent.Type.REJECTED)
+                    );
                     Platform.runLater(onSuccess);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -105,6 +113,12 @@ public class RejectBookingCommand implements ICommand {
             BranchManagerService.getInstance().updateBookingStatus(bookingId, "rejected")
                 .thenRun(() -> {
                     GlobalDataService.getInstance().invalidateBookings();
+                    // OBSERVER PATTERN (Prompt 9): fire REJECTED event (BM path)
+                    if (booking != null) {
+                        BookingNotifierSubject.getInstance().publish(
+                            new BookingEvent(booking, BookingEvent.Type.REJECTED)
+                        );
+                    }
                     if (onSuccess != null) onSuccess.run();
                 })
                 .exceptionally(ex -> {

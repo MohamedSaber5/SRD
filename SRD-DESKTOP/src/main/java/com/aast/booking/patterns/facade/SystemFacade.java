@@ -278,8 +278,16 @@ public class SystemFacade {
 
     /**
      * Fetch the current Ramadan mode flag from Firestore settings.
+     * Delegates to BranchManagerService which owns the settings/system document.
      */
     public void fetchRamadanMode(Consumer<Boolean> onResult) {
-        RoomService.fetchRamadanMode(onResult);
+        BranchManagerService.getInstance()
+            .fetchRamadanMode()
+            .thenAccept(onResult)
+            .exceptionally(ex -> {
+                System.err.println("[SystemFacade] fetchRamadanMode error: " + ex.getMessage());
+                onResult.accept(false); // safe default
+                return null;
+            });
     }
 }

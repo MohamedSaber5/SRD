@@ -21,6 +21,21 @@ import java.util.function.Consumer;
  */
 public class AdminBookingFacade {
 
+    /**
+     * OBSERVER PATTERN (Prompt 9) — Bootstrap
+     * Register FirestoreNotificationObserver as a singleton subscriber.
+     * Stored as a static final field so the same object reference is used in
+     * addIfAbsent() — prevents duplicate registration across multiple instances.
+     */
+    private static final com.aast.booking.core.observer.FirestoreNotificationObserver
+        FIRESTORE_OBSERVER = new com.aast.booking.core.observer.FirestoreNotificationObserver();
+
+    static {
+        com.aast.booking.core.observer.BookingNotifierSubject.getInstance()
+            .subscribe(FIRESTORE_OBSERVER);
+        System.out.println("[AdminBookingFacade] FirestoreNotificationObserver registered.");
+    }
+
     private ListenerRegistration pendingRequestsListener;
 
     /**

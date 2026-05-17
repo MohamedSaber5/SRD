@@ -105,6 +105,9 @@ public class AdminDashboardController implements Initializable {
     private final com.aast.booking.admin.facade.AdminBookingFacade adminFacade = new com.aast.booking.admin.facade.AdminBookingFacade();
     // FACADE PATTERN (Prompt 7): unified entry-point — delegates to adminFacade + services
     private final com.aast.booking.patterns.facade.SystemFacade systemFacade = com.aast.booking.patterns.facade.SystemFacade.getInstance();
+    // PROXY PATTERN (Prompt 8): role-based access guard for sensitive actions
+    private final com.aast.booking.patterns.permissions.SecurityProxy securityProxy =
+        new com.aast.booking.patterns.permissions.SecurityProxy();
     private Booking selectedRequest;
     // Maps display label -> real Firestore docId for room selection
     private final Map<String, String> approveRoomDocIdMap = new HashMap<>();
@@ -149,6 +152,19 @@ public class AdminDashboardController implements Initializable {
         }
  
         showDashboard();
+
+        // MODAL FIX: bind modal overlays to parent StackPane so they cover the full center pane
+        // JavaFX StackPane children don't auto-stretch to parent size by default
+        approveModalOverlay.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null && approveModalOverlay.getParent() instanceof javafx.scene.layout.StackPane) {
+                javafx.scene.layout.StackPane parent =
+                    (javafx.scene.layout.StackPane) approveModalOverlay.getParent();
+                approveModalOverlay.prefWidthProperty().bind(parent.widthProperty());
+                approveModalOverlay.prefHeightProperty().bind(parent.heightProperty());
+                rejectModalOverlay.prefWidthProperty().bind(parent.widthProperty());
+                rejectModalOverlay.prefHeightProperty().bind(parent.heightProperty());
+            }
+        });
     }
 
     // ─── Navigation ──────────────────────────────────────────────────────
@@ -466,6 +482,9 @@ public class AdminDashboardController implements Initializable {
     }
 
     @FXML private void confirmApprove() {
+        // PROXY PATTERN (Prompt 8): guard before sensitive action
+        if (!securityProxy.canAccess("approve_booking")) return;
+
         if (selectedRequest == null) return;
         String displayName = cmbAvailableRooms.getValue();
         if (displayName == null || displayName.isEmpty()) {
@@ -486,6 +505,9 @@ public class AdminDashboardController implements Initializable {
     }
 
     @FXML private void confirmReject() {
+        // PROXY PATTERN (Prompt 8): guard before sensitive action
+        if (!securityProxy.canAccess("reject_booking")) return;
+
         if (selectedRequest == null) return;
         String reason = txtRejectReason.getText();
         if (reason == null || reason.trim().isEmpty()) {
@@ -593,6 +615,9 @@ public class AdminDashboardController implements Initializable {
     }
 
     @FXML private void toggleRamadanMode() {
+        // PROXY PATTERN (Prompt 8): only admin / branch_manager can toggle
+        if (!securityProxy.canAccess("ramadan_mode")) return;
+
         boolean newMode = !isRamadanMode;
         BranchManagerService.getInstance().setRamadanMode(newMode).thenRun(() -> {
             Platform.runLater(() -> applyRamadanState(newMode));
