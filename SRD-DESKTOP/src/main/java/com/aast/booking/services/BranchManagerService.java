@@ -107,6 +107,32 @@ public class BranchManagerService {
         }, executor);
     }
 
+    /**
+     * CHAIN OF RESPONSIBILITY (Prompt 6):
+     * Branch Manager's final approval step — uses BranchManagerApprovalHandler.
+     *
+     * Compared to the plain updateBookingStatus("approved"):
+     *   - Validates that the booking is in "awaiting_manager_final" state
+     *   - Records approvedAt timestamp
+     *   - Sends a Firestore notification to the original requester
+     *
+     * @param booking the full Booking object (needs userId, date for notification)
+     * @return CompletableFuture that completes when Firestore writes are done
+     */
+    public CompletableFuture<Void> approveBookingViaChain(Booking booking) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                com.aast.booking.patterns.chain.BranchManagerApprovalHandler handler =
+                    new com.aast.booking.patterns.chain.BranchManagerApprovalHandler();
+                handler.handle(booking, db);
+                System.out.println("[DEBUG] Chain: Branch Manager approved booking " + booking.getId());
+            } catch (Exception e) {
+                System.err.println("[ERROR] Chain approval failed: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }, executor);
+    }
+
     public CompletableFuture<Boolean> fetchRamadanMode() {
         return CompletableFuture.supplyAsync(() -> {
             try {

@@ -41,11 +41,13 @@ public class UrgentRequestDecorator implements IBookingComponent {
         if (component == null) throw new IllegalArgumentException("UrgentRequestDecorator: component must not be null");
         this.wrapped = component;
 
-        // Apply urgent behaviour to the underlying booking right away
+        // Apply urgent METADATA flags to the booking.
+        // NOTE: We do NOT touch booking.setStatus() here.
+        //       Status transitions are exclusively the Chain of Responsibility's job.
+        //       (AdminApprovalHandler sets "awaiting_manager_final" in Firestore)
         Booking booking = wrapped.getBooking();
         booking.setUrgent(true);
-        booking.setStatus("awaiting_manager_final");  // jump the queue
-        booking.setPriority("urgent");                 // Web Dashboard compatibility
+        booking.setPriority("urgent"); // Web Dashboard compatibility field only
     }
 
     @Override

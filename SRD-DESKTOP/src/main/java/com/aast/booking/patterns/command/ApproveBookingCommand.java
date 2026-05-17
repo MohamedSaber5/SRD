@@ -22,10 +22,23 @@ public class ApproveBookingCommand implements ICommand {
     private final Runnable onSuccess;
     private final Consumer<Exception> onError;
 
-    // For Branch Manager
+    // For Branch Manager — legacy (bookingId only, no chain notification)
     public ApproveBookingCommand(String bookingId, Runnable onSuccess) {
         this.bookingId = bookingId;
         this.booking = null;
+        this.roomId = null;
+        this.isUrgent = false;
+        this.isAdmin = false;
+        this.onSuccess = onSuccess;
+        this.onError = ex -> ex.printStackTrace();
+    }
+
+    // For Branch Manager — CHAIN OF RESPONSIBILITY (Prompt 6)
+    // Preferred over the string-only constructor: uses BranchManagerApprovalHandler
+    // which validates state, records approvedAt, and notifies the requester.
+    public ApproveBookingCommand(Booking booking, Runnable onSuccess) {
+        this.bookingId = booking.getId();
+        this.booking = booking;
         this.roomId = null;
         this.isUrgent = false;
         this.isAdmin = false;
@@ -82,17 +95,36 @@ public class ApproveBookingCommand implements ICommand {
             t.setDaemon(true);
             t.start();
         } else {
-            BranchManagerService.getInstance().updateBookingStatus(bookingId, "approved")
-                .thenRun(() -> {
-                    GlobalDataService.getInstance().invalidateBookings();
-                    if (onSuccess != null) onSuccess.run();
-                })
-                .exceptionally(ex -> {
-                    if (onError != null) {
-                        onError.accept(ex instanceof Exception ? (Exception) ex : new Exception(ex));
-                    }
-                    return null;
-                });
+            // CHAIN OF RESPONSIBILITY (Prompt 6):
+            // If a full Booking object is available, use the chain-based approval
+            // (validates state, records approvedAt, notifies requester).
+            // Otherwise fall back to legacy direct status update.
+            if (booking != null) {
+                BranchManagerService.getInstance().approveBookingViaChain(booking)
+                    .thenRun(() -> {
+                        GlobalDataService.getInstance().invalidateBookings();
+                        if (onSuccess != null) onSuccess.run();
+                    })
+                    .exceptionally(ex -> {
+                        if (onError != null) {
+                            onError.accept(ex instanceof Exception ? (Exception) ex : new Exception(ex));
+                        }
+                        return null;
+                    });
+            } else {
+                // Legacy path — BranchManagerDashboard passes only bookingId
+                BranchManagerService.getInstance().updateBookingStatus(bookingId, "approved")
+                    .thenRun(() -> {
+                        GlobalDataService.getInstance().invalidateBookings();
+                        if (onSuccess != null) onSuccess.run();
+                    })
+                    .exceptionally(ex -> {
+                        if (onError != null) {
+                            onError.accept(ex instanceof Exception ? (Exception) ex : new Exception(ex));
+                        }
+                        return null;
+                    });
+            }
         }
     }
 

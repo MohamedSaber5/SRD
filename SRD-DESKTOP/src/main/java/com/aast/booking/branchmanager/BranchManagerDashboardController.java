@@ -359,9 +359,12 @@ public class BranchManagerDashboardController implements Initializable {
 
     private void handleApprove(Booking b) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "تأكيد اعتماد الحجز؟", ButtonType.YES, ButtonType.NO);
-        confirm.showAndWait().ifPresent(btn -> { 
+        confirm.showAndWait().ifPresent(btn -> {
             if (btn == ButtonType.YES) {
-                new ApproveBookingCommand(b.getId(), this::fetchRoomsAndBookings).execute();
+                // CHAIN OF RESPONSIBILITY (Prompt 6):
+                // Pass full Booking object → ApproveBookingCommand routes through
+                // BranchManagerApprovalHandler which validates state + notifies requester.
+                new ApproveBookingCommand(b, this::fetchRoomsAndBookings).execute();
             }
         });
     }

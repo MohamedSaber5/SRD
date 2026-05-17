@@ -239,12 +239,12 @@ public class BookingListController implements Initializable {
         badge.setStyle("-fx-background-radius: 20px; -fx-font-weight: bold; -fx-font-size: 11px;");
 
         switch (status != null ? status : "") {
-            case "approved" -> {
+            case "approved", "approved_by_branch" -> {
                 badge.setText("مقبول ✓");
                 badge.setStyle(badge.getStyle() + "-fx-background-color: #DCFCE7; -fx-text-fill: #166534;");
             }
             case "awaiting_manager_final" -> {
-                badge.setText("اعتماد نهائي");
+                badge.setText("بانتظار مدير الفرع");
                 badge.setStyle(badge.getStyle() + "-fx-background-color: #FEF3C7; -fx-text-fill: #92400E;");
             }
             case "rejected" -> {
