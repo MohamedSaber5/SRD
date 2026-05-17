@@ -409,7 +409,39 @@ public class BookingFormController implements Initializable {
 
         Booking booking;
         try {
-            booking = bookingBuilder.build(); // BUILDER PATTERN: build() validates + returns Booking
+            if (!isLectureMode()) {
+                com.aast.booking.patterns.builder.BookingDirector director = new com.aast.booking.patterns.builder.BookingDirector();
+                var user = SessionManager.getInstance().getCurrentUser();
+                String uId = user != null ? user.getUid() : "";
+                String uName = user != null && user.getDisplayName() != null ? user.getDisplayName() : "";
+                
+                String date = datePicker != null && datePicker.getValue() != null ? datePicker.getValue().format(DateTimeFormatter.ISO_DATE) : "";
+                String tFrom = timeFromCombo != null && timeFromCombo.getValue() != null ? timeFromCombo.getValue() : "";
+                String tTo = timeToCombo != null && timeToCombo.getValue() != null ? timeToCombo.getValue() : "";
+                String purp = purposeField != null ? purposeField.getText().trim() : "";
+                int cap = 0;
+                if (capacityField != null) {
+                    try { cap = Integer.parseInt(capacityField.getText().trim()); } catch (Exception ignored) {}
+                }
+                
+                String respName = respNameField != null ? respNameField.getText().trim() : "";
+                String respJob = respJobField != null ? respJobField.getText().trim() : "";
+                String respMobile = respMobileField != null ? respMobileField.getText().trim() : "";
+                
+                boolean mic = reqMicCheck != null && reqMicCheck.isSelected();
+                int micQty = reqMicQtySpinner != null ? reqMicQtySpinner.getValue() : 1;
+                boolean laptop = reqLaptopCheck != null && reqLaptopCheck.isSelected();
+                boolean video = reqVideoConfCheck != null && reqVideoConfCheck.isSelected();
+                boolean other = reqOtherCheck != null && reqOtherCheck.isSelected();
+                String otherDet = reqOtherDetailsField != null ? reqOtherDetailsField.getText().trim() : "";
+                
+                booking = director.buildEmployeeMultiPurposeRequest(
+                        new BookingBuilder(), date, tFrom, tTo, purp, cap,
+                        respName, respJob, respMobile, mic, micQty, laptop, video, other, otherDet,
+                        uId, uName);
+            } else {
+                booking = bookingBuilder.build(); // Lecture mode still uses simple builder step 1
+            }
         } catch (IllegalStateException e) {
             showAlert("يرجى التأكد من تعبئة جميع الحقول بشكل صحيح: " + e.getMessage(),
                       Alert.AlertType.WARNING);

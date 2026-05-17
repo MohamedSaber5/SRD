@@ -279,27 +279,42 @@ public class AdminBookingFormController {
     private void submitForm() {
         try {
             // 1. BUILDER PATTERN
-            BookingBuilder builder = new BookingBuilder()
-                .userRole("admin")
-                .userId(SessionManager.getInstance().getCurrentUser().getUid())
-                .userName(SessionManager.getInstance().getCurrentUser().getDisplayName())
-                .hallCategory(selectedCategory)
-                .date(datePicker.getValue().toString())
-                .purpose(purposeField.getText())
-                .requiredCapacity(Integer.parseInt(capacityField.getText()))
-                .responsibleName(respNameField.getText())
-                .responsibleJob(respJobField.getText())
-                .responsibleMobile(respMobileField.getText())
-                .reqLaptop(reqLaptopCheck.isSelected())
-                .reqVideoConf(reqVideoConfCheck.isSelected());
+            Booking booking;
+            com.aast.booking.patterns.builder.IBookingBuilder builder = new BookingBuilder();
+            String uId = SessionManager.getInstance().getCurrentUser().getUid();
+            String uName = SessionManager.getInstance().getCurrentUser().getDisplayName();
+            String d = datePicker.getValue().toString();
+            String purp = purposeField.getText();
+            int cap = 0;
+            try { cap = Integer.parseInt(capacityField.getText()); } catch(Exception ignored) {}
+            String rName = respNameField.getText();
+            String rJob = respJobField.getText();
+            String rMob = respMobileField.getText();
+            boolean laptop = reqLaptopCheck.isSelected();
+            boolean video = reqVideoConfCheck.isSelected();
+            boolean mic = reqMicCheck.isSelected();
+            int micQty = reqMicQtySpinner.getValue();
+            boolean other = reqOtherCheck.isSelected();
+            String otherDet = reqOtherDetailsField.getText();
 
-            if (selectedCategory.equals("lecture")) {
-                builder.timeFrom(slotComboBox.getValue());
+            if (selectedCategory.equals("multi")) {
+                com.aast.booking.patterns.builder.BookingDirector director = new com.aast.booking.patterns.builder.BookingDirector();
+                booking = director.buildAdminMultiPurposeRequest(
+                    builder, d, timeFromCombo.getValue(), timeToCombo.getValue(),
+                    purp, cap, rName, rJob, rMob, mic, micQty, laptop, video, other, otherDet,
+                    uId, uName
+                );
             } else {
-                builder.timeFrom(timeFromCombo.getValue()).timeTo(timeToCombo.getValue());
+                builder.userRole("admin")
+                       .userId(uId).userName(uName)
+                       .hallCategory(selectedCategory).roomType("fixed")
+                       .date(d).purpose(purp).requiredCapacity(cap)
+                       .responsibleName(rName).responsibleJob(rJob).responsibleMobile(rMob)
+                       .reqLaptop(laptop).reqVideoConf(video)
+                       .reqMic(mic, micQty).reqOther(other, otherDet)
+                       .timeFrom(slotComboBox.getValue());
+                booking = builder.build();
             }
-
-            Booking booking = builder.build();
 
             // 2. DECORATOR PATTERN
             if (cbOfficial.isSelected()) {

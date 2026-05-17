@@ -323,7 +323,7 @@ public class RoomManagementController implements Initializable {
                 });
             });
         } else {
-            RoomService.updateRoom(r, v -> {
+            new com.aast.booking.patterns.command.UpdateRoomCommand(r, () -> {
                 Platform.runLater(() -> {
                     submitFormBtn.setDisable(false);
                     closeForm();
@@ -334,7 +334,7 @@ public class RoomManagementController implements Initializable {
                     submitFormBtn.setDisable(false);
                     showAlert("خطأ", e.getMessage());
                 });
-            });
+            }).execute();
         }
     }
 

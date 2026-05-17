@@ -71,83 +71,18 @@ public class AdminBookingFacade {
 
     /**
      * Approves a booking using the appropriate strategy based on roomType.
+     * Uses Command Pattern for decoupling and tracking.
      */
     public void approveRequest(Booking booking, String roomId, boolean isUrgent, Runnable onSuccess, Consumer<Exception> onError) {
-        Thread t = new Thread(() -> {
-            try {
-                IApprovalStrategy strategy;
-                if ("multi".equals(booking.getRoomType())) {
-                    strategy = new MultiPurposeApprovalStrategy();
-                } else {
-                    strategy = new LectureApprovalStrategy();
-                }
-
-                boolean success = strategy.approve(booking, roomId, isUrgent);
-                if (success) {
-                    com.aast.booking.services.GlobalDataService.getInstance().invalidateBookings();
-                    Platform.runLater(onSuccess);
-                } else {
-                    Platform.runLater(() -> onError.accept(new Exception("Approval strategy failed.")));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                Platform.runLater(() -> onError.accept(e));
-            }
-        });
-        t.setDaemon(true);
-        t.start();
+        new com.aast.booking.patterns.command.ApproveBookingCommand(booking, roomId, isUrgent, onSuccess, onError).execute();
     }
 
     /**
      * Rejects a booking and saves alternative suggestions, and notifies the user.
+     * Uses Command Pattern for decoupling and tracking.
      */
     public void rejectRequest(Booking booking, String reason, String suggestedRoom, String suggestedDate, String suggestedTimeFrom, String suggestedTimeTo, Runnable onSuccess, Consumer<Exception> onError) {
-        Firestore db = FirebaseService.getInstance().getFirestore();
-        if (db == null) return;
-
-        Thread t = new Thread(() -> {
-            try {
-                // 1. Update Booking
-                Map<String, Object> updates = new HashMap<>();
-                updates.put("status", "rejected");
-                updates.put("rejectReason", reason);
-                if (suggestedRoom != null && !suggestedRoom.isEmpty()) updates.put("suggestedRoomId", suggestedRoom);
-                if (suggestedDate != null && !suggestedDate.isEmpty()) updates.put("suggestedDate", suggestedDate);
-                if (suggestedTimeFrom != null && !suggestedTimeFrom.isEmpty()) updates.put("suggestedTimeFrom", suggestedTimeFrom);
-                if (suggestedTimeTo != null && !suggestedTimeTo.isEmpty()) updates.put("suggestedTimeTo", suggestedTimeTo);
-                updates.put("updatedAt", FieldValue.serverTimestamp());
-
-                db.collection("bookings").document(booking.getId()).update(updates).get();
-
-                // 2. Notify the employee
-                String suggestionText = "";
-                if ((suggestedRoom != null && !suggestedRoom.isEmpty()) || (suggestedDate != null && !suggestedDate.isEmpty()) || (suggestedTimeFrom != null && !suggestedTimeFrom.isEmpty())) {
-                    suggestionText = " البديل المقترح: ";
-                    if (suggestedRoom != null && !suggestedRoom.isEmpty()) suggestionText += "القاعة " + suggestedRoom + " ";
-                    if (suggestedDate != null && !suggestedDate.isEmpty()) suggestionText += "يوم " + suggestedDate + " ";
-                    if (suggestedTimeFrom != null && !suggestedTimeFrom.isEmpty()) suggestionText += "من " + suggestedTimeFrom + " إلى " + suggestedTimeTo;
-                }
-
-                Map<String, Object> notification = new HashMap<>();
-                notification.put("userId", booking.getUserId());
-                notification.put("title", "تم رفض طلبك / يتطلب تعديل");
-                notification.put("message", "تم رفض الحجز لأن القاعة أو الوقت غير متاح. السبب: " + (reason != null && !reason.isEmpty() ? reason : "غير محدد") + "." + suggestionText);
-                notification.put("type", "rejection_alert");
-                notification.put("bookingId", booking.getId());
-                notification.put("isRead", false);
-                notification.put("createdAt", FieldValue.serverTimestamp());
-
-                db.collection("notifications").add(notification).get();
-
-                com.aast.booking.services.GlobalDataService.getInstance().invalidateBookings();
-                Platform.runLater(onSuccess);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Platform.runLater(() -> onError.accept(e));
-            }
-        });
-        t.setDaemon(true);
-        t.start();
+        new com.aast.booking.patterns.command.RejectBookingCommand(booking, reason, suggestedRoom, suggestedDate, suggestedTimeFrom, suggestedTimeTo, onSuccess, onError).execute();
     }
 
     /**

@@ -447,28 +447,40 @@ public class SecretaryDashboardController extends BaseDashboardController implem
         
         String now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
-        // Builder Pattern
-        BookingBuilder builder = new StandardBookingBuilder(reqId)
-                                    .setUserId(userId)
-                                    .setEmployeeName(employeeName)
-                                    .setRoomId(room)
-                                    .setDate(date)
-                                    .setTimeFrom(tFrom)
-                                    .setTimeTo(tTo)
-                                    .setPurpose(purp)
-                                    .setCreatedAt(now)
-                                    .setStatus("pending");
-        BookingRequest newBooking = builder.build();
-        
-        // Add step 2 & 3 data to request model
-        newBooking.setRequesterName(requesterNameField != null ? requesterNameField.getText() : "");
-        newBooking.setRequesterTitle(requesterTitleField != null ? requesterTitleField.getText() : "");
-        newBooking.setRequesterPhone(requesterPhoneField != null ? requesterPhoneField.getText() : "");
+        int capacityNum = 0;
+        try { if (!cap.isEmpty()) capacityNum = Integer.parseInt(cap); } catch(Exception ignored) {}
+
+        boolean mic = cbMic != null && cbMic.isSelected();
+        boolean laptop = cbLaptop != null && cbLaptop.isSelected();
+        boolean video = cbVideoConf != null && cbVideoConf.isSelected();
+
+        // Director & Builder Pattern
+        com.aast.booking.patterns.builder.BookingDirector director = new com.aast.booking.patterns.builder.BookingDirector();
+        com.aast.booking.patterns.builder.BookingBuilder builder = new com.aast.booking.patterns.builder.BookingBuilder();
+        com.aast.booking.models.Booking builtBooking = director.buildSecretaryMultiPurposeBooking(
+                builder, date, tFrom, tTo, purp, capacityNum, 
+                reqName, reqTitle, reqPhone, mic, 1, laptop, video, userId, employeeName);
+
+        // Convert Booking to BookingRequest (Adapter) for the UI list
+        BookingRequest newBooking = new BookingRequest();
+        newBooking.setId(reqId);
+        newBooking.setUserId(userId);
+        newBooking.setEmployeeName(employeeName);
+        newBooking.setRoomId(room);
+        newBooking.setDate(date);
+        newBooking.setTimeFrom(tFrom);
+        newBooking.setTimeTo(tTo);
+        newBooking.setPurpose(purp);
+        newBooking.setCreatedAt(now);
+        newBooking.setStatus("pending");
+        newBooking.setRequesterName(reqName);
+        newBooking.setRequesterTitle(reqTitle);
+        newBooking.setRequesterPhone(reqPhone);
         
         List<String> requirements = new ArrayList<>();
-        if (cbLaptop != null && cbLaptop.isSelected()) requirements.add("Laptop");
-        if (cbVideoConf != null && cbVideoConf.isSelected()) requirements.add("Video Conference");
-        if (cbMic != null && cbMic.isSelected()) requirements.add("Microphones");
+        if (laptop) requirements.add("Laptop");
+        if (video) requirements.add("Video Conference");
+        if (mic) requirements.add("Microphones");
         newBooking.setRequirements(requirements);
 
         // Decorator Pattern

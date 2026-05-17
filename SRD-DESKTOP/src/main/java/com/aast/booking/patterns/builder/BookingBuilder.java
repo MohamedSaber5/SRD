@@ -24,7 +24,7 @@ import com.aast.booking.models.Booking;
  *       .userId("uid123").userName("أحمد").userRole("employee")
  *       .build();
  */
-public class BookingBuilder {
+public class BookingBuilder implements IBookingBuilder {
 
     private final Booking booking;
 
@@ -37,92 +37,109 @@ public class BookingBuilder {
 
     // ── Step 1: Basic Info ─────────────────────────────────────────────────
 
-    public BookingBuilder roomId(String roomId) {
+    @Override
+    public IBookingBuilder roomId(String roomId) {
         booking.setRoomId(roomId);
         return this;
     }
 
-    public BookingBuilder roomType(String roomType) {
+    @Override
+    public IBookingBuilder roomType(String roomType) {
         booking.setRoomType(roomType);
         return this;
     }
 
-    public BookingBuilder hallCategory(String hallCategory) {
+    @Override
+    public IBookingBuilder hallCategory(String hallCategory) {
         booking.setHallCategory(hallCategory);
         return this;
     }
 
-    public BookingBuilder date(String date) {
+    @Override
+    public IBookingBuilder date(String date) {
         booking.setDate(date);
         return this;
     }
 
-    public BookingBuilder timeFrom(String timeFrom) {
+    @Override
+    public IBookingBuilder timeFrom(String timeFrom) {
         booking.setTimeFrom(timeFrom);
         return this;
     }
 
-    public BookingBuilder timeTo(String timeTo) {
+    @Override
+    public IBookingBuilder timeTo(String timeTo) {
         booking.setTimeTo(timeTo);
         return this;
     }
 
-    public BookingBuilder purpose(String purpose) {
+    @Override
+    public IBookingBuilder purpose(String purpose) {
         booking.setPurpose(purpose);
         return this;
     }
 
-    public BookingBuilder requiredCapacity(int capacity) {
+    @Override
+    public IBookingBuilder requiredCapacity(int capacity) {
         booking.setRequiredCapacity(capacity);
         return this;
     }
 
-    public BookingBuilder holidayEvent(boolean isHolidayEvent) {
+    @Override
+    public IBookingBuilder holidayEvent(boolean isHolidayEvent) {
         booking.setHolidayEvent(isHolidayEvent);
         return this;
     }
 
-    public BookingBuilder officialOccasion(boolean isOfficialOccasion) {
+    @Override
+    public IBookingBuilder officialOccasion(boolean isOfficialOccasion) {
         booking.setOfficialOccasion(isOfficialOccasion);
         return this;
     }
 
     // ── Step 2: Responsible Person ─────────────────────────────────────────
 
-    public BookingBuilder responsibleName(String name) {
+    @Override
+    public IBookingBuilder responsibleName(String name) {
         booking.setResponsibleName(name);
         return this;
     }
 
-    public BookingBuilder responsibleJob(String job) {
+    @Override
+    public IBookingBuilder responsibleJob(String job) {
         booking.setResponsibleJob(job);
         return this;
     }
 
-    public BookingBuilder responsibleMobile(String mobile) {
+    @Override
+    public IBookingBuilder responsibleMobile(String mobile) {
         booking.setResponsibleMobile(mobile);
         return this;
     }
 
     // ── Step 3: Requirements ───────────────────────────────────────────────
 
-    public BookingBuilder reqMic(boolean reqMic, int qty) {
+    @Override
+    public IBookingBuilder reqMic(boolean reqMic, int qty) {
         booking.setReqMic(reqMic);
         booking.setReqMicQty(qty);
         return this;
     }
 
-    public BookingBuilder reqLaptop(boolean reqLaptop) {
+    @Override
+    public IBookingBuilder reqLaptop(boolean reqLaptop) {
         booking.setReqLaptop(reqLaptop);
         return this;
     }
 
-    public BookingBuilder reqVideoConf(boolean reqVideoConf) {
+    @Override
+    public IBookingBuilder reqVideoConf(boolean reqVideoConf) {
         booking.setReqVideoConf(reqVideoConf);
         return this;
     }
 
-    public BookingBuilder reqOther(boolean reqOther, String details) {
+    @Override
+    public IBookingBuilder reqOther(boolean reqOther, String details) {
         booking.setReqOther(reqOther);
         booking.setReqOtherDetails(details != null ? details : "");
         return this;
@@ -130,17 +147,20 @@ public class BookingBuilder {
 
     // ── Metadata (from SessionManager) ────────────────────────────────────
 
-    public BookingBuilder userId(String userId) {
+    @Override
+    public IBookingBuilder userId(String userId) {
         booking.setUserId(userId);
         return this;
     }
 
-    public BookingBuilder userName(String userName) {
+    @Override
+    public IBookingBuilder userName(String userName) {
         booking.setUserName(userName);
         return this;
     }
 
-    public BookingBuilder userRole(String role) {
+    @Override
+    public IBookingBuilder userRole(String role) {
         booking.setUserRole(role);
         // Mirror web logic: status = admin -> awaiting_manager_final, else pending
         if ("admin".equals(role) || "temp_admin".equals(role)) {
@@ -151,7 +171,8 @@ public class BookingBuilder {
         return this;
     }
 
-    public BookingBuilder college(String college) {
+    @Override
+    public IBookingBuilder college(String college) {
         booking.setCollege(college);
         return this;
     }
@@ -162,7 +183,8 @@ public class BookingBuilder {
      * Applies default values for Lecture rooms.
      * Overrides responsible person and sets requirements to false/0.
      */
-    public BookingBuilder applyLectureDefaults(String defaultResponsibleName) {
+    @Override
+    public IBookingBuilder applyLectureDefaults(String defaultResponsibleName) {
         if (booking.getResponsibleName() == null || booking.getResponsibleName().trim().isEmpty()) {
             booking.setResponsibleName(defaultResponsibleName != null ? defaultResponsibleName : "");
         }
@@ -187,7 +209,8 @@ public class BookingBuilder {
      * Pre-populates builder from a Prototype-cloned booking.
      * Called when user submits with suggested alternative.
      */
-    public BookingBuilder fromPrototype(Booking prototype) {
+    @Override
+    public IBookingBuilder fromPrototype(Booking prototype) {
         booking.setRoomId(prototype.getRoomId());
         booking.setRoomType(prototype.getRoomType());
         booking.setHallCategory(prototype.getHallCategory());
