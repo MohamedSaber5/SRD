@@ -379,19 +379,19 @@ public class AdminBookingFormController {
             showAlert("لا يوجد حجز سابق لتكراره.", AlertType.WARNING);
             return;
         }
-        Booking cloned = lastBooking.clone();
-        
-        // Category
-        if (cloned.getHallCategory().equals("lecture")) selectLectureCategory(); 
-        else selectMultiCategory();
+        // PROTOTYPE PATTERN (Prompt 4): use cloneForResubmit() via IBookingPrototype interface
+        Booking cloned = lastBooking.cloneForResubmit();
 
-        // Details
+        // Admin is always multi-purpose
+        selectMultiCategory();
+
+        // Pre-fill form fields with cloned data
         purposeField.setText(cloned.getPurpose());
         capacityField.setText(String.valueOf(cloned.getRequiredCapacity()));
         respNameField.setText(cloned.getResponsibleName());
         respJobField.setText(cloned.getResponsibleJob());
         respMobileField.setText(cloned.getResponsibleMobile());
-        
+
         showAlert("تم ملء البيانات من الحجز السابق بنجاح.", AlertType.INFORMATION);
     }
 }

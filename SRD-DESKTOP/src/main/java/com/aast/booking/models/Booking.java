@@ -1,5 +1,6 @@
 package com.aast.booking.models;
 
+import com.aast.booking.patterns.prototype.IBookingPrototype;
 import com.google.cloud.firestore.DocumentSnapshot;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import java.util.Map;
  * Mirrors the "prefill" logic in UserDashboard.jsx where rejected booking data
  * is passed as state to the booking form with suggested alternative values.
  */
-public class Booking implements Cloneable {
+public class Booking implements Cloneable, IBookingPrototype {
 
     private String id;
     private String roomId;
@@ -63,38 +64,92 @@ public class Booking implements Cloneable {
 
     public Booking() {}
 
-    // ── Prototype Pattern: Deep Clone ──────────────────────────────────────
+    // ── Prototype Pattern: IBookingPrototype implementation ───────────────
     /**
-     * Creates a deep copy of this booking.
-     * Used when employee clicks "تقديم الطلب بالبديل" on a rejected booking.
+     * Creates a deep copy of this booking for re-submission.
      *
-     * The clone will have:
-     *  - All original fields copied
-     *  - id = null (it's a NEW booking)
-     *  - status = "pending" (reset)
-     *  - rejectReason, suggested* fields cleared
-     *  - createdAt = null (will be set by server)
+     * DESIGN PATTERN: Prototype (Prompt 4)
      *
-     * Then caller modifies roomId/date/time with the suggested values.
+     * This is the canonical implementation of the Prototype pattern for bookings.
+     * Uses explicit field-by-field copy (safer than super.clone() for future-proofing)
+     * and automatically applies any admin-suggested alternatives from the rejection.
+     *
+     * Lifecycle fields reset:
+     *   - id          = null   (will get a new Firestore document ID)
+     *   - status      = "pending" (fresh start in the approval chain)
+     *   - isUrgent    = false
+     *   - createdAt   = null   (set by server on save)
+     *   - rejectReason / suggested* fields cleared
+     *
+     * Used by:
+     *   - employee/BookingListController → handleResubmitWithSuggestion()
+     *   - admin/AdminBookingFormController → repeat-booking feature
      */
     @Override
+    public Booking cloneForResubmit() {
+        Booking copy = new Booking();
+
+        // ── Core booking data ──────────────────────────────────────────────
+        copy.setRoomType(this.roomType);
+        copy.setHallCategory(this.hallCategory);
+        copy.setPurpose(this.purpose);
+        copy.setRequiredCapacity(this.requiredCapacity);
+        copy.setHolidayEvent(this.isHolidayEvent);
+        copy.setOfficialOccasion(this.isOfficialOccasion);
+
+        // ── Responsible person ────────────────────────────────────────────
+        copy.setResponsibleName(this.responsibleName);
+        copy.setResponsibleJob(this.responsibleJob);
+        copy.setResponsibleMobile(this.responsibleMobile);
+
+        // ── Requirements ─────────────────────────────────────────────────
+        copy.setReqMic(this.reqMic);
+        copy.setReqMicQty(this.reqMicQty);
+        copy.setReqLaptop(this.reqLaptop);
+        copy.setReqVideoConf(this.reqVideoConf);
+        copy.setReqOther(this.reqOther);
+        copy.setReqOtherDetails(this.reqOtherDetails);
+
+        // ── User metadata (carried from original, caller may override) ────
+        copy.setUserId(this.userId);
+        copy.setUserName(this.userName);
+        copy.setUserRole(this.userRole);
+        copy.setCollege(this.college);
+
+        // ── Apply original date / time / room — then override with suggestion ──
+        copy.setRoomId(this.roomId);
+        copy.setDate(this.date);
+        copy.setTimeFrom(this.timeFrom);
+        copy.setTimeTo(this.timeTo);
+
+        // ── Apply admin's suggested alternatives (if any) ─────────────────
+        if (this.suggestedRoomId != null && !this.suggestedRoomId.isEmpty())
+            copy.setRoomId(this.suggestedRoomId);
+        if (this.suggestedDate != null && !this.suggestedDate.isEmpty())
+            copy.setDate(this.suggestedDate);
+        if (this.suggestedTimeFrom != null && !this.suggestedTimeFrom.isEmpty())
+            copy.setTimeFrom(this.suggestedTimeFrom);
+        if (this.suggestedTimeTo != null && !this.suggestedTimeTo.isEmpty())
+            copy.setTimeTo(this.suggestedTimeTo);
+
+        // ── Lifecycle reset ───────────────────────────────────────────────
+        copy.setId(null);           // new Firestore document
+        copy.setStatus("pending");  // back to start of approval chain
+        // isUrgent, rejectReason, suggested* → left at default (false/null)
+        // createdAt → left null (server sets it on save)
+
+        return copy;
+    }
+
+    // ── Prototype Pattern: Legacy clone() — delegates to cloneForResubmit() ─
+    /**
+     * @deprecated Prefer {@link #cloneForResubmit()} for the clean Prototype interface.
+     *             Kept for backward compatibility with code written before Prompt 4.
+     */
+    @Override
+    @Deprecated
     public Booking clone() {
-        try {
-            Booking cloned = (Booking) super.clone();
-            // Reset booking-specific fields for re-submission
-            cloned.id = null;
-            cloned.status = "pending";
-            cloned.isUrgent = false;
-            cloned.rejectReason = null;
-            cloned.suggestedRoomId = null;
-            cloned.suggestedDate = null;
-            cloned.suggestedTimeFrom = null;
-            cloned.suggestedTimeTo = null;
-            cloned.createdAt = null;
-            return cloned;
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Booking clone failed", e);
-        }
+        return cloneForResubmit();
     }
 
     // ── Factory method: Build from Firestore document ──────────────────────

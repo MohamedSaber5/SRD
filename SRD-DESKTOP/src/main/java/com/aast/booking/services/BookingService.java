@@ -81,22 +81,24 @@ public class BookingService {
     }
 
     /**
-     * PROTOTYPE PATTERN: Clone rejected booking + apply suggested values.
+     * PROTOTYPE PATTERN — backward-compatible wrapper.
+     *
+     * @deprecated Since Prompt 4, call {@code booking.cloneForResubmit()} directly.
+     *             The suggestion-application and user-identity update logic now lives
+     *             inside {@link com.aast.booking.models.Booking#cloneForResubmit()}.
+     *             This method is kept only for legacy call-sites not yet migrated.
      */
+    @Deprecated
     public static Booking cloneWithSuggestions(Booking rejected) {
-        Booking cloned = rejected.clone();
-        if (rejected.getSuggestedRoomId() != null && !rejected.getSuggestedRoomId().isEmpty())
-            cloned.setRoomId(rejected.getSuggestedRoomId());
-        if (rejected.getSuggestedDate() != null && !rejected.getSuggestedDate().isEmpty())
-            cloned.setDate(rejected.getSuggestedDate());
-        if (rejected.getSuggestedTimeFrom() != null && !rejected.getSuggestedTimeFrom().isEmpty())
-            cloned.setTimeFrom(rejected.getSuggestedTimeFrom());
-        if (rejected.getSuggestedTimeTo() != null && !rejected.getSuggestedTimeTo().isEmpty())
-            cloned.setTimeTo(rejected.getSuggestedTimeTo());
+        // Delegate entirely to the Prototype interface — no duplicated logic here
+        Booking cloned = rejected.cloneForResubmit();
 
+        // Apply current session's identity (cloneForResubmit carries original user)
         var user = SessionManager.getInstance().getCurrentUser();
-        cloned.setUserId(user.getUid());
-        cloned.setUserName(user.getDisplayName());
+        if (user != null) {
+            cloned.setUserId(user.getUid());
+            cloned.setUserName(user.getDisplayName());
+        }
         return cloned;
     }
 }

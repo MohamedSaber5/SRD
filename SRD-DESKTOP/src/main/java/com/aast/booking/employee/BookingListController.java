@@ -206,16 +206,26 @@ public class BookingListController implements Initializable {
     /**
      * Handles "تقديم الطلب بالبديل" button click.
      *
-     * PROTOTYPE PATTERN:
-     *   1. Calls BookingService.cloneWithSuggestions(booking) → deep clone + apply suggestions
-     *   2. Passes the clone to BookingFormController for pre-filling
-     *   3. User reviews and submits as a new booking
+     * PROTOTYPE PATTERN (Prompt 4):
+     *   1. Calls booking.cloneForResubmit() — IBookingPrototype interface
+     *      → deep copy of original booking data
+     *      → admin's suggested alternatives automatically applied (room/date/time)
+     *      → lifecycle reset: id=null, status="pending"
+     *   2. Updates user identity on the clone (current session)
+     *   3. Opens BookingFormController pre-filled with the clone for review + submission
      */
     private void handleResubmitWithSuggestion(Booking rejectedBooking) {
-        // Step 1: Clone the rejected booking and apply suggested values (Prototype)
-        Booking clonedBooking = BookingService.cloneWithSuggestions(rejectedBooking);
+        // Step 1: PROTOTYPE — clone via IBookingPrototype interface
+        Booking clonedBooking = rejectedBooking.cloneForResubmit();
 
-        // Step 2: Open form with pre-filled data
+        // Step 2: Update user identity (session user may differ from original submitter)
+        var user = SessionManager.getInstance().getCurrentUser();
+        if (user != null) {
+            clonedBooking.setUserId(user.getUid());
+            clonedBooking.setUserName(user.getDisplayName());
+        }
+
+        // Step 3: Open booking form with pre-filled clone
         if (shellController != null) {
             shellController.showBookingFormWithPrefill(clonedBooking);
         }
