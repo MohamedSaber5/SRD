@@ -52,6 +52,7 @@ public class Booking implements Cloneable, IBookingPrototype {
     private String college;
     private String status;          // pending | approved | rejected | awaiting_manager_final
     private boolean isUrgent;       // priority flag set by admin for multi-purpose rooms
+    private String priority = "normal"; // "normal" | "urgent" — Web Dashboard compatibility
 
     // Rejection fields (set by admin/secretary)
     private String rejectReason;
@@ -184,6 +185,7 @@ public class Booking implements Cloneable, IBookingPrototype {
         
         // Support both Desktop (isUrgent) and Web (priority) flags
         b.isUrgent = Boolean.TRUE.equals(doc.getBoolean("isUrgent")) || "urgent".equals(doc.getString("priority"));
+        b.priority = b.isUrgent ? "urgent" : (doc.getString("priority") != null ? doc.getString("priority") : "normal");
         
         b.rejectReason = doc.getString("rejectReason");
         b.suggestedRoomId = doc.getString("suggestedRoomId");
@@ -242,7 +244,7 @@ public class Booking implements Cloneable, IBookingPrototype {
         map.put("college", college != null ? college : "");
         map.put("status", status != null ? status : "pending");
         map.put("isUrgent", isUrgent);
-        map.put("priority", isUrgent ? "urgent" : "normal"); // Compatibility with Web App
+        map.put("priority", priority != null ? priority : (isUrgent ? "urgent" : "normal")); // Web App compatibility
         return map;
     }
 
@@ -349,6 +351,9 @@ public class Booking implements Cloneable, IBookingPrototype {
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
 
-    public boolean isUrgent() { return isUrgent; }
+    public boolean isUrgent()  { return isUrgent; }
     public void setUrgent(boolean urgent) { isUrgent = urgent; }
+
+    public String getPriority() { return priority != null ? priority : (isUrgent ? "urgent" : "normal"); }
+    public void setPriority(String priority) { this.priority = priority; }
 }

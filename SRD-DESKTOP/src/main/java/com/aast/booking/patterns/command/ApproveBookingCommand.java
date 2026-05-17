@@ -7,6 +7,9 @@ import com.aast.booking.models.Booking;
 import com.aast.booking.admin.strategies.IApprovalStrategy;
 import com.aast.booking.admin.strategies.LectureApprovalStrategy;
 import com.aast.booking.admin.strategies.MultiPurposeApprovalStrategy;
+import com.aast.booking.patterns.decorator.BaseBookingComponent;
+import com.aast.booking.patterns.decorator.IBookingComponent;
+import com.aast.booking.patterns.decorator.UrgentRequestDecorator;
 import javafx.application.Platform;
 import java.util.function.Consumer;
 
@@ -46,13 +49,25 @@ public class ApproveBookingCommand implements ICommand {
         if (isAdmin) {
             Thread t = new Thread(() -> {
                 try {
+                    // ── DECORATOR PATTERN (Prompt 5) ───────────────────────────────────
+                    // Wrap the booking in the Decorator chain before the strategy executes.
+                    // BaseBookingComponent = no-op wrapper (normal priority)
+                    // UrgentRequestDecorator = sets isUrgent=true, status, priority on booking
+                    IBookingComponent component = new BaseBookingComponent(booking);
+                    if (isUrgent) {
+                        component = new UrgentRequestDecorator(component); // applies flags
+                    }
+                    Booking decoratedBooking = component.getBooking(); // fully decorated
+
+                    // ── STRATEGY PATTERN ──────────────────────────────────────────────
                     IApprovalStrategy strategy;
-                    if ("multi".equals(booking.getRoomType())) {
+                    if ("multi".equals(decoratedBooking.getRoomType())) {
                         strategy = new MultiPurposeApprovalStrategy();
                     } else {
                         strategy = new LectureApprovalStrategy();
                     }
-                    boolean success = strategy.approve(booking, roomId, isUrgent);
+                    // Pass decoratedBooking — already has isUrgent/priority set by decorator
+                    boolean success = strategy.approve(decoratedBooking, roomId, isUrgent);
                     if (success) {
                         GlobalDataService.getInstance().invalidateBookings();
                         Platform.runLater(onSuccess);
