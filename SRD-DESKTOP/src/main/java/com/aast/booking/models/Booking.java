@@ -62,6 +62,7 @@ public class Booking implements Cloneable, IBookingPrototype {
     private String suggestedTimeTo;
 
     private Date createdAt;
+    private Date updatedAt;
 
     public Booking() {}
 
@@ -202,6 +203,16 @@ public class Booking implements Cloneable, IBookingPrototype {
                 b.createdAt = new Date(); // Fallback if unparseable
             }
         }
+        
+        Object updatedAtObj = doc.get("updatedAt");
+        if (updatedAtObj instanceof com.google.cloud.Timestamp) {
+            b.updatedAt = ((com.google.cloud.Timestamp) updatedAtObj).toDate();
+        } else if (updatedAtObj instanceof String) {
+            try {
+                b.updatedAt = Date.from(java.time.Instant.parse((String) updatedAtObj));
+            } catch (Exception e) {}
+        }
+        
         return b;
     }
 
@@ -350,6 +361,9 @@ public class Booking implements Cloneable, IBookingPrototype {
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+    public Date getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
 
     public boolean isUrgent()  { return isUrgent; }
     public void setUrgent(boolean urgent) { isUrgent = urgent; }

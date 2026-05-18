@@ -321,10 +321,19 @@ public class AdminDashboardController implements Initializable {
 
     private void updateDashboardStats(int roomCount) {
         int pendingCount = (int) allBookings.stream()
-                .filter(b -> "pending".equals(b.getStatus()) || "awaiting_manager_final".equals(b.getStatus()))
+                .filter(b -> "pending".equals(b.getStatus()))
                 .count();
         int acceptedToday = (int) allBookings.stream()
-                .filter(b -> "approved".equals(b.getStatus()) && todayStr.equals(b.getDate()))
+                .filter(b -> {
+                    if (!("approved".equals(b.getStatus()) || "awaiting_manager_final".equals(b.getStatus()))) return false;
+                    
+                    java.util.Date dateToCheck = b.getUpdatedAt() != null ? b.getUpdatedAt() : b.getCreatedAt();
+                    if (dateToCheck == null) return false;
+                    
+                    java.time.LocalDate targetDate = dateToCheck.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                    java.time.LocalDate today = java.time.LocalDate.now();
+                    return targetDate.equals(today);
+                })
                 .count();
         int totalBookings = allBookings.size();
 
@@ -407,8 +416,9 @@ public class AdminDashboardController implements Initializable {
                 RequestCardController controller = loader.getController();
                 controller.setBooking(b, this::handleApproveClick, this::handleRejectClick);
                 
-                // Fixed width like branch manager (420px) — FlowPane will auto-wrap them
-                card.setPrefWidth(420);
+                // Bind the card width to exactly half the container width minus gap/padding
+                card.prefWidthProperty().bind(requestsContainer.widthProperty().divide(2).subtract(16));
+                card.setMaxWidth(Region.USE_PREF_SIZE);
                 // Click anywhere on the card to open detail popup
                 card.setOnMouseClicked(evt -> showDetailOverlay(b));
                 card.setStyle(card.getStyle() + " -fx-cursor: hand;");
@@ -498,7 +508,7 @@ public class AdminDashboardController implements Initializable {
             () -> {
                 showAlert(Alert.AlertType.INFORMATION, "نجاح", "تم التعامل مع الطلب بنجاح.");
                 closeModals();
-                fetchPendingRequestsOnly();
+                fetchAllData();
             },
             e -> showAlert(Alert.AlertType.ERROR, "خطأ", "حدث خطأ أثناء حفظ التعديلات.")
         );
@@ -540,6 +550,7 @@ public class AdminDashboardController implements Initializable {
             () -> {
                 showAlert(Alert.AlertType.INFORMATION, "نجاح", "تم رفض الطلب وإشعار الموظف بنجاح.");
                 closeModals();
+                fetchAllData();
             },
             e -> showAlert(Alert.AlertType.ERROR, "خطأ", "حدث خطأ أثناء الرفض.")
         );

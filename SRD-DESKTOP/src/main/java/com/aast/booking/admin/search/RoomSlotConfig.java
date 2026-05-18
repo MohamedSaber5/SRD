@@ -19,14 +19,14 @@ public class RoomSlotConfig {
     // ── Regular Lecture Slots (mirrors REGULAR_SLOTS in useBookingForm.js) ──
 
     public static final List<LectureSlot> REGULAR_SLOTS = List.of(
-        new LectureSlot("08:30", "10:10", "المحاضرة الأولى  (8:30 ص - 10:10 ص)"),
-        new LectureSlot("10:30", "12:10", "المحاضرة الثانية (10:30 ص - 12:10 م)"),
-        new LectureSlot("12:30", "14:10", "المحاضرة الثالثة (12:30 م - 2:10 م)"),
-        new LectureSlot("14:30", "16:10", "المحاضرة الرابعة (2:30 م - 4:10 م)"),
-        new LectureSlot("16:30", "18:10", "المحاضرة الخامسة (4:30 م - 6:10 م)"),
-        new LectureSlot("18:30", "20:10", "المحاضرة السادسة (6:30 م - 8:10 م)"),
-        new LectureSlot("20:30", "22:10", "المحاضرة السابعة (8:30 م - 10:10 م)"),
-        new LectureSlot("22:30", "00:10", "المحاضرة الثامنة (10:30 م - 12:10 ص)")
+        new LectureSlot("08:30", "10:30", "الفترة 1 + 2 (8:30 ص - 10:30 ص)"),
+        new LectureSlot("10:30", "12:30", "الفترة 3 + 4 (10:30 ص - 12:30 م)"),
+        new LectureSlot("12:30", "14:30", "الفترة 5 + 6 (12:30 م - 2:30 م)"),
+        new LectureSlot("14:30", "16:30", "الفترة 7 + 8 (2:30 م - 4:30 م)"),
+        new LectureSlot("16:30", "18:30", "الفترة 9 + 10 (4:30 م - 6:30 م)"),
+        new LectureSlot("18:30", "20:30", "الفترة 11 + 12 (6:30 م - 8:30 م)"),
+        new LectureSlot("20:30", "22:30", "الفترة 13 + 14 (8:30 م - 10:30 م)"),
+        new LectureSlot("22:30", "00:30", "الفترة 15 + 16 (10:30 م - 12:30 ص)")
     );
 
     // ── Ramadan Lecture Slots (mirrors RAMADAN_SLOTS in useBookingForm.js) ──

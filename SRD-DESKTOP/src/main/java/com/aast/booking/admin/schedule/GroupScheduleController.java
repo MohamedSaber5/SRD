@@ -1,6 +1,7 @@
 package com.aast.booking.admin.schedule;
 
 import com.aast.booking.core.FirebaseService;
+import com.aast.booking.admin.search.RoomSlotConfig;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import javafx.application.Platform;
@@ -42,9 +43,9 @@ public class GroupScheduleController implements Initializable {
 
     private final Firestore db;
 
-    // Time slots definition (from RoomSlotConfig roughly, but we just use 1 to 9 indices)
-    private final String[] days = {"SATURDAY", "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY"};
-    private final String[] arDays = {"السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"};
+    // Time slots definition (from RoomSlotConfig roughly, but we just use 1 to 16 indices)
+    private final String[] days = {"SATURDAY", "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"};
+    private final String[] arDays = {"السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"};
 
     public GroupScheduleController() {
         this.db = FirebaseService.getInstance().getFirestore();
@@ -101,6 +102,9 @@ public class GroupScheduleController implements Initializable {
                     String lecturerName = doc.getString("lecturerName");
                     String lectureType = doc.getString("lectureType");
                     String roomId = doc.getString("roomId");
+                    Boolean biWeeklyObj = doc.getBoolean("biWeekly");
+                    if (biWeeklyObj == null) biWeeklyObj = doc.getBoolean("isBiWeekly");
+                    boolean biWeekly = biWeeklyObj != null ? biWeeklyObj : false;
 
                     // Unique key to prevent duplicating the same lecture every week
                     String key = dayOfWeek + "_" + timeFrom + "_" + courseCode + "_" + lectureType;
@@ -114,9 +118,10 @@ public class GroupScheduleController implements Initializable {
                         info.lecturerName = lecturerName != null ? lecturerName : "N/A";
                         info.lectureType = lectureType != null ? lectureType : "Lecture";
                         info.roomId = roomId != null ? roomId : "N/A";
+                        info.biWeekly = biWeekly;
 
-                        // Determine slot index based on timeFrom
-                        info.slotIndex = determineSlotIndex(timeFrom);
+                        // Determine slot index based on timeFrom (1 to 16)
+                        info.slotIndex = getStartPeriodFromTime(timeFrom);
                         uniqueSlots.put(key, info);
                     }
                 }
@@ -146,15 +151,16 @@ public class GroupScheduleController implements Initializable {
         gridSchedule.setVgap(2);
         gridSchedule.setStyle("-fx-background-color: #d1d5db; -fx-padding: 2;"); // border effect
 
-        // Column 0: Days. Columns 1-9: Slots
+        // Column 0: Days. Columns 1-16: Slots
         ColumnConstraints col0 = new ColumnConstraints();
-        col0.setPrefWidth(100);
+        col0.setPercentWidth(10.0);
         gridSchedule.getColumnConstraints().add(col0);
 
-        for (int i = 1; i <= 9; i++) {
+        double slotPercent = 90.0 / 16;
+        for (int i = 1; i <= 16; i++) {
             ColumnConstraints col = new ColumnConstraints();
             col.setHgrow(Priority.ALWAYS);
-            col.setPercentWidth(100.0 / 9);
+            col.setPercentWidth(slotPercent);
             gridSchedule.getColumnConstraints().add(col);
         }
 
@@ -165,7 +171,7 @@ public class GroupScheduleController implements Initializable {
 
         // Header Cells
         addCell(gridSchedule, createHeaderCell(""), 0, 0);
-        for (int i = 1; i <= 9; i++) {
+        for (int i = 1; i <= 16; i++) {
             addCell(gridSchedule, createHeaderCell(String.valueOf(i)), i, 0);
         }
 
@@ -177,7 +183,7 @@ public class GroupScheduleController implements Initializable {
             addCell(gridSchedule, createDayCell(arDays[r]), 0, r + 1);
 
             // Empty background cells
-            for (int c = 1; c <= 9; c++) {
+            for (int c = 1; c <= 16; c++) {
                 addCell(gridSchedule, createEmptyCell(), c, r + 1);
             }
         }
@@ -188,16 +194,35 @@ public class GroupScheduleController implements Initializable {
 
         for (BookingSlotInfo slot : slots) {
             int rowIdx = getDayRowIndex(slot.dayOfWeek);
-            if (rowIdx == -1 || slot.slotIndex < 1 || slot.slotIndex > 9) continue;
+            if (rowIdx == -1) continue;
 
-            VBox cell = createLectureCell(slot);
-            // Remove the empty cell first
-            gridSchedule.getChildren().removeIf(node -> GridPane.getColumnIndex(node) != null && 
-                    GridPane.getColumnIndex(node) == slot.slotIndex && 
-                    GridPane.getRowIndex(node) != null && 
-                    GridPane.getRowIndex(node) == rowIdx);
-            
-            addCell(gridSchedule, cell, slot.slotIndex, rowIdx);
+            int startPeriod = slot.slotIndex;
+            if (startPeriod < 1 || startPeriod > 16) continue;
+
+            final int r = rowIdx;
+            if (slot.biWeekly) {
+                // Bi-weekly occupies only a single period startPeriod
+                VBox cell = createLectureCell(slot, slot.timeFrom, slot.timeTo, true);
+                
+                // Remove empty cell at startPeriod
+                gridSchedule.getChildren().removeIf(node -> GridPane.getColumnIndex(node) != null && 
+                        GridPane.getColumnIndex(node) == startPeriod && 
+                        GridPane.getRowIndex(node) != null && 
+                        GridPane.getRowIndex(node) == r);
+                
+                addCell(gridSchedule, cell, startPeriod, rowIdx);
+            } else {
+                // Weekly occupies two consecutive periods (span = 2)
+                VBox cell = createLectureCell(slot, slot.timeFrom, slot.timeTo, false);
+                
+                // Remove empty cell at startPeriod and startPeriod + 1
+                gridSchedule.getChildren().removeIf(node -> GridPane.getColumnIndex(node) != null && 
+                        (GridPane.getColumnIndex(node) == startPeriod || GridPane.getColumnIndex(node) == (startPeriod + 1)) && 
+                        GridPane.getRowIndex(node) != null && 
+                        GridPane.getRowIndex(node) == r);
+                
+                gridSchedule.add(cell, startPeriod, rowIdx, 2, 1);
+            }
         }
     }
 
@@ -228,17 +253,42 @@ public class GroupScheduleController implements Initializable {
 
     // --- UI Helpers ---
 
-    private int determineSlotIndex(String timeFrom) {
-        // Heuristic based on typical start times
-        if (timeFrom.startsWith("08:") || timeFrom.startsWith("09:")) return 1;
-        if (timeFrom.startsWith("10:")) return 2;
-        if (timeFrom.startsWith("11:") || timeFrom.startsWith("12:00") || timeFrom.startsWith("12:30")) return 3;
-        if (timeFrom.startsWith("13:") || timeFrom.startsWith("14:30")) return 4;
-        if (timeFrom.startsWith("15:") || timeFrom.startsWith("16:30")) return 5;
-        if (timeFrom.startsWith("17:") || timeFrom.startsWith("18:30")) return 6;
-        if (timeFrom.startsWith("19:") || timeFrom.startsWith("20:30")) return 7;
-        if (timeFrom.startsWith("21:") || timeFrom.startsWith("22:30")) return 8;
-        return 9;
+    private int getStartPeriodFromTime(String timeFrom) {
+        if (timeFrom == null || !timeFrom.contains(":")) return 1;
+        try {
+            String clean = timeFrom.replace("ص", "").replace("م", "").replace("AM", "").replace("PM", "").trim();
+            String[] parts = clean.split(":");
+            int hour = Integer.parseInt(parts[0]);
+            
+            boolean isPM = timeFrom.contains("م") || timeFrom.toUpperCase().contains("PM");
+            if (isPM && hour < 12) {
+                hour += 12;
+            } else if (!isPM && hour == 12) {
+                hour = 0;
+            }
+            
+            // Period 1 starts at 08:30 -> hour = 8
+            int period = hour - 8 + 1;
+            if (period >= 1 && period <= 16) {
+                return period;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 1;
+    }
+
+    private String adjustTimeByHours(String timeStr, int hours) {
+        if (timeStr == null || !timeStr.contains(":")) return timeStr;
+        try {
+            String[] parts = timeStr.split(":");
+            int h = Integer.parseInt(parts[0]);
+            int m = Integer.parseInt(parts[1]);
+            h = (h + hours) % 24;
+            return String.format("%02d:%02d", h, m);
+        } catch (Exception e) {
+            return timeStr;
+        }
     }
 
     private int getDayRowIndex(String dayOfWeek) {
@@ -279,7 +329,7 @@ public class GroupScheduleController implements Initializable {
         return box;
     }
 
-    private VBox createLectureCell(BookingSlotInfo info) {
+    private VBox createLectureCell(BookingSlotInfo info, String from, String to, boolean isBiWeekly) {
         VBox box = new VBox();
         box.setStyle("-fx-background-color: white; -fx-border-color: #4b5563; -fx-border-width: 1; -fx-padding: 4;");
         box.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -287,13 +337,16 @@ public class GroupScheduleController implements Initializable {
         box.setSpacing(2);
 
         // Time HBox
-        HBox timeBox = new HBox(new Label(info.timeFrom), new Label(" - "), new Label(info.timeTo));
+        String displayTime = RoomSlotConfig.formatTime(from) + " - " + RoomSlotConfig.formatTime(to);
+        Label timeLabel = new Label(displayTime);
+        timeLabel.setFont(Font.font("System", 9));
+        
+        HBox timeBox = new HBox(timeLabel);
         timeBox.setAlignment(Pos.CENTER);
         timeBox.setStyle("-fx-border-color: #d1d5db; -fx-border-width: 0 0 1 0;");
-        for (var node : timeBox.getChildren()) ((Label)node).setFont(Font.font("System", 10));
 
         // Course Box
-        Label courseCode = new Label("⚪ " + info.courseCode);
+        Label courseCode = new Label((isBiWeekly ? "🔵 " : "⚪ ") + info.courseCode);
         courseCode.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #1f2937;");
         Label courseName = new Label(info.courseName);
         courseName.setStyle("-fx-font-size: 10px; -fx-text-fill: #374151;");
@@ -309,11 +362,15 @@ public class GroupScheduleController implements Initializable {
         // Room & Type
         HBox bottomBox = new HBox();
         bottomBox.setAlignment(Pos.CENTER);
-        bottomBox.setSpacing(10);
-        Label room = new Label("Room # " + info.roomId);
-        Label type = new Label(info.lectureType.equalsIgnoreCase("section") ? "Sec." : "Lect.");
-        room.setStyle("-fx-font-size: 10px;");
-        type.setStyle("-fx-font-size: 10px;");
+        bottomBox.setSpacing(5);
+        Label room = new Label("Room " + info.roomId);
+        String suffix = info.lectureType.equalsIgnoreCase("section") ? "Sec." : "Lect.";
+        if (isBiWeekly) {
+            suffix += " (أسبوعين)";
+        }
+        Label type = new Label(suffix);
+        room.setStyle("-fx-font-size: 9px;");
+        type.setStyle("-fx-font-size: 9px; -fx-text-fill: " + (isBiWeekly ? "#0284c7" : "#374151") + "; -fx-font-weight: " + (isBiWeekly ? "bold" : "normal"));
         bottomBox.getChildren().addAll(room, type);
 
         box.getChildren().addAll(timeBox, courseCode, courseName, lecturer, bottomBox);
@@ -338,5 +395,6 @@ public class GroupScheduleController implements Initializable {
         String lectureType;
         String roomId;
         int slotIndex;
+        boolean biWeekly;
     }
 }

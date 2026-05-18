@@ -82,23 +82,23 @@
 
                         <!-- Stats Row -->
                         <HBox spacing="14">
-                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <Label styleClass="bm-stat-label" text="الطلبات المعلقة" />
                                 <Label fx:id="statPending" styleClass="bm-stat-value" text="0" />
                             </VBox>
-                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <Label styleClass="bm-stat-label" text="المعتمدة" />
                                 <Label fx:id="statApproved" styleClass="bm-stat-value-green" text="0" />
                             </VBox>
-                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <Label styleClass="bm-stat-label" text="المرفوضة" />
                                 <Label fx:id="statRejected" styleClass="bm-stat-value-red" text="0" />
                             </VBox>
-                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <Label styleClass="bm-stat-label" text="الإجمالي" />
                                 <Label fx:id="statTotal" styleClass="bm-stat-value" text="0" />
                             </VBox>
-                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="8" styleClass="bm-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <Label styleClass="bm-stat-label" text="طلبات طارئة" />
                                 <Label fx:id="statEmergency" styleClass="bm-stat-value-orange" text="0" />
                             </VBox>

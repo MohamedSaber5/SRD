@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "724657515386",
+    "project_id": "aast-booking-system",
+    "storage_bucket": "aast-booking-system.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724657515386:android:ed6ebc9f36df4b661884c3",
+        "android_client_info": {
+          "package_name": "com.aast.booking.srd_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAolYvwI1kPyNuaguc4xxYCuStRfw8aLuA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

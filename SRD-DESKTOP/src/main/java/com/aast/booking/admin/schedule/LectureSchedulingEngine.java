@@ -78,7 +78,7 @@ public class LectureSchedulingEngine {
                     List<LocalDate> dates = dateIterator.generateDates(row.getStartDate(), row.isBiWeekly());
 
                     // 2. Determine time slot
-                    LectureSlot slot = dateIterator.resolveSlot(row.getSlotIndex(), isRamadan);
+                    LectureSlot slot = dateIterator.resolveSlot(row.getSlotIndex(), row.isBiWeekly(), isRamadan);
                     if (slot == null) continue; 
 
                     // 3. For each date, find a room
@@ -151,6 +151,8 @@ public class LectureSchedulingEngine {
         map.put("department", row.getDepartment());
         map.put("group", row.getGroup());
         map.put("lectureType", row.getLectureType());
+        map.put("biWeekly", row.isBiWeekly());
+        map.put("isBiWeekly", row.isBiWeekly());
         
         return map;
     }

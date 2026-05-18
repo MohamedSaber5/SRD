@@ -37,7 +37,7 @@ public class FirebaseService {
 
     private FirebaseService() {}
 
-    /**
+    /** 
      * Returns the single instance of FirebaseService.
      * Thread-safe with double-checked locking.
      */

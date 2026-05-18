@@ -63,6 +63,7 @@ public class AdminApprovalHandler extends BookingApprovalHandler {
         updates.put("roomId",   roomId);
         updates.put("isUrgent", isUrgent);
         updates.put("priority", isUrgent ? "urgent" : "normal"); // Web Dashboard compat.
+        updates.put("updatedAt", FieldValue.serverTimestamp());
         db.collection("bookings").document(booking.getId()).update(updates).get();
 
         // ── IMPORTANT: Do NOT call booking.setStatus() here ──────────────────

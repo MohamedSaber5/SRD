@@ -257,20 +257,116 @@ public class RoomManagementController implements Initializable {
 
     private void openForm(Room room) {
         editingRoom = room;
-        formModalOverlay.setVisible(true);
+
+        javafx.stage.Stage dialog = new javafx.stage.Stage();
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        dialog.initStyle(javafx.stage.StageStyle.UNDECORATED);
+        dialog.setResizable(false);
+
+        // ── Outer container with dark backdrop feel ────────────────────────
+        VBox card = new VBox(20);
+        card.setStyle(
+            "-fx-background-color: white;" +
+            "-fx-background-radius: 16;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 40, 0, 0, 8);" +
+            "-fx-padding: 30;"
+        );
+        card.setPrefWidth(480);
+        card.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+
+        // ── Title row ──────────────────────────────────────────────────────
+        HBox titleRow = new HBox(10);
+        titleRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        formTitle = new Label(room == null ? "إضافة قاعة جديدة" : "تعديل قاعة " + room.getRoomNumber());
+        formTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #001e40;");
+        HBox.setHgrow(formTitle, javafx.scene.layout.Priority.ALWAYS);
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        Button closeBtn = new Button("✖");
+        closeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-cursor: hand;");
+        closeBtn.setOnAction(e -> dialog.close());
+        titleRow.getChildren().addAll(formTitle, spacer, closeBtn);
+
+        // ── Fields ─────────────────────────────────────────────────────────
+        String fieldStyle = "-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;";
+        String labelStyle = "-fx-font-weight: bold; -fx-text-fill: #5a7698; -fx-font-size: 13px;";
+        String comboStyle = "-fx-background-color: #f8fafc; -fx-border-color: #e0e3e5; -fx-border-radius: 8; -fx-padding: 4;";
+
+        // Name
+        VBox nameBox = new VBox(5);
+        Label nameLabel = new Label("الاسم / الرقم التعريفي");
+        nameLabel.setStyle(labelStyle);
+        formName = new TextField();
+        formName.setPromptText("مثال: A-402");
+        formName.setStyle(fieldStyle);
+        nameBox.getChildren().addAll(nameLabel, formName);
+
+        // Type + Building
+        HBox row1 = new HBox(15);
+        VBox typeBox = new VBox(5);
+        Label typeLabel = new Label("نوع القاعة");
+        typeLabel.setStyle(labelStyle);
+        formType = new ComboBox<>();
+        formType.getItems().addAll("محاضرات عادية", "متعددة الأغراض");
+        formType.setMaxWidth(Double.MAX_VALUE);
+        formType.setStyle(comboStyle);
+        HBox.setHgrow(typeBox, javafx.scene.layout.Priority.ALWAYS);
+        typeBox.getChildren().addAll(typeLabel, formType);
+
+        VBox buildingBox = new VBox(5);
+        Label buildingLabel = new Label("المبنى");
+        buildingLabel.setStyle(labelStyle);
+        formBuilding = new ComboBox<>();
+        formBuilding.getItems().addAll("A", "B");
+        formBuilding.setMaxWidth(Double.MAX_VALUE);
+        formBuilding.setStyle(comboStyle);
+        HBox.setHgrow(buildingBox, javafx.scene.layout.Priority.ALWAYS);
+        buildingBox.getChildren().addAll(buildingLabel, formBuilding);
+        row1.getChildren().addAll(typeBox, buildingBox);
+
+        // Floor + Capacity
+        HBox row2 = new HBox(15);
+        VBox floorBox = new VBox(5);
+        Label floorLabel = new Label("الدور");
+        floorLabel.setStyle(labelStyle);
+        formFloor = new ComboBox<>();
+        formFloor.getItems().addAll("0", "1", "2", "3", "4");
+        formFloor.setMaxWidth(Double.MAX_VALUE);
+        formFloor.setStyle(comboStyle);
+        HBox.setHgrow(floorBox, javafx.scene.layout.Priority.ALWAYS);
+        floorBox.getChildren().addAll(floorLabel, formFloor);
+
+        VBox capBox = new VBox(5);
+        Label capLabel = new Label("سعة القاعة (أفراد)");
+        capLabel.setStyle(labelStyle);
+        formCapacity = new TextField();
+        formCapacity.setPromptText("20");
+        formCapacity.setStyle(fieldStyle);
+        formCapacity.textProperty().addListener((obs, old, val) -> {
+            if (!val.matches("\\d*")) formCapacity.setText(val.replaceAll("[^\\d]", ""));
+        });
+        HBox.setHgrow(capBox, javafx.scene.layout.Priority.ALWAYS);
+        capBox.getChildren().addAll(capLabel, formCapacity);
+        row2.getChildren().addAll(floorBox, capBox);
+
+        // Status (edit only)
+        formStatusContainer = new VBox(5);
+        Label statusLabel = new Label("الحالة");
+        statusLabel.setStyle(labelStyle);
+        formStatus = new ComboBox<>();
+        formStatus.getItems().addAll("متاحة للعمل", "مغلقة للصيانة");
+        formStatus.setMaxWidth(Double.MAX_VALUE);
+        formStatus.setStyle(comboStyle);
+        formStatusContainer.getChildren().addAll(statusLabel, formStatus);
+
+        VBox fields = new VBox(15);
+        fields.getChildren().addAll(nameBox, row1, row2);
+
+        // ── Pre-fill for edit ──────────────────────────────────────────────
         if (room == null) {
-            formTitle.setText("إضافة قاعة جديدة");
-            submitFormBtn.setText("➕  إضافة القاعة");
-            formName.clear();
-            formCapacity.clear();
-            formType.setValue(null);
-            formBuilding.setValue(null);
-            formFloor.setValue(null);
             formStatusContainer.setVisible(false);
             formStatusContainer.setManaged(false);
         } else {
-            formTitle.setText("تعديل قاعة " + room.getRoomNumber());
-            submitFormBtn.setText("💾  حفظ التعديلات");
             formName.setText(room.getRoomNumber());
             formCapacity.setText(String.valueOf(room.getCapacity()));
             formType.setValue(room.isMultiPurpose() ? "متعددة الأغراض" : "محاضرات عادية");
@@ -279,24 +375,74 @@ public class RoomManagementController implements Initializable {
             formStatus.setValue("available".equals(room.getStatus()) ? "متاحة للعمل" : "مغلقة للصيانة");
             formStatusContainer.setVisible(true);
             formStatusContainer.setManaged(true);
+            fields.getChildren().add(formStatusContainer);
         }
+
+        // ── Action buttons ─────────────────────────────────────────────────
+        HBox btnRow = new HBox(15);
+        btnRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        btnRow.setStyle("-fx-padding: 10 0 0 0;");
+
+        Button cancelBtn = new Button("إلغاء");
+        cancelBtn.setPrefWidth(120);
+        cancelBtn.setStyle("-fx-background-color: #f2f4f6; -fx-text-fill: #43474f; -fx-font-weight: bold; -fx-padding: 10; -fx-background-radius: 8; -fx-cursor: hand;");
+        cancelBtn.setOnAction(e -> dialog.close());
+
+        submitFormBtn = new Button(room == null ? "➕  إضافة القاعة" : "💾  حفظ التعديلات");
+        submitFormBtn.setPrefWidth(160);
+        submitFormBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10; -fx-background-radius: 8; -fx-cursor: hand;");
+        submitFormBtn.setOnAction(e -> {
+            submitFormFromDialog();
+            if (!submitFormBtn.isDisable()) {
+                // will close after success in submitFormFromDialog
+            }
+        });
+
+        btnRow.getChildren().addAll(cancelBtn, submitFormBtn);
+
+        card.getChildren().addAll(titleRow, fields, btnRow);
+
+        // ── Scene & Stage setup ────────────────────────────────────────────
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.setScene(scene);
+
+        // Center on owner window
+        if (roomTable.getScene() != null && roomTable.getScene().getWindow() != null) {
+            javafx.stage.Window owner = roomTable.getScene().getWindow();
+            dialog.setX(owner.getX() + (owner.getWidth() - 480) / 2);
+            dialog.setY(owner.getY() + (owner.getHeight() - 520) / 2);
+            dialog.initOwner(owner);
+        }
+
+        // Store reference for submitFormFromDialog to close
+        this.activeDialog = dialog;
+        dialog.showAndWait();
     }
 
+    private javafx.stage.Stage activeDialog = null;
+
     @FXML private void closeForm() {
+        if (activeDialog != null) activeDialog.close();
         formModalOverlay.setVisible(false);
         editingRoom = null;
     }
 
-    @FXML private void submitForm() {
-        String name = formName.getText();
-        String capStr = formCapacity.getText();
-        String type = formType.getValue();
-        String building = formBuilding.getValue();
-        String floorStr = formFloor.getValue();
+    private void submitFormFromDialog() {
+        String name = formName != null ? formName.getText() : null;
+        String capStr = formCapacity != null ? formCapacity.getText() : null;
+        String type = formType != null ? formType.getValue() : null;
+        String building = formBuilding != null ? formBuilding.getValue() : null;
+        String floorStr = formFloor != null ? formFloor.getValue() : null;
 
         if (name == null || name.isEmpty() || capStr == null || capStr.isEmpty() ||
             type == null || building == null || floorStr == null) {
-            showAlert("تنبيه", "يرجى تعبئة جميع الحقول المطلوبة.");
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setHeaderText(null);
+            a.setContentText("يرجى تعبئة جميع الحقول المطلوبة.");
+            a.showAndWait();
             return;
         }
 
@@ -306,40 +452,35 @@ public class RoomManagementController implements Initializable {
         r.setType("متعددة الأغراض".equals(type) ? "multi" : "fixed");
         r.setBuilding(building);
         try { r.setFloor(Integer.parseInt(floorStr)); } catch (Exception e) { r.setFloor(1); }
-        
+
         if (editingRoom != null) {
             r.setStatus("مغلقة للصيانة".equals(formStatus.getValue()) ? "unavailable" : "available");
         }
 
         submitFormBtn.setDisable(true);
         if (editingRoom == null) {
-            RoomService.addRoom(r, v -> {
-                Platform.runLater(() -> {
-                    submitFormBtn.setDisable(false);
-                    closeForm();
-                    loadRooms();
-                });
-            }, e -> {
-                Platform.runLater(() -> {
-                    submitFormBtn.setDisable(false);
-                    showAlert("خطأ", e.getMessage());
-                });
-            });
+            RoomService.addRoom(r, v -> Platform.runLater(() -> {
+                if (activeDialog != null) activeDialog.close();
+                editingRoom = null;
+                loadRooms();
+            }), e -> Platform.runLater(() -> {
+                submitFormBtn.setDisable(false);
+                showAlert("خطأ", e.getMessage());
+            }));
         } else {
-            new com.aast.booking.patterns.command.UpdateRoomCommand(r, () -> {
-                Platform.runLater(() -> {
-                    submitFormBtn.setDisable(false);
-                    closeForm();
-                    loadRooms();
-                });
-            }, e -> {
-                Platform.runLater(() -> {
-                    submitFormBtn.setDisable(false);
-                    showAlert("خطأ", e.getMessage());
-                });
-            }).execute();
+            new com.aast.booking.patterns.command.UpdateRoomCommand(r, () -> Platform.runLater(() -> {
+                if (activeDialog != null) activeDialog.close();
+                editingRoom = null;
+                loadRooms();
+            }), e -> Platform.runLater(() -> {
+                submitFormBtn.setDisable(false);
+                showAlert("خطأ", e.getMessage());
+            })).execute();
         }
     }
+
+    /** Required by FXML onAction="#submitForm" — delegates to programmatic form logic */
+    @FXML private void submitForm() { submitFormFromDialog(); }
 
     private void deleteRoom(Room room) {
         // PROXY PATTERN (Prompt 8): only admin / authorised roles can delete rooms
@@ -490,6 +631,7 @@ public class RoomManagementController implements Initializable {
         detTotalBookings.setText("...");
         
         detailsModalOverlay.setVisible(true);
+        detailsModalOverlay.toFront();
 
         RoomService.fetchRoomBookings(room.getId(), bookings -> {
             long active = bookings.stream().filter(b -> 

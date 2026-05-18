@@ -5,6 +5,7 @@ package com.aast.booking.admin;
  * Stores a snapshot of the Admin Booking Form state.
  */
 public class AdminBookingMemento {
+    private final String roomId;
     private final String hallCategory;
     private final String date;
     private final String timeFrom;
@@ -23,10 +24,11 @@ public class AdminBookingMemento {
     private final boolean reqOther;
     private final String reqOtherDetails;
 
-    public AdminBookingMemento(String hallCategory, String date, String timeFrom, String timeTo, String purpose, String capacity,
+    public AdminBookingMemento(String roomId, String hallCategory, String date, String timeFrom, String timeTo, String purpose, String capacity,
                                String respName, String respJob, String respMobile,
                                boolean reqMic, int reqMicQty, boolean reqLaptop, boolean reqVideoConf,
                                boolean reqOther, String reqOtherDetails) {
+        this.roomId = roomId;
         this.hallCategory = hallCategory;
         this.date = date;
         this.timeFrom = timeFrom;
@@ -44,6 +46,7 @@ public class AdminBookingMemento {
         this.reqOtherDetails = reqOtherDetails;
     }
 
+    public String getRoomId() { return roomId; }
     public String getHallCategory() { return hallCategory; }
     public String getDate() { return date; }
     public String getTimeFrom() { return timeFrom; }

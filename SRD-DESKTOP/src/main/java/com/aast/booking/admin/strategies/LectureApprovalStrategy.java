@@ -16,6 +16,7 @@ public class LectureApprovalStrategy implements IApprovalStrategy {
         Map<String, Object> updates = new HashMap<>();
         updates.put("status", "approved");
         updates.put("roomId", roomId);
+        updates.put("updatedAt", com.google.cloud.firestore.FieldValue.serverTimestamp());
 
         // Update in Firestore (blocking since it's on background thread)
         db.collection("bookings").document(booking.getId()).update(updates).get();

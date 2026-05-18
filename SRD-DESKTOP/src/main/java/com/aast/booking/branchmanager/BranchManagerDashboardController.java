@@ -252,15 +252,16 @@ public class BranchManagerDashboardController implements Initializable {
             container.getChildren().add(empty);
             return;
         }
-        for (Booking b : bookings) container.getChildren().add(buildCard(b));
+        for (Booking b : bookings) container.getChildren().add(buildCard(b, container));
     }
 
-    private VBox buildCard(Booking b) {
+    private VBox buildCard(Booking b, FlowPane container) {
         Map<String, Object> roomInfo = roomsCache.get(b.getRoomId());
 
         VBox card = new VBox(12);
         card.getStyleClass().add("bm-request-card");
-        card.setPrefWidth(420);
+        card.prefWidthProperty().bind(container.widthProperty().divide(2).subtract(16));
+        card.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);

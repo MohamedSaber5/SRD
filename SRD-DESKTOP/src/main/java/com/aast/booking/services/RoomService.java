@@ -92,6 +92,7 @@ public class RoomService {
                 DocumentReference docRef = db.collection("rooms").document(room.getRoomNumber());
                 room.setId(room.getRoomNumber());
                 docRef.set(room).get();
+                GlobalDataService.getInstance().invalidateRooms();
                 Platform.runLater(() -> onSuccess.accept(null));
             } catch (Exception e) {
                 Platform.runLater(() -> onError.accept(e));
@@ -121,6 +122,7 @@ public class RoomService {
                 }
 
                 db.collection("rooms").document(room.getId()).set(room).get();
+                GlobalDataService.getInstance().invalidateRooms();
                 Platform.runLater(() -> onSuccess.accept(null));
             } catch (Exception e) {
                 Platform.runLater(() -> onError.accept(e));
@@ -149,6 +151,7 @@ public class RoomService {
                 batch.delete(db.collection("rooms").document(roomId));
                 batch.commit().get();
                 
+                GlobalDataService.getInstance().invalidateRooms();
                 Platform.runLater(() -> onSuccess.accept(null));
             } catch (Exception e) {
                 Platform.runLater(() -> onError.accept(e));

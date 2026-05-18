@@ -44,12 +44,13 @@ public class BookingDirector {
 
     // Used by Admin — similar to employee but sets userRole to "admin"
     public Booking buildAdminMultiPurposeRequest(IBookingBuilder b,
-            String date, String timeFrom, String timeTo, String purpose,
+            String roomId, String date, String timeFrom, String timeTo, String purpose,
             int capacity, String responsibleName, String responsibleJob,
             String responsibleMobile, boolean reqMic, int micQty,
             boolean reqLaptop, boolean reqVideoConf, boolean reqOther, String otherDetails,
             String userId, String userName) {
-        return b.roomType("multi")
+        return b.roomId(roomId)
+                .roomType("multi")
                 .hallCategory("multi")
                 .date(date).timeFrom(timeFrom).timeTo(timeTo)
                 .purpose(purpose).requiredCapacity(capacity)

@@ -88,7 +88,7 @@
                         <!-- Stats Row -->
                         <HBox spacing="16">
                             <!-- Card 1: Accepted Today -->
-                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <HBox alignment="CENTER_RIGHT" spacing="10">
                                     <Label styleClass="admin-stat-icon, admin-stat-icon-blue" text="📋" style="-fx-font-size: 18px;" />
                                     <Region HBox.hgrow="ALWAYS" />
@@ -98,7 +98,7 @@
                                 <Label fx:id="statAcceptedToday" styleClass="admin-stat-value" text="0" />
                             </VBox>
                             <!-- Card 2: Pending -->
-                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <HBox alignment="CENTER_RIGHT">
                                     <Label styleClass="admin-stat-icon, admin-stat-icon-gold" text="⏳" style="-fx-font-size: 18px;" />
                                 </HBox>
@@ -106,7 +106,7 @@
                                 <Label fx:id="statPendingCount" styleClass="admin-stat-value-gold" text="0" />
                             </VBox>
                             <!-- Card 3: Total Bookings -->
-                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <HBox alignment="CENTER_RIGHT">
                                     <Label styleClass="admin-stat-icon, admin-stat-icon-green" text="✓" style="-fx-font-size: 18px;" />
                                 </HBox>
@@ -114,7 +114,7 @@
                                 <Label fx:id="statTotalBookings" styleClass="admin-stat-value-green" text="0" />
                             </VBox>
                             <!-- Card 4: Total Rooms -->
-                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS">
+                            <VBox spacing="10" styleClass="admin-stat-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
                                 <HBox alignment="CENTER_RIGHT">
                                     <Label styleClass="admin-stat-icon, admin-stat-icon-blue" text="🏢" style="-fx-font-size: 18px;" />
                                 </HBox>
@@ -166,7 +166,7 @@
                         <!-- Cards container matching branch manager style -->
                         <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
                                     style="-fx-min-height: 400; -fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;">
-                            <FlowPane fx:id="requestsContainer" hgap="20" vgap="20" prefWrapLength="800">
+                            <FlowPane fx:id="requestsContainer" alignment="TOP_CENTER" hgap="20" vgap="20" prefWrapLength="800">
                                 <padding><Insets bottom="16" left="4" right="4" top="8" /></padding>
                             </FlowPane>
                         </ScrollPane>

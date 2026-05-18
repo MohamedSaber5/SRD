@@ -4,6 +4,8 @@ import com.aast.booking.core.SessionManager;
 import com.aast.booking.models.Booking;
 import com.aast.booking.patterns.builder.BookingBuilder;
 import com.aast.booking.services.BookingService;
+import com.aast.booking.services.RoomService;
+import com.aast.booking.models.Room;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -11,10 +13,11 @@ import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * AdminBookingFormController
@@ -30,11 +33,9 @@ public class AdminBookingFormController {
 
     // Step 1: Basics
     @FXML private VBox step1Pane;
-    private Button btnCategoryLecture, btnCategoryMulti; // removed from FXML (multi-only)
+    @FXML private ComboBox<Room> roomComboBox;
     @FXML private DatePicker datePicker;
-    private HBox slotBox; // removed from FXML (multi-only)
     @FXML private HBox multiTimeBox;
-    private ComboBox<String> slotComboBox; // removed from FXML (multi-only)
     @FXML private ComboBox<String> timeFromCombo, timeToCombo;
     @FXML private TextArea purposeField;
     @FXML private TextField capacityField;
@@ -44,9 +45,9 @@ public class AdminBookingFormController {
     @FXML private VBox step2Pane;
     @FXML private TextField respNameField, respJobField, respMobileField;
 
-    // Step 3: Requirements & Decorators
+    // Step 3: Requirements
     @FXML private VBox step3Pane;
-    @FXML private CheckBox cbOfficial, cbHoliday, reqLaptopCheck, reqVideoConfCheck, reqMicCheck, reqOtherCheck;
+    @FXML private CheckBox reqLaptopCheck, reqVideoConfCheck, reqMicCheck, reqOtherCheck;
     @FXML private HBox micQtyRow;
     @FXML private Spinner<Integer> reqMicQtySpinner;
     @FXML private VBox reqOtherDetailsRow;
@@ -74,6 +75,7 @@ public class AdminBookingFormController {
     @FXML
     public void initialize() {
         setupTimeCombos();
+        setupRoomComboBox();
         setupRequirementsLogic();
         refreshStepUI();
         selectMultiCategory();
@@ -83,6 +85,28 @@ public class AdminBookingFormController {
             availabilityContext.setStrategy(isRamadan);
             refreshTimeSlots();
         });
+    }
+
+    private void setupRoomComboBox() {
+        roomComboBox.setConverter(new StringConverter<Room>() {
+            @Override
+            public String toString(Room r) {
+                if (r == null) return "يرجى اختيار قاعة...";
+                return r.getRoomNumber() + " (سعة: " + r.getCapacity() + ")";
+            }
+
+            @Override
+            public Room fromString(String string) {
+                return null;
+            }
+        });
+
+        RoomService.fetchRooms(rooms -> {
+            List<Room> multiRooms = rooms.stream()
+                .filter(r -> "multi".equals(r.getType()))
+                .collect(Collectors.toList());
+            roomComboBox.setItems(FXCollections.observableArrayList(multiRooms));
+        }, e -> showAlert("فشل في تحميل القاعات: " + e.getMessage(), AlertType.ERROR));
     }
 
     private void setupTimeCombos() {
@@ -129,8 +153,9 @@ public class AdminBookingFormController {
         List<String> missingFields = new java.util.ArrayList<>();
 
         if (currentStep == 1) {
+            if (roomComboBox.getValue() == null) missingFields.add("القاعة المطلوبة");
             if (datePicker.getValue() == null) missingFields.add("تاريخ الفعالية");
-            // Admin is always multi-purpose: validate from/to time
+            
             if (timeFromCombo.getValue() == null || timeToCombo.getValue() == null) {
                 missingFields.add("الفترة الزمنية (من/إلى)");
             } else {
@@ -141,12 +166,46 @@ public class AdminBookingFormController {
                 }
             }
             if (purposeField.getText().trim().isEmpty()) missingFields.add("الغرض من الاستخدام");
-            if (capacityField.getText().trim().isEmpty()) missingFields.add("السعة المطلوبة");
+            
+            String capacity = capacityField.getText().trim();
+            if (capacity.isEmpty()) {
+                missingFields.add("السعة المطلوبة");
+            } else {
+                try {
+                    int cap = Integer.parseInt(capacity);
+                    if (cap <= 0) missingFields.add("السعة يجب أن تكون رقماً أكبر من الصفر");
+                } catch (NumberFormatException e) {
+                    missingFields.add("السعة يجب أن تكون رقماً صحيحاً");
+                }
+            }
         } 
         else if (currentStep == 2) {
-            if (respNameField.getText().trim().isEmpty()) missingFields.add("اسم المسؤول");
-            if (respJobField.getText().trim().isEmpty()) missingFields.add("المسمى الوظيفي");
-            if (respMobileField.getText().trim().isEmpty()) missingFields.add("رقم المحمول");
+            String name = respNameField.getText().trim();
+            String job = respJobField.getText().trim();
+            String mobile = respMobileField.getText().trim();
+            
+            if (name.isEmpty()) {
+                missingFields.add("اسم المسؤول");
+            } else if (name.matches(".*\\d.*")) {
+                missingFields.add("اسم المسؤول يجب ألا يحتوي على أرقام");
+            }
+            
+            if (job.isEmpty()) {
+                missingFields.add("المسمى الوظيفي");
+            } else if (!job.matches(".*[a-zA-Z\\u0600-\\u06FF].*")) {
+                missingFields.add("المسمى الوظيفي يجب أن يحتوي على حروف");
+            }
+            
+            if (mobile.isEmpty()) {
+                missingFields.add("رقم المحمول");
+            } else if (!mobile.matches("^[0-9]+$")) {
+                missingFields.add("رقم المحمول يجب أن يحتوي على أرقام فقط");
+            }
+        }
+        else if (currentStep == 3) {
+            if (reqOtherCheck.isSelected() && reqOtherDetailsField.getText().trim().isEmpty()) {
+                missingFields.add("تفاصيل المتطلبات الأخرى (لأنك قمت بتحديدها)");
+            }
         }
 
         if (!missingFields.isEmpty()) {
@@ -205,10 +264,6 @@ public class AdminBookingFormController {
     @FXML
     private void selectMultiCategory() {
         selectedCategory = "multi";
-        // Buttons and slotBox removed from FXML (multi-only admin form)
-        if (btnCategoryMulti != null) btnCategoryMulti.getStyleClass().add("toggle-active");
-        if (btnCategoryLecture != null) btnCategoryLecture.getStyleClass().remove("toggle-active");
-        if (slotBox != null) { slotBox.setVisible(false); slotBox.setManaged(false); }
         if (multiTimeBox != null) { multiTimeBox.setVisible(true); multiTimeBox.setManaged(true); }
     }
 
@@ -230,8 +285,8 @@ public class AdminBookingFormController {
 
     @FXML
     private void handleReset() {
+        roomComboBox.setValue(null);
         datePicker.setValue(null);
-        if (slotComboBox != null) slotComboBox.setValue(null);
         timeFromCombo.setValue(null);
         timeToCombo.setValue(null);
         purposeField.clear();
@@ -239,21 +294,22 @@ public class AdminBookingFormController {
         respNameField.clear();
         respJobField.clear();
         respMobileField.clear();
-        cbOfficial.setSelected(false);
-        cbHoliday.setSelected(false);
         reqLaptopCheck.setSelected(false);
         reqVideoConfCheck.setSelected(false);
         reqMicCheck.setSelected(false);
         reqOtherCheck.setSelected(false);
+        reqOtherDetailsField.clear();
         caretaker.clear();
         showAlert("تم مسح كافة البيانات في النموذج.", AlertType.INFORMATION);
     }
 
     private void saveStateToMemento() {
+        String roomId = roomComboBox.getValue() != null ? roomComboBox.getValue().getId() : null;
         AdminBookingMemento memento = new AdminBookingMemento(
+            roomId,
             "multi", // Admin is always multi-purpose
             datePicker.getValue() != null ? datePicker.getValue().toString() : "",
-            timeFromCombo.getValue(), // always use multi time fields
+            timeFromCombo.getValue(),
             timeToCombo.getValue(),
             purposeField.getText(),
             capacityField.getText(),
@@ -272,8 +328,17 @@ public class AdminBookingFormController {
 
     private void restoreFromMemento(AdminBookingMemento m) {
         selectMultiCategory(); // Admin is always multi
+        
+        if (m.getRoomId() != null) {
+            for (Room r : roomComboBox.getItems()) {
+                if (r.getId().equals(m.getRoomId())) {
+                    roomComboBox.setValue(r);
+                    break;
+                }
+            }
+        }
+        
         if (!m.getDate().isEmpty()) datePicker.setValue(LocalDate.parse(m.getDate()));
-        // Always restore time from/to (multi-purpose only)
         timeFromCombo.setValue(m.getTimeFrom());
         timeToCombo.setValue(m.getTimeTo());
         purposeField.setText(m.getPurpose());
@@ -314,22 +379,15 @@ public class AdminBookingFormController {
 
             // Admin always submits multi-purpose hall requests
             com.aast.booking.patterns.builder.BookingDirector director = new com.aast.booking.patterns.builder.BookingDirector();
+            String roomId = roomComboBox.getValue().getId();
             booking = director.buildAdminMultiPurposeRequest(
-                builder, d, timeFromCombo.getValue(), timeToCombo.getValue(),
+                builder, roomId, d, timeFromCombo.getValue(), timeToCombo.getValue(),
                 purp, cap, rName, rJob, rMob, mic, micQty, laptop, video, other, otherDet,
                 uId, uName
             );
             // Apply urgent flag if selected
             if (chkUrgentBooking != null && chkUrgentBooking.isSelected()) {
                 booking.setUrgent(true);
-            }
-
-            // 2. DECORATOR PATTERN
-            if (cbOfficial.isSelected()) {
-                new AdminOfficialDecorator(booking).decorate();
-            }
-            if (cbHoliday.isSelected()) {
-                new AdminHolidayDecorator(booking).decorate();
             }
 
             // 3. SUBMIT (Facade)
@@ -388,6 +446,15 @@ public class AdminBookingFormController {
 
         // Admin is always multi-purpose
         selectMultiCategory();
+
+        if (cloned.getRoomId() != null) {
+            for (Room r : roomComboBox.getItems()) {
+                if (r.getId().equals(cloned.getRoomId())) {
+                    roomComboBox.setValue(r);
+                    break;
+                }
+            }
+        }
 
         // Pre-fill form fields with cloned data
         purposeField.setText(cloned.getPurpose());

@@ -58,21 +58,16 @@ async function init() {
     }
 
     // 2. Add some dummy rooms with CORRECT schema
-    await db.collection('rooms').doc('101').delete().catch(()=>console.log("No 101"));
-    await db.collection('rooms').doc('102').delete().catch(()=>console.log("No 102"));
-    await db.collection('rooms').doc('hallA').delete().catch(()=>console.log("No hallA"));
-    
-    const newRoomsRefs = [
-      db.collection('rooms').doc(),
-      db.collection('rooms').doc(),
-      db.collection('rooms').doc()
-    ];
-    
     const rooms = [
-        { id: newRoomsRefs[0].id, roomNumber: '101', type: 'fixed', building: 'مبنى A', floor: 1, capacity: 30, status: 'available' },
-        { id: newRoomsRefs[1].id, roomNumber: '102', type: 'fixed', building: 'مبنى B', floor: 2, capacity: 50, status: 'available' },
-        { id: newRoomsRefs[2].id, roomNumber: 'مدرج أ', type: 'multi', building: 'مبنى A', floor: 1, capacity: 150, status: 'available' }
+        { id: '101', roomNumber: '101', type: 'fixed', building: 'مبنى A', floor: 1, capacity: 30, status: 'available' },
+        { id: '102', roomNumber: '102', type: 'fixed', building: 'مبنى B', floor: 2, capacity: 50, status: 'available' },
+        { id: 'مدرج أ', roomNumber: 'مدرج أ', type: 'multi', building: 'مبنى A', floor: 1, capacity: 150, status: 'available' }
     ];
+    
+    // Clear any conflicting auto-generated or old rooms first
+    for (const r of rooms) {
+      await db.collection('rooms').doc(r.id).delete().catch(() => {});
+    }
     
     for (const r of rooms) {
       await db.collection('rooms').doc(r.id).set({
@@ -86,7 +81,7 @@ async function init() {
         createdAt: FieldValue.serverTimestamp()
       });
     }
-    console.log('✅ Added initial rooms to Firestore with EXACT structure.');
+    console.log('✅ Added initial rooms to Firestore with roomNumber as Document ID.');
 
     // 3. Create Settings document
     await db.collection('settings').doc('system').set({

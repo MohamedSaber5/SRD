@@ -68,11 +68,15 @@
         <VBox fx:id="step1Pane" spacing="16" styleClass="sec-form-card" visible="true">
             <Label styleClass="sec-card-title" text="1. تفاصيل الفعالية" />
 
-            <!-- Fixed: Multi-Purpose Only Banner -->
-            <VBox alignment="CENTER" spacing="6" styleClass="room-banner" style="-fx-padding: 10 0;">
-                <Label style="-fx-font-size: 28px;" text="🏗" />
-                <Label styleClass="room-banner-title" text="قاعة متعددة الأغراض" />
-                <Label styleClass="room-banner-sub" text="للندوات، الاجتماعات، والفعاليات الرسمية" />
+            <!-- Admin Notification -->
+            <VBox style="-fx-background-color: #fee2e2; -fx-padding: 8 12; -fx-background-radius: 8;">
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #b91c1c; -fx-font-size: 13px;" text="ملاحظة نظامية: يمكن حجز القاعات متعددة الأغراض فقط، وسيتم تحويل الطلب لمدير الفرع مباشرة." wrapText="true" />
+            </VBox>
+
+            <!-- Room Selection -->
+            <VBox spacing="6">
+                <Label styleClass="sec-field-label" text="القاعة المطلوبة" />
+                <ComboBox fx:id="roomComboBox" maxWidth="Infinity" promptText="يرجى اختيار قاعة..." styleClass="sec-combo" />
             </VBox>
 
             <!-- Date + Time row -->
@@ -82,16 +86,11 @@
                     <DatePicker fx:id="datePicker" maxWidth="Infinity" promptText="اختر التاريخ..." styleClass="sec-date-picker" />
                 </VBox>
                 <VBox spacing="6" HBox.hgrow="ALWAYS">
-                    <Label styleClass="sec-field-label" text="الفترة الزمنية" />
-                    <VBox spacing="8">
-                        <HBox fx:id="slotBox" spacing="8">
-                            <ComboBox fx:id="slotComboBox" maxWidth="Infinity" promptText="اختر فترة المحاضرة..." styleClass="sec-combo" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                        <HBox fx:id="multiTimeBox" spacing="8" visible="false" managed="false">
-                            <ComboBox fx:id="timeFromCombo" maxWidth="Infinity" promptText="من..." styleClass="sec-combo" HBox.hgrow="ALWAYS" />
-                            <ComboBox fx:id="timeToCombo" maxWidth="Infinity" promptText="إلى..." styleClass="sec-combo" HBox.hgrow="ALWAYS" />
-                        </HBox>
-                    </VBox>
+                    <Label styleClass="sec-field-label" text="الفترة الزمنية (من - إلى)" />
+                    <HBox fx:id="multiTimeBox" spacing="8">
+                        <ComboBox fx:id="timeFromCombo" maxWidth="Infinity" promptText="من الساعة..." styleClass="sec-combo" HBox.hgrow="ALWAYS" />
+                        <ComboBox fx:id="timeToCombo" maxWidth="Infinity" promptText="إلى الساعة..." styleClass="sec-combo" HBox.hgrow="ALWAYS" />
+                    </HBox>
                 </VBox>
             </HBox>
  
@@ -148,11 +147,7 @@
         <VBox fx:id="step3Pane" managed="false" spacing="16" styleClass="sec-form-card" visible="false">
             <Label styleClass="sec-card-title" text="3. المتطلبات والامتيازات" />
  
-            <VBox spacing="10" styleClass="sec-extras-box">
-                <Label styleClass="sec-field-label" text="امتيازات المسؤول (Admin Privileges)" />
-                <CheckBox fx:id="cbOfficial" styleClass="sec-checkbox" text="فعالية رسمية (Official Event)" />
-                <CheckBox fx:id="cbHoliday" styleClass="sec-checkbox" text="خارج أوقات العمل (Holiday/Weekend)" />
-            </VBox>
+
 
             <VBox spacing="12">
                 <Label styleClass="sec-field-label" text="المتطلبات التقنية" />
