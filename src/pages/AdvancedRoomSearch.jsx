@@ -13,9 +13,10 @@ class SearchStrategy {
 }
 
 class MultiRoomSearchStrategy extends SearchStrategy {
-  validateInput({ timeFrom, timeTo }) {
+  validateInput({ timeFrom, timeTo, isRamadanMode }) {
     if (!timeFrom || !timeTo) return "يرجى تحديد وقت البداية والنهاية.";
     if (timeTo <= timeFrom) return "وقت النهاية يجب أن يكون بعد وقت البداية.";
+    if (isRamadanMode && timeTo > '16:00') return "عفواً، أقصى وقت للحجز في رمضان للقاعات متعددة الأغراض هو الساعة 4:00 مساءً.";
     return null;
   }
   filterBookings(activeBookings, { timeFrom, timeTo }) {
@@ -60,9 +61,9 @@ export default function AdvancedRoomSearch() {
   const [isSearching, setIsSearching] = useState(false);
 
   // Determine max end time based on mode
-  const multiMaxTime = isRamadanMode ? '17:00' : '23:00';
-  const hourOptionsFrom = getHourOptions('23:00');
-  const hourOptionsTo   = getHourOptions(multiMaxTime);
+  const multiMaxTime = isRamadanMode ? '16:00' : '23:00';
+  const hourOptionsFrom = getHourOptions(isRamadanMode);
+  const hourOptionsTo   = getHourOptions(isRamadanMode);
   const activeSlots = isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
 
   useEffect(() => {
@@ -84,7 +85,7 @@ export default function AdvancedRoomSearch() {
   const handleSearch = async () => {
     const strategy = SearchStrategyFactory.createStrategy(searchRoomType);
     const data = searchRoomType === 'multi' 
-        ? { timeFrom, timeTo } 
+        ? { timeFrom, timeTo, isRamadanMode } 
         : { selectedSlot: selectedSlotIdx !== '' ? activeSlots[Number(selectedSlotIdx)] : null };
         
     const errorMsg = strategy.validateInput(data);

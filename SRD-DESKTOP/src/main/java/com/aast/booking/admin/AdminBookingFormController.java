@@ -68,9 +68,9 @@ public class AdminBookingFormController {
     private AdminBookingCaretaker caretaker = new AdminBookingCaretaker();
     private Booking lastBooking; // For Prototype cloning
 
-    // STRATEGY PATTERN (Prompt 10): availability context for time slot switching
     private final com.aast.booking.patterns.strategy.AvailabilityContext availabilityContext =
         new com.aast.booking.patterns.strategy.AvailabilityContext();
+    private com.google.cloud.firestore.ListenerRegistration ramadanListenerReg;
 
     @FXML
     public void initialize() {
@@ -80,10 +80,13 @@ public class AdminBookingFormController {
         refreshStepUI();
         selectMultiCategory();
 
-        // STRATEGY PATTERN (Prompt 10): fetch Ramadan mode and apply strategy
-        com.aast.booking.patterns.facade.SystemFacade.getInstance().fetchRamadanMode(isRamadan -> {
+        // STRATEGY PATTERN (Prompt 10) — real-time synchronization
+        if (ramadanListenerReg != null) {
+            ramadanListenerReg.remove();
+        }
+        ramadanListenerReg = com.aast.booking.patterns.facade.SystemFacade.getInstance().listenToRamadanMode(isRamadan -> {
             availabilityContext.setStrategy(isRamadan);
-            refreshTimeSlots();
+            Platform.runLater(() -> refreshTimeSlots());
         });
     }
 
@@ -112,6 +115,13 @@ public class AdminBookingFormController {
     private void setupTimeCombos() {
         // Initial population using the default strategy (Normal mode)
         refreshTimeSlots();
+
+        javafx.util.StringConverter<String> conv = new javafx.util.StringConverter<>() {
+            @Override public String toString(String v) { return v == null ? "" : com.aast.booking.models.TimeSlot.to12h(v); }
+            @Override public String fromString(String s) { return s; }
+        };
+        timeFromCombo.setConverter(conv);
+        timeToCombo.setConverter(conv);
     }
 
     /** Rebuilds time ComboBoxes from the active AvailabilityContext strategy. */

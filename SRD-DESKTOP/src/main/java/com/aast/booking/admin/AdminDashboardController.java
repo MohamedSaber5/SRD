@@ -96,6 +96,7 @@ public class AdminDashboardController implements Initializable {
     @FXML private VBox detailRequirementsBox;
 
     private boolean isRamadanMode = false;
+    private com.google.cloud.firestore.ListenerRegistration ramadanListenerReg;
     private final ObservableList<Booking> todayEvents = FXCollections.observableArrayList();
     private List<Booking> allBookings = new ArrayList<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -620,7 +621,10 @@ public class AdminDashboardController implements Initializable {
     // ─── Ramadan Mode ────────────────────────────────────────────────────
 
     private void fetchRamadanMode() {
-        BranchManagerService.getInstance().fetchRamadanMode().thenAccept(mode -> {
+        if (ramadanListenerReg != null) {
+            ramadanListenerReg.remove();
+        }
+        ramadanListenerReg = systemFacade.listenToRamadanMode(mode -> {
             Platform.runLater(() -> applyRamadanState(mode));
         });
     }
@@ -630,9 +634,7 @@ public class AdminDashboardController implements Initializable {
         if (!securityProxy.canAccess("ramadan_mode")) return;
 
         boolean newMode = !isRamadanMode;
-        BranchManagerService.getInstance().setRamadanMode(newMode).thenRun(() -> {
-            Platform.runLater(() -> applyRamadanState(newMode));
-        });
+        BranchManagerService.getInstance().setRamadanMode(newMode);
     }
 
     private void applyRamadanState(boolean on) {

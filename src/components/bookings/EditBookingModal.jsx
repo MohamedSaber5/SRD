@@ -30,9 +30,7 @@ const RAMADAN_SLOTS = [
   { from: '11:30', to: '12:25', label: 'الفترة الثالثة (11:30 - 12:25)' },
   { from: '12:30', to: '13:25', label: 'الفترة الرابعة (12:30 - 13:25)' },
   { from: '13:30', to: '14:25', label: 'الفترة الخامسة (13:30 - 14:25)' },
-  { from: '14:30', to: '15:25', label: 'الفترة السادسة (14:30 - 15:25)' },
-  { from: '15:30', to: '16:25', label: 'الفترة السابعة (15:30 - 16:25)' },
-  { from: '16:30', to: '17:25', label: 'الفترة الثامنة (16:30 - 17:25)' },
+  { from: '14:30', to: '15:30', label: 'الفترة السادسة (14:30 - 15:30)' },
 ];
 
 export default function EditBookingModal({ booking, isOpen, onClose, onUpdate }) {
@@ -90,6 +88,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
   }, [booking]);
 
   const currentSlots = isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
+  const hourOptions = getHourOptions(isRamadanMode);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -101,6 +100,17 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (booking.roomType === 'multi' || formData.roomType === 'multi') {
+      if (formData.timeTo <= formData.timeFrom) {
+        alert('وقت النهاية يجب أن يكون بعد وقت البداية.');
+        return;
+      }
+      if (isRamadanMode && formData.timeTo > '16:00') {
+        alert('عفواً، أقصى وقت للحجز في رمضان للقاعات متعددة الأغراض هو الساعة 4:00 مساءً.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const bookingRef = doc(db, 'bookings', booking.id);
@@ -199,7 +209,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
                   required
                 >
                   <option value="">من الساعة...</option>
-                  {getHourOptions().map((opt, i) => i < getHourOptions().length - 1 && (
+                  {hourOptions.map((opt, i) => i < hourOptions.length - 1 && (
                     <option key={`from-${opt.value}`} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
@@ -211,7 +221,7 @@ export default function EditBookingModal({ booking, isOpen, onClose, onUpdate })
                   required
                 >
                   <option value="">إلى الساعة...</option>
-                  {getHourOptions().map((opt, i) => i > 0 && (
+                  {hourOptions.map((opt, i) => i > 0 && (
                     <option 
                        key={`to-${opt.value}`} 
                        value={opt.value}

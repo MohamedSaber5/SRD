@@ -57,6 +57,7 @@ public class BranchManagerDashboardController implements Initializable {
     @FXML private VBox historyCardsContainer;
 
     private boolean isRamadanMode = false;
+    private com.google.cloud.firestore.ListenerRegistration ramadanListenerReg;
     private List<Booking> allPendingBookings = new ArrayList<>();
     private ObservableList<Booking> historyBookings = FXCollections.observableArrayList();
     private Map<String, Map<String, Object>> roomsCache = new HashMap<>();
@@ -229,8 +230,11 @@ public class BranchManagerDashboardController implements Initializable {
     }
 
     private void fetchRamadanMode() {
-        // FACADE PATTERN (Prompt 7)
-        systemFacade.fetchRamadanMode(mode -> {
+        // FACADE PATTERN (Prompt 7) — real-time synchronization
+        if (ramadanListenerReg != null) {
+            ramadanListenerReg.remove();
+        }
+        ramadanListenerReg = systemFacade.listenToRamadanMode(mode -> {
             Platform.runLater(() -> applyRamadanState(mode));
         });
     }
@@ -433,9 +437,7 @@ public class BranchManagerDashboardController implements Initializable {
 
     @FXML private void toggleRamadanMode() {
         boolean newMode = !isRamadanMode;
-        managerService.setRamadanMode(newMode).thenRun(() -> {
-            Platform.runLater(() -> applyRamadanState(newMode));
-        });
+        managerService.setRamadanMode(newMode);
     }
 
     private void applyRamadanState(boolean on) {
@@ -734,6 +736,9 @@ public class BranchManagerDashboardController implements Initializable {
     }
 
     @FXML private void handleLogout() throws IOException {
+        if (ramadanListenerReg != null) {
+            ramadanListenerReg.remove();
+        }
         AuthService.logout();
         Stage stage = SessionManager.getInstance().getPrimaryStage();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));

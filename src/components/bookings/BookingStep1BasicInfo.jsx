@@ -10,9 +10,10 @@ export default function BookingStep1BasicInfo({
   minDate, 
   isLeadTimeError, 
   currentSlots,
-  isMultiPurpose 
+  isMultiPurpose,
+  isRamadanMode
 }) {
-  const hourOptions = getHourOptions();
+  const hourOptions = getHourOptions(isRamadanMode);
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-300">

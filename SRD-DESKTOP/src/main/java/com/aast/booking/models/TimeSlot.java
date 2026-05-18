@@ -36,15 +36,19 @@ public class TimeSlot {
         new TimeSlot("11:30", "12:25", "الفترة الثالثة  •   11:30 ص – 12:25 م"),
         new TimeSlot("12:30", "13:25", "الفترة الرابعة  •   12:30 م – 1:25 م"),
         new TimeSlot("13:30", "14:25", "الفترة الخامسة  •   1:30 م – 2:25 م"),
-        new TimeSlot("14:30", "15:25", "الفترة السادسة  •   2:30 م – 3:25 م")
+        new TimeSlot("14:30", "15:30", "الفترة السادسة  •   2:30 م – 3:30 م")
     );
 
-    // ── Hour options for multi-purpose rooms (12h format display, 24h value) ──
-    // Format: "HH:mm|h:mm ص/م" — we just show the label, store the 24h value
-    public static final List<String> HOUR_OPTIONS = Arrays.asList(
-        "08:00","09:00","10:00","11:00","12:00","13:00","14:00",
-        "15:00","16:00","17:00","18:00","19:00","20:00"
-    );
+    public static List<String> getHourOptions(boolean isRamadanMode) {
+        if (isRamadanMode) {
+            return Arrays.asList("09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00");
+        } else {
+            return Arrays.asList(
+                "08:00","09:00","10:00","11:00","12:00","13:00","14:00",
+                "15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"
+            );
+        }
+    }
 
     // 12h display for hour options
     public static String to12h(String h24) {

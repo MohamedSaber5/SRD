@@ -118,6 +118,17 @@ public class BookingFormController implements Initializable {
         // Show notice based on role
         setupRoleNotice();
         resetForm(null);
+
+        // Listen to Ramadan mode in real-time
+        if (ramadanListener != null) {
+            ramadanListener.remove();
+        }
+        ramadanListener = RoomService.listenToRamadanMode(isRamadan -> {
+            this.isRamadanMode = isRamadan;
+            Platform.runLater(() -> {
+                updateTimeSelection();
+            });
+        });
     }
 
     public void setShellController(EmployeeDashboardController shell) {
@@ -194,7 +205,7 @@ public class BookingFormController implements Initializable {
         if (timeFromCombo == null || timeToCombo == null) return;
         timeFromCombo.getItems().clear();
         timeToCombo.getItems().clear();
-        for (String h : TimeSlot.HOUR_OPTIONS) {
+        for (String h : TimeSlot.getHourOptions(isRamadanMode)) {
             timeFromCombo.getItems().add(h);
             timeToCombo.getItems().add(h);
         }
@@ -239,6 +250,12 @@ public class BookingFormController implements Initializable {
                     leadTimeErrorLabel.setVisible(true);
                     leadTimeErrorLabel.setManaged(true);
                     leadTimeErrorLabel.setText("⚠️ وقت النهاية يجب أن يكون بعد وقت البداية.");
+                    return;
+                }
+                if (isRamadanMode && toMin > 960) {
+                    leadTimeErrorLabel.setVisible(true);
+                    leadTimeErrorLabel.setManaged(true);
+                    leadTimeErrorLabel.setText("⚠️ أقصى وقت للحجز في رمضان هو الساعة 4:00 مساءً.");
                     return;
                 }
             } catch (NumberFormatException ignored) {}
@@ -354,7 +371,7 @@ public class BookingFormController implements Initializable {
         var user = SessionManager.getInstance().getCurrentUser();
         int requiredHours = (user != null && "secretary".equals(user.getRole())) ? 48 : 24;
 
-        String errorMsg = BookingValidator.validateStep1(selectedHallCategory, date, timeFrom, timeTo, purpose, capacity, requiredHours);
+        String errorMsg = BookingValidator.validateStep1(selectedHallCategory, date, timeFrom, timeTo, purpose, capacity, requiredHours, isRamadanMode);
         if (errorMsg != null) {
             showAlert(errorMsg, Alert.AlertType.WARNING);
             return false;

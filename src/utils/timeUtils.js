@@ -10,7 +10,7 @@ export function formatTime(timeStr) {
   const [hourStr, minStr] = timeStr.split(':');
   let hour = parseInt(hourStr, 10);
   const min = minStr || '00';
-  const period = hour >= 12 ? 'PM' : 'AM';
+  const period = hour >= 12 ? 'م' : 'ص';
   if (hour === 0) hour = 12;
   else if (hour > 12) hour -= 12;
   return `${hour}:${min} ${period}`;

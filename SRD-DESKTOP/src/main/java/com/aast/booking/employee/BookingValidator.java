@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 public class BookingValidator {
 
-    public static String validateStep1(String selectedHallCategory, LocalDate date, String timeFrom, String timeTo, String purpose, String capacity, int requiredLeadTimeHours) {
+    public static String validateStep1(String selectedHallCategory, LocalDate date, String timeFrom, String timeTo, String purpose, String capacity, int requiredLeadTimeHours, boolean isRamadanMode) {
         if (selectedHallCategory == null || selectedHallCategory.isEmpty()) {
             return "يرجى اختيار نوع القاعة أولاً";
         }
@@ -33,6 +33,9 @@ public class BookingValidator {
                 int toMinutes   = Integer.parseInt(toParts[0])   * 60 + Integer.parseInt(toParts[1]);
                 if (toMinutes <= fromMinutes) {
                     return "وقت النهاية يجب أن يكون بعد وقت البداية";
+                }
+                if (isRamadanMode && "multi".equals(selectedHallCategory) && toMinutes > 960) {
+                    return "عفواً، أقصى وقت للحجز في رمضان للقاعات متعددة الأغراض هو الساعة 4:00 مساءً";
                 }
             } catch (NumberFormatException ignored) {}
         }

@@ -16,7 +16,7 @@ import java.util.function.Consumer;
  */
 public class RoomService {
 
-    /** Fetches Ramadan mode once (no real-time listener in Admin SDK). */
+    /** Fetches Ramadan mode once. */
     public static void fetchRamadanMode(Consumer<Boolean> onUpdate) {
         Firestore db = FirebaseService.getInstance().getFirestore();
         if (db == null) { onUpdate.accept(false); return; }
@@ -34,10 +34,25 @@ public class RoomService {
         t.start();
     }
 
-    /** Keep this signature so BookingFormController compiles — wraps fetchRamadanMode. */
+    /** Sets up real-time listener on the settings/system document for Ramadan mode. */
     public static ListenerRegistration listenToRamadanMode(Consumer<Boolean> onUpdate) {
-        fetchRamadanMode(onUpdate);
-        return null; // no real listener needed
+        Firestore db = FirebaseService.getInstance().getFirestore();
+        if (db == null) {
+            onUpdate.accept(false);
+            return null;
+        }
+        return db.collection("settings").document("system").addSnapshotListener((snapshot, e) -> {
+            if (e != null) {
+                System.err.println("[RoomService] Ramadan listen failed: " + e.getMessage());
+                return;
+            }
+            if (snapshot != null && snapshot.exists()) {
+                boolean isRamadan = Boolean.TRUE.equals(snapshot.getBoolean("isRamadanMode"));
+                Platform.runLater(() -> onUpdate.accept(isRamadan));
+            } else {
+                Platform.runLater(() -> onUpdate.accept(false));
+            }
+        });
     }
 
     public static void fetchRooms(Consumer<List<Room>> onSuccess, Consumer<Exception> onError) {

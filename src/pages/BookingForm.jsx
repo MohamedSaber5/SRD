@@ -18,6 +18,7 @@ export default function BookingForm() {
     isEmployeeLecture,
     isMultiPurpose,
     userRole,
+    isRamadanMode,
     handleChange,
     handleNext,
     handlePrev,
@@ -80,6 +81,7 @@ export default function BookingForm() {
               isLeadTimeError={isLeadTimeError}
               currentSlots={currentSlots}
               isMultiPurpose={isMultiPurpose}
+              isRamadanMode={isRamadanMode}
             />
           )}
 

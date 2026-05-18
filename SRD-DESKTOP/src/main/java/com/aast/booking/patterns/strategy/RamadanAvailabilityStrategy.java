@@ -6,18 +6,18 @@ import java.util.List;
  * STRATEGY PATTERN (Prompt 10) — Ramadan Mode Concrete Strategy
  *
  * Applies when Ramadan mode is ON.
- * - Shortened day slots: 08:00 → 14:00 (hourly)
- * - Time range validation: no bookings starting at 14:00 or later
- * - Multi-purpose rooms: fixed start time at 17:25 (إفطار window)
- * - Multi-purpose max end hour: 17
+ * - Shortened day slots: 08:00 → 16:00 (hourly)
+ * - Time range validation: bookings must end at or before 16:00
+ * - Multi-purpose rooms: no fixed start time (free choice up to 16:00)
+ * - Multi-purpose max end hour: 16 (4:00 PM)
  *
- * Mirrors the Ramadan rules in the React web app's useBookingForm.js.
+ * Mirrors the Ramadan rules in the React web app.
  */
 public class RamadanAvailabilityStrategy implements IAvailabilityStrategy {
 
-    /** Ramadan hourly slots — mirrors getHourOptions(17) in the web app. */
+    /** Ramadan hourly slots — mirrors getHourOptions(16). */
     private static final List<String> SLOTS = List.of(
-        "08:00","09:00","10:00","11:00","12:00","13:00","14:00","17:25"
+        "09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"
     );
 
     @Override
@@ -27,21 +27,20 @@ public class RamadanAvailabilityStrategy implements IAvailabilityStrategy {
 
     @Override
     public boolean isValidTimeRange(String timeFrom, String timeTo) {
-        // Ramadan rule: bookings must start before 14:00
-        int fromMins = timeToMinutes(timeFrom);
-        int cutoffMins = timeToMinutes("14:00");
-        return fromMins <= cutoffMins;
+        int toMins = timeToMinutes(timeTo);
+        int maxMins = timeToMinutes("16:00");
+        return toMins <= maxMins;
     }
 
     @Override
     public String getMultiPurposeFixedTime() {
-        // Multi-purpose rooms in Ramadan must start at 17:25 (إفطار time)
-        return "17:25";
+        // No fixed time — admin/user can pick freely
+        return null;
     }
 
     @Override
     public int getMultiPurposeMaxHour() {
-        return 17;
+        return 16;
     }
 
     @Override

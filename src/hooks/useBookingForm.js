@@ -22,15 +22,14 @@ export const RAMADAN_SLOTS = [
   { from: '11:30', to: '12:25', label: `الفترة الثالثة (${formatTime('11:30')} - ${formatTime('12:25')})` },
   { from: '12:30', to: '13:25', label: `الفترة الرابعة (${formatTime('12:30')} - ${formatTime('13:25')})` },
   { from: '13:30', to: '14:25', label: `الفترة الخامسة (${formatTime('13:30')} - ${formatTime('14:25')})` },
-  { from: '14:30', to: '15:25', label: `الفترة السادسة (${formatTime('14:30')} - ${formatTime('15:25')})` },
-  { from: '15:30', to: '16:25', label: `الفترة السابعة (${formatTime('15:30')} - ${formatTime('16:25')})` },
-  { from: '16:30', to: '17:25', label: `الفترة الثامنة (${formatTime('16:30')} - ${formatTime('17:25')})` },
+  { from: '14:30', to: '15:30', label: `الفترة السادسة (${formatTime('14:30')} - ${formatTime('15:30')})` },
 ];
 
-export const getHourOptions = (maxTime = '23:00') => {
+export const getHourOptions = (isRamadanMode = false) => {
   const options = [];
-  const [maxH] = maxTime.split(':').map(Number);
-  for (let i = 8; i <= maxH; i++) {
+  const startHour = isRamadanMode ? 9 : 8;
+  const endHour = isRamadanMode ? 16 : 23;
+  for (let i = startHour; i <= endHour; i++) {
     const value = `${i.toString().padStart(2, '0')}:00`;
     options.push({ value, label: formatTime(value) });
   }
@@ -164,7 +163,7 @@ export function useBookingForm({ showAlert } = {}) {
 
   const currentSlots = isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
   const isEmployeeLecture = userRole === 'employee' && formData.hallCategory === 'lecture';
-  const isMultiPurpose = formData.hallCategory === 'multi' || userRole === 'admin' || userRole === 'secretary';
+  const isMultiPurpose = formData.hallCategory === 'multi' || formData.roomType === 'multi';
 
   // Specific validation per step
   const validateStep1 = () => {
@@ -178,6 +177,7 @@ export function useBookingForm({ showAlert } = {}) {
        const startH = parseInt(formData.timeFrom.split(':')[0], 10);
        const endH = parseInt(formData.timeTo.split(':')[0], 10);
        if (endH <= startH) return false;
+       if (isRamadanMode && formData.timeTo > '16:00') return false;
     }
 
     return true;
@@ -279,6 +279,7 @@ export function useBookingForm({ showAlert } = {}) {
     isEmployeeLecture,
     isMultiPurpose,
     userRole,
+    isRamadanMode,
     handleChange,
     handleNext,
     handlePrev,

@@ -37,9 +37,7 @@ public class RoomSlotConfig {
         new LectureSlot("11:30", "12:25", "الفترة الثالثة  (11:30 ص - 12:25 م)"),
         new LectureSlot("12:30", "13:25", "الفترة الرابعة  (12:30 م - 1:25 م)"),
         new LectureSlot("13:30", "14:25", "الفترة الخامسة  (1:30 م - 2:25 م)"),
-        new LectureSlot("14:30", "15:25", "الفترة السادسة  (2:30 م - 3:25 م)"),
-        new LectureSlot("15:30", "16:25", "الفترة السابعة  (3:30 م - 4:25 م)"),
-        new LectureSlot("16:30", "17:25", "الفترة الثامنة  (4:30 م - 5:25 م)")
+        new LectureSlot("14:30", "15:30", "الفترة السادسة  (2:30 م - 3:30 م)")
     );
 
     // ── Hour options for multi-purpose rooms (mirrors getHourOptions()) ───
@@ -48,9 +46,11 @@ public class RoomSlotConfig {
      * Returns hourly options from 08:00 to maxHour (inclusive).
      * Normal mode: maxHour = 23.  Ramadan mode: maxHour = 17.
      */
-    public static List<LectureSlot> getHourOptions(int maxHour) {
+    public static List<LectureSlot> getHourOptions(boolean isRamadanMode) {
         List<LectureSlot> options = new java.util.ArrayList<>();
-        for (int h = 8; h <= maxHour; h++) {
+        int startHour = isRamadanMode ? 9 : 8;
+        int maxHour = isRamadanMode ? 16 : 23;
+        for (int h = startHour; h <= maxHour; h++) {
             String value = String.format("%02d:00", h);
             String label = formatTime(value);
             options.add(new LectureSlot(value, value, label)); // from==to — controller only uses from
@@ -78,8 +78,7 @@ public class RoomSlotConfig {
         return isRamadanMode ? RAMADAN_SLOTS : REGULAR_SLOTS;
     }
 
-    /** Returns the max end-hour for multi rooms (mirrors multiMaxTime in web). */
     public static int getMultiMaxHour(boolean isRamadanMode) {
-        return isRamadanMode ? 17 : 23;
+        return isRamadanMode ? 16 : 23;
     }
 }

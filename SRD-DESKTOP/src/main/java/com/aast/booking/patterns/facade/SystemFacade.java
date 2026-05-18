@@ -290,4 +290,11 @@ public class SystemFacade {
                 return null;
             });
     }
+
+    /**
+     * Attach a real-time listener to the system settings document for Ramadan mode.
+     */
+    public com.google.cloud.firestore.ListenerRegistration listenToRamadanMode(Consumer<Boolean> onUpdate) {
+        return RoomService.listenToRamadanMode(onUpdate);
+    }
 }

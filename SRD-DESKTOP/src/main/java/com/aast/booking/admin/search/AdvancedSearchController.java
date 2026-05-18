@@ -65,6 +65,7 @@ public class AdvancedSearchController implements Initializable {
 
     private boolean isRamadanMode = false;
     private final RoomSearchService searchService = new RoomSearchService();
+    private com.google.cloud.firestore.ListenerRegistration ramadanListenerReg;
 
     // ── Initializable ─────────────────────────────────────────────────────
 
@@ -87,7 +88,7 @@ public class AdvancedSearchController implements Initializable {
 
     private void populateHourOptions() {
         int maxHour = RoomSlotConfig.getMultiMaxHour(isRamadanMode);
-        List<LectureSlot> hours = RoomSlotConfig.getHourOptions(maxHour);
+        List<LectureSlot> hours = RoomSlotConfig.getHourOptions(isRamadanMode);
 
         cmbTimeFrom.getItems().setAll(hours);
         cmbTimeTo.getItems().setAll(hours);
@@ -248,7 +249,10 @@ public class AdvancedSearchController implements Initializable {
     // ── Ramadan Mode ──────────────────────────────────────────────────────
 
     private void fetchRamadanMode() {
-        BranchManagerService.getInstance().fetchRamadanMode().thenAccept(mode -> {
+        if (ramadanListenerReg != null) {
+            ramadanListenerReg.remove();
+        }
+        ramadanListenerReg = com.aast.booking.patterns.facade.SystemFacade.getInstance().listenToRamadanMode(mode -> {
             Platform.runLater(() -> applyRamadanMode(mode));
         });
     }

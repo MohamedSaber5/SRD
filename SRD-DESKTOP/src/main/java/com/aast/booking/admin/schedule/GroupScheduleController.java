@@ -30,6 +30,16 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+// PDFBox and AWT Imports
+import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+
 public class GroupScheduleController implements Initializable {
 
     @FXML private ComboBox<String> comboCollege;
@@ -410,12 +420,13 @@ public class GroupScheduleController implements Initializable {
 
     @FXML
     private void handleExportImage() {
-        // Since PDF generation requires external libs like PDFBox/iText which might cause maven issues,
-        // we export the schedule as a high-quality PNG image which fulfills the user's need.
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("حفظ الجدول كصورة");
-        fileChooser.setInitialFileName(comboGroup.getValue() + "_Schedule.png");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Image", "*.png"));
+        fileChooser.setTitle("حفظ الجدول");
+        fileChooser.setInitialFileName(comboGroup.getValue() + "_Schedule");
+        fileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("PDF Document (*.pdf)", "*.pdf"),
+            new FileChooser.ExtensionFilter("PNG Image (*.png)", "*.png")
+        );
 
         Stage stage = (Stage) btnExportPdf.getScene().getWindow();
         File file = fileChooser.showSaveDialog(stage);
@@ -424,12 +435,59 @@ public class GroupScheduleController implements Initializable {
             try {
                 SnapshotParameters params = new SnapshotParameters();
                 params.setFill(Color.WHITE);
+                
                 WritableImage image = scheduleContainer.snapshot(params, null);
-                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
-                showAlert("نجاح", "تم حفظ الجدول بنجاح في:\n" + file.getAbsolutePath(), Alert.AlertType.INFORMATION);
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+                
+                // Fix the JavaFX RTL horizontal mirroring bug
+                boolean isRTL = scheduleContainer.getEffectiveNodeOrientation() == javafx.geometry.NodeOrientation.RIGHT_TO_LEFT || 
+                                (scheduleContainer.getScene() != null && scheduleContainer.getScene().getRoot() != null && 
+                                 scheduleContainer.getScene().getRoot().getNodeOrientation() == javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+                
+                if (isRTL) {
+                    bufferedImage = flipImageHorizontal(bufferedImage);
+                }
+                
+                String fileName = file.getName().toLowerCase();
+                if (fileName.endsWith(".pdf")) {
+                    saveAsPdf(bufferedImage, file);
+                    showAlert("نجاح", "تم حفظ الجدول بنجاح كـ PDF في:\n" + file.getAbsolutePath(), Alert.AlertType.INFORMATION);
+                } else {
+                    ImageIO.write(bufferedImage, "png", file);
+                    showAlert("نجاح", "تم حفظ الجدول بنجاح كـ صورة في:\n" + file.getAbsolutePath(), Alert.AlertType.INFORMATION);
+                }
             } catch (Exception e) {
                 showAlert("خطأ", "فشل الحفظ: " + e.getMessage(), Alert.AlertType.ERROR);
+                e.printStackTrace();
             }
+        }
+    }
+
+    private BufferedImage flipImageHorizontal(BufferedImage img) {
+        int w = img.getWidth();
+        int h = img.getHeight();
+        BufferedImage flipped = new BufferedImage(w, h, img.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : img.getType());
+        Graphics2D g = flipped.createGraphics();
+        g.drawImage(img, 0, 0, w, h, w, 0, 0, h, null);
+        g.dispose();
+        return flipped;
+    }
+
+    private void saveAsPdf(BufferedImage bufferedImage, File file) throws Exception {
+        try (PDDocument doc = new PDDocument()) {
+            float width = bufferedImage.getWidth();
+            float height = bufferedImage.getHeight();
+            
+            PDPage page = new PDPage(new PDRectangle(width, height));
+            doc.addPage(page);
+            
+            PDImageXObject pdImage = LosslessFactory.createFromImage(doc, bufferedImage);
+            
+            try (PDPageContentStream contentStream = new PDPageContentStream(doc, page)) {
+                contentStream.drawImage(pdImage, 0, 0, width, height);
+            }
+            
+            doc.save(file);
         }
     }
 

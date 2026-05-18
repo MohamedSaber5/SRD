@@ -102,6 +102,7 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     // STRATEGY PATTERN (Prompt 10): availability context for time slot switching
     private final com.aast.booking.patterns.strategy.AvailabilityContext availabilityContext =
         new com.aast.booking.patterns.strategy.AvailabilityContext();
+    private com.google.cloud.firestore.ListenerRegistration ramadanListenerReg;
 
     @Override
     protected void setupObservers() {
@@ -123,8 +124,10 @@ public class SecretaryDashboardController extends BaseDashboardController implem
         }
         
         if (timeFromCombo != null && timeToCombo != null) {
-            // STRATEGY PATTERN (Prompt 10): fetch Ramadan mode then apply strategy slots
-            systemFacade.fetchRamadanMode(isRamadan -> {
+            if (ramadanListenerReg != null) {
+                ramadanListenerReg.remove();
+            }
+            ramadanListenerReg = systemFacade.listenToRamadanMode(isRamadan -> {
                 availabilityContext.setStrategy(isRamadan);
                 java.util.List<String> slots = availabilityContext.getSlots();
                 javafx.application.Platform.runLater(() -> {
@@ -739,6 +742,9 @@ public class SecretaryDashboardController extends BaseDashboardController implem
     private void handleLogout() throws IOException {
         BookingNotifierSubject.getInstance().removeObserver(this);
         NotificationService.stopListening();
+        if (ramadanListenerReg != null) {
+            ramadanListenerReg.remove();
+        }
         AuthService.logout();
         Stage stage = SessionManager.getInstance().getPrimaryStage();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
