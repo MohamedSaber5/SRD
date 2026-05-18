@@ -163,3 +163,159 @@
 .admin-action-btn:hover {
     -fx-effect: dropshadow(three-pass-box, rgba(19, 82, 43, 0.4), 12, 0, 0, 4) !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   BLUE → GREEN CONVERSION: All Dashboards (Admin, Employee,
+   Secretary, BranchManager) — Ramadan Mode Override
+   Primary accent:   #001e40 (navy blue)  → #13522b (emerald)
+   Hover accent:     #003366 / #1e3a5f   → #1b6b37 (emerald light)
+   Active fill:      #001e40             → linear-gradient(#13522b, #1b6b37)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Sidebar active nav buttons (all roles) ─────────────────── */
+.admin-nav-btn-active,
+.bm-nav-btn-active {
+    -fx-background-color: linear-gradient(to left, #13522b, #1b6b37) !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-border-color: #c2e7cc !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19,82,43,0.25), 8, 0, 0, 2) !important;
+}
+
+/* ── Primary buttons (admin + shared) ───────────────────────── */
+.admin-primary-btn,
+.admin-primary-btn:hover {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19,82,43,0.3), 8, 0, 0, 2) !important;
+}
+.admin-primary-btn:hover {
+    -fx-background-color: #1b6b37 !important;
+}
+
+/* ── Approve / confirm buttons ──────────────────────────────── */
+.btn-approve-card {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19,82,43,0.25), 6, 0, 0, 2) !important;
+}
+.btn-approve-card:hover {
+    -fx-background-color: #1b6b37 !important;
+}
+
+/* ── Search primary button ───────────────────────────────────── */
+.search-btn-primary,
+.search-btn-primary:focused {
+    -fx-background-color: #13522b !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19,82,43,0.35), 10, 0, 0, 3) !important;
+}
+.search-btn-primary:hover {
+    -fx-background-color: #1b6b37 !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19,82,43,0.5), 14, 0, 0, 5) !important;
+}
+
+/* ── Schedule fetch button ───────────────────────────────────── */
+.btn-schedule-fetch,
+.btn-schedule-fetch:focused {
+    -fx-background-color: #13522b !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19,82,43,0.3), 8, 0, 0, 2) !important;
+}
+.btn-schedule-fetch:hover {
+    -fx-background-color: #1b6b37 !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19,82,43,0.45), 10, 0, 0, 3) !important;
+}
+
+/* ── TabPane active/selected tab ────────────────────────────── */
+.tab-pane .tab:selected,
+.tab-pane .tab:selected:focused {
+    -fx-background-color: #13522b !important;
+    -fx-border-color: #13522b !important;
+}
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #ffffff !important;
+}
+
+/* ── Employee primary buttons ───────────────────────────────── */
+.btn-primary {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+}
+.btn-primary:hover {
+    -fx-background-color: #1b6b37 !important;
+}
+
+/* ── Employee step indicator (active step circle) ───────────── */
+.step-active {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+}
+
+/* ── Employee category/toggle active ────────────────────────── */
+.category-active {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+}
+
+/* ── Employee / shared outline button ───────────────────────── */
+.btn-outline {
+    -fx-border-color: #13522b !important;
+    -fx-text-fill: #13522b !important;
+}
+.btn-outline:hover {
+    -fx-background-color: #e8f5ec !important;
+}
+
+/* ── Employee date-picker arrow button (dark navy → emerald) ── */
+.modern-date-picker .arrow-button {
+    -fx-background-color: #13522b !important;
+}
+
+/* ── Date picker popup header + selected day ────────────────── */
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: #13522b !important;
+}
+.date-picker-popup .selected {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+}
+.date-picker-popup .today {
+    -fx-border-color: #13522b !important;
+}
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #d1fae5 !important;
+}
+
+/* ── CheckBox selected state ────────────────────────────────── */
+.check-box:selected .box {
+    -fx-background-color: #13522b !important;
+    -fx-border-color: #13522b !important;
+}
+
+/* ── ComboBox / dropdown selected item ──────────────────────── */
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+}
+.search-combo .list-cell:selected {
+    -fx-background-color: #d1fae5 !important;
+    -fx-text-fill: #13522b !important;
+}
+
+/* ── BranchManager primary buttons ──────────────────────────── */
+.bm-approve-btn {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+}
+.bm-approve-btn:hover {
+    -fx-background-color: #1b6b37 !important;
+}
+
+/* ── Secretary submit/new-booking buttons ───────────────────── */
+.btn-submit,
+.btn-new-booking {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+}
+.btn-submit:hover,
+.btn-new-booking:hover {
+    -fx-background-color: #1b6b37 !important;
+}
