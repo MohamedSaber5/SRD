@@ -186,20 +186,12 @@
                             <Button onAction="#refreshHistory" styleClass="bm-refresh-btn" text="↻  تحديث" />
                         </HBox>
 
-                        <TableView fx:id="historyTable" styleClass="bm-table" VBox.vgrow="ALWAYS"
-                                   style="-fx-min-height: 400;">
-                            <columns>
-                                <TableColumn fx:id="hColDate"    prefWidth="110" text="التاريخ" />
-                                <TableColumn fx:id="hColTime"    prefWidth="150" text="الفترة الزمنية" />
-                                <TableColumn fx:id="hColRoom"    prefWidth="150" text="القاعة" />
-                                <TableColumn fx:id="hColUser"    prefWidth="160" text="مقدم الطلب" />
-                                <TableColumn fx:id="hColPurpose" prefWidth="200" text="الغرض" />
-                                <TableColumn fx:id="hColStatus"  prefWidth="120" text="الحالة" />
-                            </columns>
-                            <placeholder>
-                                <Label styleClass="bm-empty-title" text="لا توجد بيانات مطابقة للبحث" />
-                            </placeholder>
-                        </TableView>
+                        <ScrollPane fitToWidth="true" styleClass="bm-scroll" VBox.vgrow="ALWAYS"
+                                    hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" style="-fx-min-height: 450; -fx-background-color: transparent;">
+                            <VBox fx:id="historyCardsContainer" spacing="12" style="-fx-background-color: transparent;">
+                                <padding><Insets bottom="16" left="4" right="4" top="4" /></padding>
+                            </VBox>
+                        </ScrollPane>
                     </VBox>
 
                 </StackPane>

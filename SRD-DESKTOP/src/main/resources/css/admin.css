@@ -569,3 +569,281 @@
     -fx-text-alignment: center;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Lecture Scheduling TabPane & Tab Custom Premium Styles
+   ══════════════════════════════════════════════════════════════ */
+
+/* The background of the entire tab header bar */
+.tab-pane .tab-header-area {
+    -fx-background-color: #f1f5f9; /* sleek grey background */
+    -fx-padding: 8 16 0 16;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 1 0; /* subtle bottom border */
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+/* Individual tab style */
+.tab-pane .tab {
+    -fx-background-color: #e2e8f0; /* inactive tab background */
+    -fx-background-radius: 12px 12px 0 0;
+    -fx-padding: 12 28;
+    -fx-cursor: hand;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1 1 0 1;
+}
+
+/* Hover state of a tab */
+.tab-pane .tab:hover {
+    -fx-background-color: #cbd5e1;
+}
+
+/* Active / Selected Tab State (Premium Navy) */
+.tab-pane .tab:selected {
+    -fx-background-color: #001e40; /* Dark Navy active state */
+    -fx-border-color: #001e40;
+}
+
+/* Label text of the tab */
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #475569; /* grey text for inactive */
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+/* Label text of selected tab */
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #ffffff; /* crisp white for active */
+}
+
+/* Remove default focus border inside the tab */
+.tab-pane .tab:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Sleek & Premium ComboBox Styles (Eradicates Modena Blue Focus Highlight)
+   ══════════════════════════════════════════════════════════════ */
+
+.search-combo {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10px;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1.5px;
+    -fx-padding: 8 16;
+    -fx-font-size: 13px;
+    -fx-text-fill: #001e40;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+.search-combo:hover {
+    -fx-border-color: #94a3b8;
+    -fx-background-color: #f8fafc;
+}
+
+/* Focused State: No more solid blue background blocking the text! */
+.search-combo:focused {
+    -fx-border-color: #001e40; /* elegant dark navy border */
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+}
+
+/* Override JavaFX internal selected list cell color to keep text clear and crisp */
+.search-combo .list-cell {
+    -fx-text-fill: #001e40 !important;
+    -fx-background-color: transparent !important; /* NO MORE ugly blue background selection! */
+    -fx-padding: 0;
+}
+
+.search-combo:focused .list-cell {
+    -fx-text-fill: #001e40 !important;
+    -fx-background-color: transparent !important; /* Force transparent background when focused */
+}
+
+/* Style the internal arrow button container */
+.search-combo .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 8;
+}
+
+.search-combo .arrow {
+    -fx-background-color: #475569;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z"; /* clean modern arrow */
+}
+
+/* Dynamic dropdown popup styling */
+.combo-box-popup .list-view {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10px;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 12, 0, 0, 4);
+    -fx-padding: 4;
+}
+
+.combo-box-popup .list-cell {
+    -fx-padding: 10 16;
+    -fx-text-fill: #334155;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6px;
+    -fx-font-weight: bold;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #001e40;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #001e40;
+    -fx-text-fill: #ffffff;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Global Focus Suppressor — Eradicates JavaFX Blue Outlines/Focus Rings
+   ══════════════════════════════════════════════════════════════ */
+
+/* 1. Supress focus rings on Tabs and Tab label texts */
+.tab:focused {
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
+}
+
+.tab:focused .tab-label,
+.tab .tab-label:focused {
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
+}
+
+.tab-pane .tab:focused {
+    -fx-background-color: #cbd5e1; /* keep inactive hover styling */
+    -fx-background-insets: 0 0 1 0, 0, 1 1 0 1, 2 2 0 2;
+}
+
+.tab-pane .tab:selected:focused {
+    -fx-background-color: #001e40; /* keep active navy styling */
+    -fx-background-insets: 0 0 1 0, 0, 1 1 0 1, 2 2 0 2;
+}
+
+/* 2. Supress focus rings on all Buttons globally */
+.button:focused {
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
+    -fx-background-insets: 0 !important;
+}
+
+.search-btn-primary:focused {
+    -fx-background-color: #1e3a5f !important; /* keep elegant hover/active color on focus */
+    -fx-background-insets: 0 !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.45), 14, 0, 0, 5) !important;
+}
+
+/* 3. Global ComboBox Style Overrides (Applies to all standard ComboBoxes in the app) */
+.combo-box {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10px;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1.5px;
+    -fx-padding: 8 16;
+    -fx-font-size: 13px;
+    -fx-text-fill: #001e40;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+.combo-box:hover {
+    -fx-border-color: #94a3b8;
+    -fx-background-color: #f8fafc;
+}
+
+.combo-box:focused, .combo-box:showing {
+    -fx-border-color: #001e40 !important;
+    -fx-background-color: #ffffff !important;
+    -fx-background-insets: 0 !important;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: #001e40 !important;
+    -fx-background-color: transparent !important;
+    -fx-padding: 0;
+}
+
+.combo-box:focused .list-cell,
+.combo-box:hover .list-cell,
+.combo-box:showing .list-cell,
+.combo-box .list-cell:focused,
+.combo-box .list-cell:selected {
+    -fx-text-fill: #001e40 !important;
+    -fx-background-color: transparent !important;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 8;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #475569;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Custom Group Schedule Button Styles
+   ══════════════════════════════════════════════════════════════ */
+.btn-schedule-fetch {
+    -fx-background-color: #001e40;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10px;
+    -fx-padding: 12 28;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.25), 8, 0, 0, 2);
+}
+
+.btn-schedule-fetch:hover {
+    -fx-background-color: #0d3868;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,30,64,0.4), 10, 0, 0, 3);
+}
+
+.btn-schedule-fetch:focused {
+    -fx-background-color: #0d3868 !important;
+    -fx-background-insets: 0 !important;
+}
+
+.btn-schedule-export {
+    -fx-background-color: #10b981;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10px;
+    -fx-padding: 12 28;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(16,185,129,0.25), 8, 0, 0, 2);
+}
+
+.btn-schedule-export:hover {
+    -fx-background-color: #059669;
+    -fx-effect: dropshadow(three-pass-box, rgba(16,185,129,0.4), 10, 0, 0, 3);
+}
+
+.btn-schedule-export:focused {
+    -fx-background-color: #059669 !important;
+    -fx-background-insets: 0 !important;
+}
+
+.btn-schedule-export:disabled {
+    -fx-background-color: #a7f3d0;
+    -fx-text-fill: #ffffff;
+    -fx-effect: none;
+}
+
+
+

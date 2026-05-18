@@ -465,7 +465,11 @@ public class RoomManagementController implements Initializable {
                 loadRooms();
             }), e -> Platform.runLater(() -> {
                 submitFormBtn.setDisable(false);
-                showAlert("خطأ", e.getMessage());
+                if (e.getMessage() != null && e.getMessage().contains("مستخدم بالفعل")) {
+                    showDuplicateRoomAlert(r.getRoomNumber());
+                } else {
+                    showAlert("خطأ", e.getMessage());
+                }
             }));
         } else {
             new com.aast.booking.patterns.command.UpdateRoomCommand(r, () -> Platform.runLater(() -> {
@@ -474,7 +478,11 @@ public class RoomManagementController implements Initializable {
                 loadRooms();
             }), e -> Platform.runLater(() -> {
                 submitFormBtn.setDisable(false);
-                showAlert("خطأ", e.getMessage());
+                if (e.getMessage() != null && e.getMessage().contains("مستخدم بالفعل")) {
+                    showDuplicateRoomAlert(r.getRoomNumber());
+                } else {
+                    showAlert("خطأ", e.getMessage());
+                }
             })).execute();
         }
     }
@@ -610,32 +618,231 @@ public class RoomManagementController implements Initializable {
         popup.showAndWait();
     }
 
+    /**
+     * Shows a premium styled red warning informing the user that the room number already exists.
+     */
+    private void showDuplicateRoomAlert(String roomNumber) {
+        javafx.stage.Stage popup = new javafx.stage.Stage();
+        popup.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        popup.initStyle(javafx.stage.StageStyle.UNDECORATED);
+        popup.setResizable(false);
+
+        // ── Layout ──────────────────────────────────────────────
+        VBox root = new VBox(0);
+        root.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        root.setStyle(
+            "-fx-background-color: #ffffff;" +
+            "-fx-background-radius: 18;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 40, 0, 0, 8);"
+        );
+        root.setPrefWidth(420);
+
+        // Header bar (red)
+        VBox header = new VBox(10);
+        header.setAlignment(javafx.geometry.Pos.CENTER);
+        header.setStyle(
+            "-fx-background-color: #b91c1c;" +
+            "-fx-background-radius: 18 18 0 0;" +
+            "-fx-padding: 22 24 18 24;"
+        );
+        Label iconLbl = new Label("🚫");
+        iconLbl.setStyle("-fx-font-size: 40px;");
+        Label titleLbl = new Label("اسم القاعة مستخدم بالفعل");
+        titleLbl.setStyle(
+            "-fx-font-size: 18px; -fx-font-weight: bold;" +
+            "-fx-text-fill: #ffffff; -fx-font-family: 'Arial';"
+        );
+        titleLbl.setWrapText(true);
+        header.getChildren().addAll(iconLbl, titleLbl);
+
+        // Body
+        VBox body = new VBox(14);
+        body.setAlignment(javafx.geometry.Pos.CENTER);
+        body.setStyle("-fx-padding: 24 28 10 28;");
+
+        Label roomLbl = new Label("القاعة:  " + roomNumber);
+        roomLbl.setStyle(
+            "-fx-font-size: 15px; -fx-font-weight: bold;" +
+            "-fx-text-fill: #b91c1c; -fx-background-color: #fee2e2;" +
+            "-fx-background-radius: 8; -fx-padding: 8 16;"
+        );
+
+        Label msgLbl = new Label(
+            "رقم أو اسم هذه القاعة مسجل بالفعل في النظام.\n" +
+            "يرجى كتابة رقم قاعة آخر غير مكرر لإتمام عملية الإضافة بنجاح."
+        );
+        msgLbl.setStyle(
+            "-fx-font-size: 14px; -fx-text-fill: #475569;" +
+            "-fx-line-spacing: 4; -fx-text-alignment: center; -fx-font-family: 'Arial';"
+        );
+        msgLbl.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        msgLbl.setWrapText(true);
+
+        // Divider
+        javafx.scene.layout.Region divider = new javafx.scene.layout.Region();
+        divider.setStyle("-fx-background-color: #fee2e2; -fx-min-height: 1; -fx-max-height: 1;");
+        divider.setMaxWidth(Double.MAX_VALUE);
+
+        body.getChildren().addAll(roomLbl, msgLbl, divider);
+
+        // Footer with close button
+        HBox footer = new HBox();
+        footer.setAlignment(javafx.geometry.Pos.CENTER);
+        footer.setStyle("-fx-padding: 16 28 24 28;");
+        Button closeBtn = new Button("حسناً، فهمت");
+        closeBtn.setStyle(
+            "-fx-background-color: #b91c1c; -fx-text-fill: white;" +
+            "-fx-font-size: 14px; -fx-font-weight: bold; -fx-font-family: 'Arial';" +
+            "-fx-background-radius: 10; -fx-padding: 10 40;" +
+            "-fx-cursor: hand;"
+        );
+        closeBtn.setOnMouseEntered(e -> closeBtn.setStyle(
+            "-fx-background-color: #991b1b; -fx-text-fill: white;" +
+            "-fx-font-size: 14px; -fx-font-weight: bold; -fx-font-family: 'Arial';" +
+            "-fx-background-radius: 10; -fx-padding: 10 40;" +
+            "-fx-cursor: hand;"
+        ));
+        closeBtn.setOnMouseExited(e -> closeBtn.setStyle(
+            "-fx-background-color: #b91c1c; -fx-text-fill: white;" +
+            "-fx-font-size: 14px; -fx-font-weight: bold; -fx-font-family: 'Arial';" +
+            "-fx-background-radius: 10; -fx-padding: 10 40;" +
+            "-fx-cursor: hand;"
+        ));
+        closeBtn.setOnAction(e -> popup.close());
+        footer.getChildren().add(closeBtn);
+
+        root.getChildren().addAll(header, body, footer);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        popup.setScene(scene);
+        
+        // Center relative to parent window if available
+        if (roomTable.getScene() != null && roomTable.getScene().getWindow() != null) {
+            javafx.stage.Window owner = roomTable.getScene().getWindow();
+            popup.setX(owner.getX() + (owner.getWidth() - 420) / 2);
+            popup.setY(owner.getY() + (owner.getHeight() - 400) / 2);
+            popup.initOwner(owner);
+        }
+        
+        popup.showAndWait();
+    }
+
 
     private void openDetails(Room room) {
         viewingRoom = room;
-        detTitle.setText("قاعة " + room.getRoomNumber());
-        detSubtitle.setText(room.isMultiPurpose() ? "متعددة الأغراض" : "محاضرات عادية");
-        detBuilding.setText(room.getBuilding() != null ? room.getBuilding() : "-");
-        detFloor.setText(String.valueOf(room.getFloor()));
-        detCapacity.setText(room.getCapacity() + " فرد");
-        
+
+        javafx.stage.Stage dialog = new javafx.stage.Stage();
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        dialog.initStyle(javafx.stage.StageStyle.UNDECORATED);
+        dialog.setResizable(false);
+
         boolean isAvail = "available".equals(room.getStatus());
-        detStatus.setText(isAvail ? "متاحة" : "مغلقة");
-        detStatus.setStyle(isAvail ? "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #15803d;" 
-                                   : "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #b91c1c;");
-        detStatusContainer.setStyle(isAvail ? "-fx-background-color: #f0fdf4; -fx-border-color: #bbf7d0; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 15;"
-                                            : "-fx-background-color: #fef2f2; -fx-border-color: #fecaca; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 15;");
+        String accentColor = isAvail ? "#15803d" : "#b91c1c";
+        String bgColor     = isAvail ? "#f0fdf4" : "#fef2f2";
+        String borderColor = isAvail ? "#bbf7d0" : "#fecaca";
 
-        detActiveBookings.setText("...");
-        detHistoryBookings.setText("...");
-        detTotalBookings.setText("...");
-        
-        detailsModalOverlay.setVisible(true);
-        detailsModalOverlay.toFront();
+        // ── Card root ──────────────────────────────────────────────────────
+        VBox card = new VBox(0);
+        card.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+        card.setStyle(
+            "-fx-background-color: white;" +
+            "-fx-background-radius: 16;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 40, 0, 0, 8);"
+        );
+        card.setPrefWidth(540);
 
+        // ── Header ─────────────────────────────────────────────────────────
+        HBox header = new HBox(10);
+        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        header.setStyle(
+            "-fx-padding: 20 24; " +
+            "-fx-background-color: #f8fafc; " +
+            "-fx-background-radius: 16 16 0 0; " +
+            "-fx-border-color: #e0e3e5; -fx-border-width: 0 0 1 0;"
+        );
+        VBox titleBox = new VBox(3);
+        HBox.setHgrow(titleBox, javafx.scene.layout.Priority.ALWAYS);
+        Label titleLbl = new Label("قاعة " + room.getRoomNumber());
+        titleLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #001e40;");
+        Label subtitleLbl = new Label(room.isMultiPurpose() ? "متعددة الأغراض" : "محاضرات عادية");
+        subtitleLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #6b7280;");
+        titleBox.getChildren().addAll(titleLbl, subtitleLbl);
+        Button xBtn = new Button("✖");
+        xBtn.setStyle("-fx-background-color: white; -fx-border-color: #e0e3e5; -fx-border-radius: 20; -fx-background-radius: 20; -fx-text-fill: #9ca3af; -fx-padding: 6 10; -fx-cursor: hand;");
+        xBtn.setOnAction(e -> dialog.close());
+        header.getChildren().addAll(titleBox, xBtn);
+
+        // ── Stat tiles ─────────────────────────────────────────────────────
+        HBox statsRow = new HBox(12);
+        statsRow.setStyle("-fx-padding: 20 24 0 24;");
+
+        VBox buildTile = makeTile("المبنى",   room.getBuilding() != null ? room.getBuilding() : "-", "#eff6ff", "#bfdbfe");
+        VBox floorTile = makeTile("الدور",    String.valueOf(room.getFloor()), "#faf5ff", "#e9d5ff");
+        VBox capTile   = makeTile("السعة",    room.getCapacity() + " فرد", "#fff7ed", "#fed7aa");
+        VBox statTile  = makeTile("الحالة",   isAvail ? "متاحة" : "مغلقة", bgColor, borderColor);
+        // colour the status value
+        ((Label) statTile.getChildren().get(1)).setStyle(
+            "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + accentColor + ";"
+        );
+        HBox.setHgrow(buildTile, javafx.scene.layout.Priority.ALWAYS);
+        HBox.setHgrow(floorTile, javafx.scene.layout.Priority.ALWAYS);
+        HBox.setHgrow(capTile,   javafx.scene.layout.Priority.ALWAYS);
+        HBox.setHgrow(statTile,  javafx.scene.layout.Priority.ALWAYS);
+        statsRow.getChildren().addAll(buildTile, floorTile, capTile, statTile);
+
+        // ── Booking stats ──────────────────────────────────────────────────
+        VBox bookingBox = new VBox(10);
+        bookingBox.setStyle(
+            "-fx-padding: 20 24; " +
+            "-fx-border-color: #e0e3e5; -fx-border-radius: 12; -fx-margin: 16;"
+        );
+        Label bookHeader = new Label("📊  إحصائيات الحجوزات");
+        bookHeader.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #001e40;");
+
+        detActiveBookings   = new Label("جاري التحميل...");
+        detHistoryBookings  = new Label("جاري التحميل...");
+        detTotalBookings    = new Label("جاري التحميل...");
+
+        HBox activeRow  = makeStatRow("حجوزات نشطة (قادمة أو معلقة)", detActiveBookings,  "#dbeafe", "#1e40af", "#f8fafc");
+        HBox histRow    = makeStatRow("حجوزات سابقة (أرشيف)",          detHistoryBookings, "#e5e7eb", "#374151", "#f8fafc");
+        HBox totalRow   = makeStatRow("إجمالي الحركات على القاعة",       detTotalBookings,   "#001e40", "white",   "#f1f5f9");
+
+        bookingBox.getChildren().addAll(bookHeader, activeRow, histRow, totalRow);
+
+        VBox body = new VBox(16);
+        body.setStyle("-fx-padding: 16 24;");
+        body.getChildren().addAll(statsRow, bookingBox);
+
+        // ── Footer ─────────────────────────────────────────────────────────
+        VBox footer = new VBox();
+        footer.setStyle("-fx-padding: 16 24; -fx-border-color: #e0e3e5; -fx-border-width: 1 0 0 0;");
+        Button pdfBtn = new Button("📄  تحميل تقرير القاعة (PDF)");
+        pdfBtn.setMaxWidth(Double.MAX_VALUE);
+        pdfBtn.setStyle("-fx-background-color: #001e40; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;");
+        pdfBtn.setOnAction(e -> downloadPDF());
+        footer.getChildren().add(pdfBtn);
+
+        card.getChildren().addAll(header, body, footer);
+
+        // ── Scene ──────────────────────────────────────────────────────────
+        StackPane root = new StackPane(card);
+        root.setStyle("-fx-background-color: transparent;");
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.setScene(scene);
+
+        if (roomTable.getScene() != null && roomTable.getScene().getWindow() != null) {
+            javafx.stage.Window owner = roomTable.getScene().getWindow();
+            dialog.setX(owner.getX() + (owner.getWidth() - 540) / 2);
+            dialog.setY(owner.getY() + (owner.getHeight() - 480) / 2);
+            dialog.initOwner(owner);
+        }
+
+        // Load booking stats async
         RoomService.fetchRoomBookings(room.getId(), bookings -> {
-            long active = bookings.stream().filter(b -> 
-                "pending".equals(b.getStatus()) || "approved".equals(b.getStatus()) || 
+            long active = bookings.stream().filter(b ->
+                "pending".equals(b.getStatus()) || "approved".equals(b.getStatus()) ||
                 "awaiting_manager_final".equals(b.getStatus()) || "approved_by_branch".equals(b.getStatus())
             ).count();
             Platform.runLater(() -> {
@@ -644,6 +851,41 @@ public class RoomManagementController implements Initializable {
                 detTotalBookings.setText(String.valueOf(bookings.size()));
             });
         }, e -> System.err.println("Failed to fetch room bookings: " + e.getMessage()));
+
+        dialog.showAndWait();
+        viewingRoom = null;
+    }
+
+    private VBox makeTile(String label, String value, String bg, String border) {
+        VBox tile = new VBox(4);
+        tile.setAlignment(javafx.geometry.Pos.CENTER);
+        tile.setStyle(
+            "-fx-background-color: " + bg + "; " +
+            "-fx-border-color: " + border + "; " +
+            "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 14;"
+        );
+        Label lbl = new Label(label);
+        lbl.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;");
+        Label val = new Label(value);
+        val.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #001e40;");
+        tile.getChildren().addAll(lbl, val);
+        return tile;
+    }
+
+    private HBox makeStatRow(String labelText, Label valueLabel, String badgeBg, String badgeFg, String rowBg) {
+        HBox row = new HBox();
+        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        row.setStyle("-fx-background-color: " + rowBg + "; -fx-padding: 10; -fx-background-radius: 8;");
+        Label lbl = new Label(labelText);
+        lbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #4b5563;");
+        HBox.setHgrow(lbl, javafx.scene.layout.Priority.ALWAYS);
+        lbl.setMaxWidth(Double.MAX_VALUE);
+        valueLabel.setStyle(
+            "-fx-background-color: " + badgeBg + "; -fx-text-fill: " + badgeFg + "; " +
+            "-fx-padding: 4 12; -fx-background-radius: 12; -fx-font-weight: bold;"
+        );
+        row.getChildren().addAll(lbl, valueLabel);
+        return row;
     }
 
     @FXML private void closeDetails() {
@@ -653,103 +895,240 @@ public class RoomManagementController implements Initializable {
 
     @FXML private void downloadPDF() {
         if (viewingRoom == null) return;
-        
+
         RoomService.fetchRoomBookings(viewingRoom.getId(), bookings -> {
-            Platform.runLater(() -> {
-                VBox reportBox = new VBox(20);
-                reportBox.setPadding(new javafx.geometry.Insets(40));
-                reportBox.setStyle("-fx-background-color: white;");
-                reportBox.setAlignment(javafx.geometry.Pos.TOP_CENTER);
-                
-                Label header = new Label("تقرير تفصيلي - قاعة " + viewingRoom.getRoomNumber());
-                header.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #001e40;");
-                
-                Label dateLabel = new Label("تاريخ استخراج التقرير: " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()));
-                dateLabel.setStyle("-fx-font-size: 14px;");
-                
-                // Info Grid
-                HBox infoBox = new HBox(15);
-                infoBox.setAlignment(javafx.geometry.Pos.CENTER);
-                infoBox.getChildren().addAll(
-                    createInfoItem("نوع القاعة", viewingRoom.isMultiPurpose() ? "متعددة الأغراض" : "محاضرات عادية"),
-                    createInfoItem("المبنى", viewingRoom.getBuilding() != null ? viewingRoom.getBuilding() : "-"),
-                    createInfoItem("الدور", String.valueOf(viewingRoom.getFloor())),
-                    createInfoItem("السعة", viewingRoom.getCapacity() + " فرد"),
-                    createInfoItem("الحالة", "available".equals(viewingRoom.getStatus()) ? "متاحة" : "مغلقة للصيانة")
-                );
-                
-                // Stats
-                HBox statsBox = new HBox(30);
-                statsBox.setAlignment(javafx.geometry.Pos.CENTER);
-                statsBox.setStyle("-fx-background-color: #eef2f6; -fx-padding: 15; -fx-background-radius: 8;");
-                statsBox.getChildren().addAll(
-                    new Label("إجمالي الحركات: " + detTotalBookings.getText()),
-                    new Label("نشطة: " + detActiveBookings.getText()),
-                    new Label("سابقة: " + detHistoryBookings.getText())
-                );
-                statsBox.getChildren().forEach(n -> n.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;"));
-                
-                Label historyHeader = new Label("سجل الحجوزات");
-                historyHeader.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-                
-                // Table
-                VBox table = new VBox(5);
-                HBox tableHeader = new HBox(10);
-                tableHeader.setStyle("-fx-background-color: #001e40; -fx-padding: 10;");
-                String[] cols = {"التاريخ", "الوقت", "المسؤول", "الغرض / المادة", "الحالة"};
-                for (String c : cols) {
-                    Label l = new Label(c);
-                    l.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center;");
-                    l.setPrefWidth(100);
-                    tableHeader.getChildren().add(l);
-                }
-                table.getChildren().add(tableHeader);
-                
-                if (bookings.isEmpty()) {
-                    Label empty = new Label("لا توجد حجوزات مسجلة لهذه القاعة.");
-                    empty.setStyle("-fx-padding: 20; -fx-text-fill: #5a7698;");
-                    table.getChildren().add(empty);
-                } else {
-                    for (int i=0; i<bookings.size(); i++) {
-                        Booking b = bookings.get(i);
-                        HBox row = new HBox(10);
-                        row.setStyle(i % 2 == 0 ? "-fx-background-color: #f8fafc; -fx-padding: 10;" : "-fx-padding: 10;");
-                        
-                        Label c1 = new Label(b.getDate() != null ? b.getDate() : "—"); c1.setPrefWidth(100); c1.setStyle("-fx-alignment: center;");
-                        Label c2 = new Label(b.getTimeFrom() + " - " + b.getTimeTo()); c2.setPrefWidth(100); c2.setStyle("-fx-alignment: center;");
-                        Label c3 = new Label(b.getResponsibleName() != null ? b.getResponsibleName() : "—"); c3.setPrefWidth(100); c3.setStyle("-fx-alignment: center;");
-                        Label c4 = new Label(b.getPurpose() != null ? b.getPurpose() : "—"); c4.setPrefWidth(100); c4.setStyle("-fx-alignment: center;");
-                        Label c5 = new Label(translateStatus(b.getStatus())); c5.setPrefWidth(100); c5.setStyle("-fx-alignment: center;");
-                        
-                        row.getChildren().addAll(c1, c2, c3, c4, c5);
-                        table.getChildren().add(row);
-                    }
-                }
-                
-                reportBox.getChildren().addAll(header, dateLabel, infoBox, statsBox, historyHeader, table);
-                
-                // Print
-                javafx.print.PrinterJob job = javafx.print.PrinterJob.createPrinterJob();
-                if (job != null && job.showPrintDialog(roomTable.getScene().getWindow())) {
-                    boolean success = job.printPage(reportBox);
-                    if (success) {
-                        job.endJob();
-                    }
-                }
-            });
-        }, e -> Platform.runLater(() -> showAlert("خطأ", "فشل جلب الحجوزات للتقرير")));
+            Platform.runLater(() -> buildAndShowReport(bookings));
+        }, e -> Platform.runLater(() -> showAlert("خطأ", "فشل جلب الحجوزات: " + e.getMessage())));
     }
 
-    private VBox createInfoItem(String title, String value) {
-        VBox box = new VBox(5);
-        box.setAlignment(javafx.geometry.Pos.CENTER);
-        box.setStyle("-fx-background-color: #f8fafc; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;");
-        Label tLabel = new Label(title);
-        tLabel.setStyle("-fx-text-fill: #5a7698; -fx-font-size: 12px; -fx-font-weight: bold;");
-        Label vLabel = new Label(value);
-        vLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #001e40;");
-        box.getChildren().addAll(tLabel, vLabel);
-        return box;
+    private void buildAndShowReport(List<Booking> bookings) {
+        Room room = viewingRoom;
+        if (room == null) return;
+
+        // ── Stage (preview window) ─────────────────────────────────────────
+        javafx.stage.Stage printStage = new javafx.stage.Stage();
+        printStage.setTitle("معاينة التقرير - قاعة " + room.getRoomNumber());
+        printStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+
+        // ── Helpers ────────────────────────────────────────────────────────
+        final String F = "-fx-font-family: 'Arial'; ";
+
+        // ── Page root (Fixed width 570px to match standard paper aspect ratio) 
+        VBox page = new VBox(0);
+        page.setPrefWidth(570);
+        page.setMinWidth(570);
+        page.setMaxWidth(570);
+        page.setStyle("-fx-background-color: white; -fx-padding: 0;");
+        page.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT); // Explicit LTR parent to bypass snapshot-mirroring bug
+
+        // ═══ HEADER ════════════════════════════════════════════════════════
+        VBox banner = new VBox(6);
+        banner.setAlignment(javafx.geometry.Pos.CENTER);
+        banner.setStyle("-fx-background-color: #001e40; -fx-padding: 24 40;");
+        Label titleLbl = new Label("تقرير تفصيلي — قاعة " + room.getRoomNumber());
+        titleLbl.setStyle(F + "-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
+        titleLbl.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+        Label dateLbl = new Label("تاريخ الإصدار:  " +
+            new java.text.SimpleDateFormat("yyyy-MM-dd   HH:mm:ss").format(new java.util.Date()));
+        dateLbl.setStyle(F + "-fx-font-size: 12px; -fx-text-fill: #93c5fd;");
+        dateLbl.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+        banner.getChildren().addAll(titleLbl, dateLbl);
+
+        // ═══ INFO ROW ══════════════════════════════════════════════════════
+        boolean avail = "available".equals(room.getStatus());
+        HBox infoRow = new HBox(10);
+        infoRow.setStyle("-fx-padding: 18 20 10 20; -fx-background-color: #f8fafc;");
+        infoRow.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
+
+        // Loop in reverse order so "نوع القاعة" is added last (appearing on the far right in standard LTR)
+        for (String[] pair : new String[][]{
+            {"الحالة",       avail ? "متاحة" : "مغلقة"},
+            {"السعة",        room.getCapacity() + " فرد"},
+            {"الدور",        String.valueOf(room.getFloor())},
+            {"المبنى",       room.getBuilding() != null ? room.getBuilding() : "-"},
+            {"نوع القاعة",  room.isMultiPurpose() ? "متعددة" : "عادية"}
+        }) {
+            VBox tile = new VBox(3);
+            tile.setAlignment(javafx.geometry.Pos.CENTER);
+            tile.setStyle("-fx-background-color: #eff6ff; -fx-background-radius: 8; -fx-padding: 8 6; -fx-border-color: #bfdbfe; -fx-border-radius: 8;");
+            Label k = new Label(pair[0]);
+            k.setStyle(F + "-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #6b7280;");
+            k.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+            Label v = new Label(pair[1]);
+            v.setStyle(F + "-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1e3a5f;");
+            v.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+            tile.getChildren().addAll(k, v);
+            HBox.setHgrow(tile, javafx.scene.layout.Priority.ALWAYS);
+            tile.setMaxWidth(Double.MAX_VALUE);
+            infoRow.getChildren().add(tile);
+        }
+
+        // ═══ STATS ═════════════════════════════════════════════════════════
+        long activeCount = bookings.stream().filter(b ->
+            "pending".equals(b.getStatus()) || "approved".equals(b.getStatus()) ||
+            "awaiting_manager_final".equals(b.getStatus()) || "approved_by_branch".equals(b.getStatus())
+        ).count();
+        long histCount = bookings.size() - activeCount;
+
+        HBox statsRow = new HBox(0);
+        statsRow.setStyle("-fx-padding: 0 0 10 0;");
+        statsRow.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
+
+        // Loop in reverse order to place "إجمالي الحركات" on the far right in LTR
+        for (String[] s : new String[][]{
+            {"حجوزات سابقة",  String.valueOf(histCount),         "#374151", "#e5e7eb"},
+            {"حجوزات نشطة",   String.valueOf(activeCount),      "#1e40af", "#dbeafe"},
+            {"إجمالي الحركات", String.valueOf(bookings.size()), "#001e40", "white"}
+        }) {
+            VBox b = new VBox(2);
+            b.setAlignment(javafx.geometry.Pos.CENTER);
+            b.setStyle("-fx-background-color: " + s[2] + "; -fx-padding: 12;");
+            Label lk = new Label(s[0]); 
+            lk.setStyle(F + "-fx-font-size: 11px; -fx-text-fill: " + s[3] + "99; -fx-font-weight: bold;");
+            lk.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+            Label lv = new Label(s[1]); 
+            lv.setStyle(F + "-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: " + s[3] + ";");
+            lv.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+            b.getChildren().addAll(lk, lv);
+            HBox.setHgrow(b, javafx.scene.layout.Priority.ALWAYS);
+            b.setMaxWidth(Double.MAX_VALUE);
+            statsRow.getChildren().add(b);
+        }
+
+        // ═══ TABLE ═════════════════════════════════════════════════════════
+        VBox tableBox = new VBox(0);
+        tableBox.setStyle("-fx-padding: 20;");
+        tableBox.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
+
+        Label tTitle = new Label("سجل الحجوزات");
+        tTitle.setStyle(F + "-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #001e40; -fx-padding: 0 0 10 0;");
+        tTitle.setMaxWidth(Double.MAX_VALUE);
+        tTitle.setAlignment(javafx.geometry.Pos.CENTER_RIGHT); // Align right in LTR context
+        tTitle.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+        tableBox.getChildren().add(tTitle);
+
+        // Define headers and widths reversed (so History columns read Right to Left naturally)
+        String[] heads  = {"الحالة", "الغرض / المادة", "المسؤول", "الوقت", "التاريخ"};
+        double[] widths = {90, 140, 110, 105, 85};
+        tableBox.getChildren().add(makeReportRow(heads, widths, "#001e40", "white", true, F));
+
+        if (bookings.isEmpty()) {
+            Label empty = new Label("لا توجد حجوزات مسجلة لهذه القاعة.");
+            empty.setStyle(F + "-fx-font-size: 13px; -fx-text-fill: #6b7280; -fx-padding: 20;");
+            empty.setMaxWidth(Double.MAX_VALUE);
+            empty.setAlignment(javafx.geometry.Pos.CENTER);
+            empty.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+            tableBox.getChildren().add(empty);
+        } else {
+            for (int i = 0; i < bookings.size(); i++) {
+                Booking bk = bookings.get(i);
+                String[] vals = {
+                    translateStatus(bk.getStatus()),
+                    bk.getPurpose() != null ? bk.getPurpose() : "—",
+                    bk.getResponsibleName() != null ? bk.getResponsibleName() : "—",
+                    (bk.getTimeFrom() != null ? bk.getTimeFrom() : "") + " - " + (bk.getTimeTo() != null ? bk.getTimeTo() : ""),
+                    bk.getDate() != null ? bk.getDate() : "—"
+                };
+                String bg = i % 2 == 0 ? "#f8fafc" : "white";
+                tableBox.getChildren().add(makeReportRow(vals, widths, bg, "#374151", false, F));
+            }
+        }
+
+        page.getChildren().addAll(banner, infoRow, statsRow, tableBox);
+
+        // ── ScrollPane / Container setup to look like real paper sheet ─────
+        javafx.scene.layout.StackPane paperContainer = new javafx.scene.layout.StackPane(page);
+        paperContainer.setStyle("-fx-background-color: #f1f5f9; -fx-padding: 24;");
+        paperContainer.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
+        
+        // Add shadow effect to the white page for a neat print preview aesthetic
+        page.setStyle("-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 10, 0, 0, 4);");
+
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(paperContainer);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background-color: #f1f5f9;");
+        scroll.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
+
+        // ── Footer print button ────────────────────────────────────────────
+        HBox footerBar = new HBox(12);
+        footerBar.setAlignment(javafx.geometry.Pos.CENTER_RIGHT); // Align to the right in LTR
+        footerBar.setStyle("-fx-padding: 14 30; -fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0;");
+        footerBar.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
+        Button printBtn = new Button("🖨  طباعة التقرير");
+        printBtn.setStyle("-fx-background-color: #001e40; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 28; -fx-background-radius: 8; -fx-cursor: hand;");
+        Button closeBtn = new Button("إغلاق");
+        closeBtn.setStyle("-fx-background-color: #f2f4f6; -fx-text-fill: #43474f; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;");
+        closeBtn.setOnAction(e -> printStage.close());
+        
+        printBtn.setOnAction(e -> {
+            javafx.print.PrinterJob job = javafx.print.PrinterJob.createPrinterJob();
+            if (job == null) { showAlert("خطأ", "لا توجد طابعة متاحة."); return; }
+            if (job.showPrintDialog(printStage)) {
+                // Get printable width/height
+                javafx.print.PageLayout layout = job.getJobSettings().getPageLayout();
+                double printableWidth = layout.getPrintableWidth();
+                double printableHeight = layout.getPrintableHeight();
+
+                // Capture high-res snapshot of the visual report page node
+                double scaleVal = 3.0; // High resolution scaling to keep text sharp
+                javafx.scene.SnapshotParameters params = new javafx.scene.SnapshotParameters();
+                params.setTransform(javafx.scene.transform.Transform.scale(scaleVal, scaleVal));
+                params.setFill(javafx.scene.paint.Color.WHITE);
+                
+                javafx.scene.image.WritableImage snapshot = page.snapshot(params, null);
+                
+                // Create an ImageView to render this crisp snapshot image
+                javafx.scene.image.ImageView printView = new javafx.scene.image.ImageView(snapshot);
+                printView.setFitWidth(printableWidth);
+                printView.setPreserveRatio(true);
+                
+                // Wrap in Group to guarantee alignment inside the print page
+                javafx.scene.Group printGroup = new javafx.scene.Group(printView);
+                
+                boolean ok = job.printPage(printGroup);
+                if (ok) job.endJob();
+            }
+        });
+        footerBar.getChildren().addAll(printBtn, closeBtn);
+
+        VBox root = new VBox(0, scroll, footerBar);
+        root.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root, 650, 750);
+        scene.setFill(javafx.scene.paint.Color.WHITE);
+        scene.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT); // Strictly LTR scene orientation to defeat high-DPI mirroring bug
+        printStage.setScene(scene);
+        if (roomTable.getScene() != null && roomTable.getScene().getWindow() != null) {
+            javafx.stage.Window owner = roomTable.getScene().getWindow();
+            printStage.setX(owner.getX() + (owner.getWidth() - 650) / 2);
+            printStage.setY(owner.getY() + 30);
+            printStage.initOwner(owner);
+        }
+        printStage.show();
+    }
+
+    private HBox makeReportRow(String[] values, double[] widths, String bg, String fg, boolean bold, String F) {
+        HBox row = new HBox(0);
+        row.setStyle("-fx-background-color: " + bg + ";");
+        row.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
+        for (int i = 0; i < values.length; i++) {
+            Label cell = new Label(values[i]);
+            cell.setPrefWidth(widths[i]);
+            cell.setMinWidth(widths[i]);
+            cell.setMaxWidth(widths[i]);
+            cell.setWrapText(true);
+            cell.setAlignment(javafx.geometry.Pos.CENTER);
+            cell.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT); // Arabic rendering handles perfectly on LTR grid
+            cell.setStyle(
+                F + "-fx-font-size: 11px; " +
+                "-fx-text-fill: " + fg + "; " +
+                "-fx-font-weight: " + (bold ? "bold" : "normal") + "; " +
+                "-fx-padding: 8 4; " +
+                "-fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;"
+            );
+            row.getChildren().add(cell);
+        }
+        return row;
     }
 
     private String translateStatus(String status) {

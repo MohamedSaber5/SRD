@@ -11,22 +11,31 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.aast.booking.admin.schedule.GroupScheduleController">
 
+    <stylesheets>
+        <java.lang.String fx:value="/css/admin.css" />
+        <java.lang.String fx:value="/css/dashboard-common.css" />
+    </stylesheets>
+
     <padding><Insets bottom="24" left="24" right="24" top="24" /></padding>
 
     <!-- Header & Search -->
     <VBox spacing="16" styleClass="admin-section-card">
-        <HBox spacing="16" alignment="CENTER_LEFT">
+        <HBox spacing="12" alignment="CENTER_LEFT">
             <VBox spacing="4">
                 <Label text="الكلية" style="-fx-font-weight: bold; -fx-text-fill: #43474f;" />
-                <TextField fx:id="txtCollege" promptText="مثال: الهندسة" prefWidth="150" styleClass="admin-text-field" />
+                <ComboBox fx:id="comboCollege" promptText="اختر الكلية" prefWidth="240" styleClass="search-combo" />
             </VBox>
             <VBox spacing="4">
                 <Label text="القسم" style="-fx-font-weight: bold; -fx-text-fill: #43474f;" />
-                <TextField fx:id="txtDepartment" promptText="مثال: حاسبات" prefWidth="150" styleClass="admin-text-field" />
+                <ComboBox fx:id="comboDepartment" promptText="اختر القسم" prefWidth="260" styleClass="search-combo" />
+            </VBox>
+            <VBox spacing="4">
+                <Label text="الفترة" style="-fx-font-weight: bold; -fx-text-fill: #43474f;" />
+                <ComboBox fx:id="comboPeriod" promptText="الكل" prefWidth="110" styleClass="search-combo" />
             </VBox>
             <VBox spacing="4">
                 <Label text="الجروب" style="-fx-font-weight: bold; -fx-text-fill: #43474f;" />
-                <TextField fx:id="txtGroup" promptText="مثال: A" prefWidth="100" styleClass="admin-text-field" />
+                <ComboBox fx:id="comboGroup" promptText="الكل" prefWidth="100" styleClass="search-combo" />
             </VBox>
             
             <Region HBox.hgrow="ALWAYS" />
@@ -34,15 +43,23 @@
             <VBox spacing="4" alignment="BOTTOM_CENTER">
                 <Button fx:id="btnSearch" text="🔍 جلب الجدول" 
                         onAction="#handleSearch"
-                        styleClass="admin-primary-btn" 
-                        style="-fx-padding: 8 24;" />
+                        styleClass="btn-schedule-fetch" />
             </VBox>
             <VBox spacing="4" alignment="BOTTOM_CENTER">
                 <Button fx:id="btnExportPdf" text="📥 حفظ كصورة (PDF/PNG)" 
                         onAction="#handleExportImage"
-                        style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 24; -fx-font-weight: bold; -fx-cursor: hand;" />
+                        styleClass="btn-schedule-export" />
             </VBox>
         </HBox>
+        
+        <!-- Guide Banner -->
+        <HBox spacing="8" alignment="CENTER_LEFT" 
+              style="-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-padding: 10 16;">
+            <Label text="💡" style="-fx-font-size: 16px;" />
+            <Label text="تنبيه هام: لعرض الجدول الدراسي الأسبوعي الكامل لدفعتك (مثال: الترم السادس)، يرجى اختيار الجروب الخاص بك (مثال: الجروب F) وتحديد الفترة بـ 'الكل'. فلتر 'الفترة' يصفّي فقط المحاضرات المجدولة في تلك الحصة اليومية المحددة."
+                   style="-fx-font-size: 12px; -fx-text-fill: #1e40af; -fx-font-weight: bold;" wrapText="true" HBox.hgrow="ALWAYS" />
+        </HBox>
+        
         <Label fx:id="lblStatus" text="أدخل البيانات واضغط على جلب الجدول." style="-fx-text-fill: #737780; -fx-font-size: 13px;" />
     </VBox>
 

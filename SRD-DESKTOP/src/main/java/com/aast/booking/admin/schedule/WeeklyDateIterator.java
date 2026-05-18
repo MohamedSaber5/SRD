@@ -67,6 +67,13 @@ public class WeeklyDateIterator {
         return resolveSlot(slotIndex, false, isRamadan);
     }
 
+    public LectureSlot resolveSlot(int startSlot, int endSlot, boolean isRamadan) {
+        String timeFrom = getPeriodStartTime(startSlot);
+        String timeTo = getPeriodEndTime(endSlot);
+        String label = "سلوت " + startSlot + " - " + endSlot;
+        return new LectureSlot(timeFrom, timeTo, label);
+    }
+
     private String getPeriodStartTime(int period) {
         switch (period) {
             case 1: return "08:30";

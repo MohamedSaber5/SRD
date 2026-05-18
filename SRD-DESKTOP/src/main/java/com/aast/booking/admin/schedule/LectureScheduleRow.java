@@ -18,16 +18,18 @@ public class LectureScheduleRow {
     private final String lecturerName;   // اسم المحاضر
     private final String lectureType;    // "lecture" or "section"
     private final int    requiredCapacity; // السعة المطلوبة
-    private final int    slotIndex;      // 1-8 (المحاضرة الأولى..الثامنة)
+    private final int    academicPeriod;  // الفترة الأكاديمية (الفصل الدراسي)
+    private final int    startSlot;       // سلوت البداية (1-16)
+    private final int    endSlot;         // سلوت النهاية (1-16)
     private final String dayOfWeek;      // السبت/الأحد/الاثنين/الثلاثاء/الأربعاء/الخميس
     private final String startDate;      // ISO "YYYY-MM-DD" — first occurrence date
     private final String group;          // A, B, C ... etc.
     private final boolean biWeekly;      // false=weekly, true=every 2 weeks
 
     public LectureScheduleRow(String college, String department, String subject,
-                               String subjectCode, String lecturerName, String lectureType,
-                               int requiredCapacity, int slotIndex, String dayOfWeek,
-                               String startDate, String group, boolean biWeekly) {
+                              String subjectCode, String lecturerName, String lectureType,
+                              int requiredCapacity, int academicPeriod, int startSlot, int endSlot,
+                              String dayOfWeek, String startDate, String group, boolean biWeekly) {
         this.college           = college;
         this.department        = department;
         this.subject           = subject;
@@ -35,7 +37,9 @@ public class LectureScheduleRow {
         this.lecturerName      = lecturerName;
         this.lectureType       = lectureType;
         this.requiredCapacity  = requiredCapacity;
-        this.slotIndex         = slotIndex;
+        this.academicPeriod    = academicPeriod;
+        this.startSlot         = startSlot;
+        this.endSlot           = endSlot;
         this.dayOfWeek         = dayOfWeek;
         this.startDate         = startDate;
         this.group             = group;
@@ -50,7 +54,10 @@ public class LectureScheduleRow {
     public String getLecturerName()     { return lecturerName; }
     public String getLectureType()      { return lectureType; }
     public int    getRequiredCapacity() { return requiredCapacity; }
-    public int    getSlotIndex()        { return slotIndex; }
+    public int    getAcademicPeriod()   { return academicPeriod; }
+    public int    getStartSlot()        { return startSlot; }
+    public int    getEndSlot()          { return endSlot; }
+    public int    getSlotIndex()        { return startSlot; } // Backward compatibility
     public String getDayOfWeek()        { return dayOfWeek; }
     public String getStartDate()        { return startDate; }
     public String getGroup()            { return group; }
@@ -58,8 +65,8 @@ public class LectureScheduleRow {
 
     @Override
     public String toString() {
-        return String.format("[%s][%s][%s] %s - %s - %s - الفترة%d - %s",
+        return String.format("[%s][%s][%s] %s - %s - %s - الترم %d (سلوت %d-%d) - %s",
                 college, department, subject, lecturerName, group,
-                dayOfWeek, slotIndex, biWeekly ? "كل أسبوعين" : "أسبوعي");
+                dayOfWeek, academicPeriod, startSlot, endSlot, biWeekly ? "كل أسبوعين" : "أسبوعي");
     }
 }

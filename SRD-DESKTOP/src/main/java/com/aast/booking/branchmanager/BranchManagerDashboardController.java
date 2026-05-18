@@ -54,8 +54,7 @@ public class BranchManagerDashboardController implements Initializable {
     // History
     @FXML private ComboBox<String> historyFilter;
     @FXML private DatePicker historyDatePicker;
-    @FXML private TableView<Booking> historyTable;
-    @FXML private TableColumn<Booking, String> hColDate, hColTime, hColRoom, hColUser, hColPurpose, hColStatus;
+    @FXML private VBox historyCardsContainer;
 
     private boolean isRamadanMode = false;
     private List<Booking> allPendingBookings = new ArrayList<>();
@@ -179,6 +178,7 @@ public class BranchManagerDashboardController implements Initializable {
                     updateStats();
                     renderCards(pendingCardsContainer, allPendingBookings);
                     updateRoomCombo(rooms);
+                    applyHistoryFilter();
                 });
                 return null;
             })
@@ -463,24 +463,7 @@ public class BranchManagerDashboardController implements Initializable {
     // ─── History ──────────────────────────────────────────────────────────
 
     private void setupHistoryTable() {
-        if(hColDate == null) return;
-        hColDate.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDate()));
-        hColTime.setCellValueFactory(d -> new SimpleStringProperty(
-            d.getValue().getTimeFrom() + " - " + d.getValue().getTimeTo()));
-        hColRoom.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getRoomId()));
-        hColUser.setCellValueFactory(d -> {
-            Booking b = d.getValue();
-            String name = b.getResponsibleName() != null ? b.getResponsibleName() : b.getUserName();
-            return new SimpleStringProperty(name != null ? name : "-");
-        });
-        hColPurpose.setCellValueFactory(d -> new SimpleStringProperty(
-            d.getValue().getPurpose() != null ? d.getValue().getPurpose() : "-"));
-        hColStatus.setCellValueFactory(d -> {
-            String s = d.getValue().getStatus();
-            return new SimpleStringProperty("approved".equals(s) ? "✓ معتمد" : "✗ مرفوض");
-        });
-
-        historyTable.setItems(historyBookings);
+        // Dynamic History Card layout replaces static TableView. No column setup needed.
     }
 
     @FXML private void refreshHistory() {
@@ -506,7 +489,248 @@ public class BranchManagerDashboardController implements Initializable {
             return statusMatch && dateMatch;
         }).collect(Collectors.toList());
 
-        historyTable.setItems(FXCollections.observableArrayList(filtered));
+        renderHistoryCards(filtered);
+    }
+
+    private void renderHistoryCards(List<Booking> list) {
+        if (historyCardsContainer == null) return;
+        historyCardsContainer.getChildren().clear();
+
+        if (list.isEmpty()) {
+            VBox empty = new VBox(15);
+            empty.setAlignment(Pos.CENTER);
+            empty.setPadding(new Insets(60, 20, 60, 20));
+            Label t = new Label("📭 لا توجد طلبات مطابقة للبحث");
+            t.getStyleClass().add("bm-empty-title");
+            Label s = new Label("حاول تغيير خيارات التصفية أو البحث بالتاريخ أعلاه.");
+            s.getStyleClass().add("bm-empty-subtitle");
+            empty.getChildren().addAll(t, s);
+            historyCardsContainer.getChildren().add(empty);
+            return;
+        }
+
+        for (Booking b : list) {
+            Map<String, Object> roomInfo = roomsCache.get(b.getRoomId());
+            String roomNum = roomInfo != null ? safeStr(roomInfo.get("roomNumber")) : b.getRoomId();
+
+            HBox card = new HBox(16);
+            card.getStyleClass().add("bm-history-card");
+            card.setAlignment(Pos.CENTER_LEFT);
+            card.setPadding(new Insets(14, 20, 14, 20));
+
+            // Left graphic status bubble
+            VBox graphicContainer = new VBox();
+            graphicContainer.setAlignment(Pos.CENTER);
+            Label graphicIcon = new Label();
+            graphicIcon.setStyle("-fx-font-size: 20px;");
+            if ("approved".equals(b.getStatus())) {
+                graphicIcon.setText("✅");
+                graphicContainer.setStyle("-fx-background-color: #D1FAE5; -fx-padding: 8; -fx-background-radius: 20; -fx-min-width: 40; -fx-min-height: 40;");
+            } else {
+                graphicIcon.setText("❌");
+                graphicContainer.setStyle("-fx-background-color: #FEE2E2; -fx-padding: 8; -fx-background-radius: 20; -fx-min-width: 40; -fx-min-height: 40;");
+            }
+            graphicContainer.getChildren().add(graphicIcon);
+
+            // Center content layout
+            VBox content = new VBox(6);
+            HBox.setHgrow(content, Priority.ALWAYS);
+
+            HBox titleRow = new HBox(8);
+            titleRow.setAlignment(Pos.CENTER_LEFT);
+            Label title = new Label("طلب حجز قاعة متعددة الأغراض");
+            title.getStyleClass().add("bm-history-card-title");
+            Label roomTag = new Label("قاعة " + roomNum);
+            roomTag.getStyleClass().add("bm-history-card-room-tag");
+            titleRow.getChildren().addAll(title, roomTag);
+
+            HBox metaRow = new HBox(16);
+            metaRow.setAlignment(Pos.CENTER_LEFT);
+            Label dateMeta = new Label("📅  " + (b.getDate() != null ? b.getDate() : "-"));
+            dateMeta.getStyleClass().add("bm-history-card-subtitle");
+            Label timeMeta = new Label("🕐  " + (b.getTimeFrom() != null ? b.getTimeFrom() : "-") + " - " + (b.getTimeTo() != null ? b.getTimeTo() : "-"));
+            timeMeta.getStyleClass().add("bm-history-card-subtitle");
+            Label userMeta = new Label("👤  " + (b.getResponsibleName() != null ? b.getResponsibleName() : b.getUserName()));
+            userMeta.getStyleClass().add("bm-history-card-subtitle");
+            metaRow.getChildren().addAll(dateMeta, timeMeta, userMeta);
+
+            content.getChildren().addAll(titleRow, metaRow);
+
+            // Right actions & badges
+            VBox rightSide = new VBox(8);
+            rightSide.setAlignment(Pos.CENTER_RIGHT);
+
+            Label statusBadge;
+            if ("approved".equals(b.getStatus())) {
+                statusBadge = badge("معتمد", "bm-badge-approved");
+            } else {
+                statusBadge = badge("مرفوض", "bm-badge-rejected");
+            }
+
+            Button detailsBtn = new Button("🔍  عرض التفاصيل");
+            detailsBtn.getStyleClass().add("bm-view-details-btn");
+            detailsBtn.setOnAction(e -> showBookingDetailsModal(b));
+
+            rightSide.getChildren().addAll(statusBadge, detailsBtn);
+
+            card.getChildren().addAll(graphicContainer, content, rightSide);
+            historyCardsContainer.getChildren().add(card);
+        }
+    }
+
+    private void showBookingDetailsModal(Booking b) {
+        Stage modal = new Stage();
+        modal.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        modal.initOwner(SessionManager.getInstance().getPrimaryStage());
+        modal.setTitle("تفاصيل طلب الحجز");
+        modal.setResizable(false);
+
+        VBox root = new VBox(0);
+        root.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+        root.getStyleClass().add("bm-detail-modal-card");
+
+        // Gorgeous Navy Blue Title Bar Header
+        VBox header = new VBox(6);
+        header.getStyleClass().add("bm-detail-modal-header");
+        Label title = new Label("🔍  تفاصيل طلب حجز قاعة");
+        title.getStyleClass().add("bm-detail-modal-title");
+        Label subtitle = new Label("طلب حجز القاعات متعددة الأغراض - الأكاديمية العربية");
+        subtitle.getStyleClass().add("bm-detail-modal-subtitle");
+        header.getChildren().addAll(title, subtitle);
+
+        // Body Content Panel
+        VBox body = new VBox(16);
+        body.getStyleClass().add("bm-detail-modal-body");
+        body.setPadding(new Insets(20));
+
+        Map<String, Object> roomInfo = roomsCache.get(b.getRoomId());
+        String roomNum = roomInfo != null ? safeStr(roomInfo.get("roomNumber")) : b.getRoomId();
+
+        // 1. General & Room Info Card
+        VBox roomCard = new VBox(12);
+        roomCard.getStyleClass().add("bm-detail-modal-section-card");
+        Label roomTitle = new Label("🏛  تفاصيل القاعة والحدث");
+        roomTitle.getStyleClass().add("bm-detail-modal-section-title");
+        
+        GridPane roomGrid = new GridPane();
+        roomGrid.setHgap(20); roomGrid.setVgap(10);
+        roomGrid.getColumnConstraints().addAll(new ColumnConstraints(150), new ColumnConstraints(280));
+
+        addGridRow(roomGrid, 0, "رقم القاعة:", roomNum);
+        if (roomInfo != null) {
+            addGridRow(roomGrid, 1, "المبنى والدور:", "مبنى " + safeStr(roomInfo.get("building")) + " | الدور " + safeStr(roomInfo.get("floor")));
+            addGridRow(roomGrid, 2, "السعة القصوى:", safeStr(roomInfo.get("capacity")) + " فرداً");
+        }
+        addGridRow(roomGrid, 3, "الغرض من الحجز:", b.getPurpose() != null ? b.getPurpose() : "-");
+
+        roomCard.getChildren().addAll(roomTitle, roomGrid);
+
+        // 2. Timing & Responsibility Card
+        VBox timeCard = new VBox(12);
+        timeCard.getStyleClass().add("bm-detail-modal-section-card");
+        Label timeTitle = new Label("📅  التوقيت ومسؤولية الحجز");
+        timeTitle.getStyleClass().add("bm-detail-modal-section-title");
+
+        GridPane timeGrid = new GridPane();
+        timeGrid.setHgap(20); timeGrid.setVgap(10);
+        timeGrid.getColumnConstraints().addAll(new ColumnConstraints(150), new ColumnConstraints(280));
+
+        addGridRow(timeGrid, 0, "تاريخ الفعالية:", b.getDate() != null ? b.getDate() : "-");
+        addGridRow(timeGrid, 1, "الفترة الزمنية:", (b.getTimeFrom() != null ? b.getTimeFrom() : "-") + "  إلى  " + (b.getTimeTo() != null ? b.getTimeTo() : "-"));
+        addGridRow(timeGrid, 2, "اسم المسؤول:", b.getResponsibleName() != null ? b.getResponsibleName() : "-");
+        addGridRow(timeGrid, 3, "الصفة الوظيفية:", b.getUserName() != null ? b.getUserName() : "-");
+
+        timeCard.getChildren().addAll(timeTitle, timeGrid);
+
+        // 3. Equipments & Technical inventory Card
+        VBox eqCard = new VBox(12);
+        eqCard.getStyleClass().add("bm-detail-modal-section-card");
+        Label eqTitle = new Label("💻  التجهيزات والمتطلبات الفنية");
+        eqTitle.getStyleClass().add("bm-detail-modal-section-title");
+
+        FlowPane eqFlow = new FlowPane();
+        eqFlow.setHgap(10); eqFlow.setVgap(10);
+        
+        boolean hasEquipments = false;
+        if (b.isReqLaptop()) {
+            eqFlow.getChildren().add(badge("💻 جهاز حاسب آلي (Laptop)", "bm-badge-building"));
+            hasEquipments = true;
+        }
+        if (b.isReqMic()) {
+            eqFlow.getChildren().add(badge("🎤 ميكروفون لاسلكي (" + b.getReqMicQty() + ")", "bm-badge-building"));
+            hasEquipments = true;
+        }
+        if (b.isReqVideoConf()) {
+            eqFlow.getChildren().add(badge("📹 نظام الـ Video Conference", "bm-badge-building"));
+            hasEquipments = true;
+        }
+        
+        if (!hasEquipments) {
+            Label noEq = new Label("لم يتم طلب أي تجهيزات لوجستية إضافية.");
+            noEq.setStyle("-fx-font-style: italic; -fx-text-fill: #737780;");
+            eqCard.getChildren().addAll(eqTitle, noEq);
+        } else {
+            eqCard.getChildren().addAll(eqTitle, eqFlow);
+        }
+
+        // 4. Priority & Status row
+        HBox statusRow = new HBox(20);
+        statusRow.setAlignment(Pos.CENTER_LEFT);
+        
+        // Priority badges
+        FlowPane priorityFlow = new FlowPane();
+        priorityFlow.setHgap(8); priorityFlow.setVgap(8);
+        HBox.setHgrow(priorityFlow, Priority.ALWAYS);
+
+        if (b.isUrgent()) priorityFlow.getChildren().add(badge("🚨 طلب عاجل", "bm-badge-urgent"));
+        if (b.isHolidayEvent()) priorityFlow.getChildren().add(badge("🎉 عطلة رسمية", "bm-badge-holiday"));
+        if (b.isOfficialOccasion()) priorityFlow.getChildren().add(badge("⭐ مناسبة رسمية", "bm-badge-holiday"));
+
+        // Decision Stamp Graphic
+        VBox stampBox = new VBox();
+        stampBox.setAlignment(Pos.CENTER);
+        Label stampLabel = new Label();
+        if ("approved".equals(b.getStatus())) {
+            stampBox.getStyleClass().addAll("bm-stamp-box", "bm-stamp-box-approved");
+            stampLabel.setText("APPROVED | معتمد");
+            stampLabel.getStyleClass().add("bm-stamp-text-approved");
+        } else {
+            stampBox.getStyleClass().addAll("bm-stamp-box", "bm-stamp-box-rejected");
+            stampLabel.setText("REJECTED | مرفوض");
+            stampLabel.getStyleClass().add("bm-stamp-text-rejected");
+        }
+        stampBox.getChildren().add(stampLabel);
+
+        statusRow.getChildren().addAll(priorityFlow, stampBox);
+
+        // Footer close Action button
+        HBox footer = new HBox();
+        footer.setAlignment(Pos.CENTER);
+        footer.setPadding(new Insets(10, 0, 0, 0));
+        Button closeBtn = new Button("إغلاق النافذة");
+        closeBtn.getStyleClass().add("bm-approve-btn");
+        closeBtn.setPrefWidth(160);
+        closeBtn.setOnAction(e -> modal.close());
+        footer.getChildren().add(closeBtn);
+
+        body.getChildren().addAll(roomCard, timeCard, eqCard, statusRow, footer);
+        root.getChildren().addAll(header, body);
+
+        Scene scene = new Scene(root, 530, 690);
+        scene.getStylesheets().add(getClass().getResource("/css/branchmanager.css").toExternalForm());
+        modal.setScene(scene);
+        modal.showAndWait();
+    }
+
+    private void addGridRow(GridPane grid, int row, String label, String value) {
+        Label lbl = new Label(label);
+        lbl.getStyleClass().add("bm-detail-label");
+        Label val = new Label(value);
+        val.getStyleClass().add("bm-detail-value");
+        val.setWrapText(true);
+
+        grid.add(lbl, 0, row);
+        grid.add(val, 1, row);
     }
 
     @FXML private void handleLogout() throws IOException {

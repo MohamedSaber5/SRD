@@ -9,6 +9,11 @@
          xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
          fx:controller="com.aast.booking.admin.schedule.LectureSchedulingController">
 
+    <stylesheets>
+        <java.lang.String fx:value="/css/styles.css" />
+        <java.lang.String fx:value="/css/admin.css" />
+    </stylesheets>
+
     <Tab text="أتمتة وحجز الإكسل" style="-fx-font-weight: bold; -fx-font-size: 14px;">
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                     style="-fx-background-color: #f2f4f6; -fx-background: #f2f4f6; -fx-border-color: transparent;">

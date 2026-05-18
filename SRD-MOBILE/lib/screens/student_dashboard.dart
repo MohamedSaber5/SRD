@@ -68,11 +68,15 @@ class _StudentDashboardState extends State<StudentDashboard> with SingleTickerPr
       final parts = clean.split(":");
       int hour = int.parse(parts[0]);
       
-      bool isPM = timeFrom.contains("م") || timeFrom.toUpperCase().contains("PM");
-      if (isPM && hour < 12) {
-        hour += 12;
-      } else if (!isPM && hour == 12) {
-        hour = 0;
+      bool hasMeridiem = timeFrom.contains("ص") || timeFrom.contains("م") || 
+                         timeFrom.toUpperCase().contains("AM") || timeFrom.toUpperCase().contains("PM");
+      if (hasMeridiem) {
+        bool isPM = timeFrom.contains("م") || timeFrom.toUpperCase().contains("PM");
+        if (isPM && hour < 12) {
+          hour += 12;
+        } else if (!isPM && hour == 12) {
+          hour = 0;
+        }
       }
       
       // Period 1 starts at 08:30 -> hour = 8

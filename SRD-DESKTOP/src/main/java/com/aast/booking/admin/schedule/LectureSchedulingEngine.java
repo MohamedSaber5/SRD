@@ -77,8 +77,8 @@ public class LectureSchedulingEngine {
                     // 1. Determine dates
                     List<LocalDate> dates = dateIterator.generateDates(row.getStartDate(), row.isBiWeekly());
 
-                    // 2. Determine time slot
-                    LectureSlot slot = dateIterator.resolveSlot(row.getSlotIndex(), row.isBiWeekly(), isRamadan);
+                    // 2. Determine time slot dynamically based on startSlot and endSlot range
+                    LectureSlot slot = dateIterator.resolveSlot(row.getStartSlot(), row.getEndSlot(), isRamadan);
                     if (slot == null) continue; 
 
                     // 3. For each date, find a room
@@ -140,19 +140,24 @@ public class LectureSchedulingEngine {
         map.put("status", "approved"); // Auto-approved
         map.put("createdAt", FieldValue.serverTimestamp());
         
-        // Custom fields for weekly lectures
+        // Custom fields for weekly lectures - normalized for perfect query matching
         map.put("source", "weekly_lecture");
         map.put("batchId", batchId);
         map.put("is16WeekFixed", true);
         map.put("courseName", row.getSubject());
         map.put("courseCode", row.getSubjectCode());
         map.put("lecturerName", row.getLecturerName());
-        map.put("college", row.getCollege());
-        map.put("department", row.getDepartment());
+        map.put("college", GroupScheduleController.normalizeCollege(row.getCollege()));
+        map.put("department", GroupScheduleController.normalizeDepartment(row.getDepartment()));
         map.put("group", row.getGroup());
         map.put("lectureType", row.getLectureType());
         map.put("biWeekly", row.isBiWeekly());
         map.put("isBiWeekly", row.isBiWeekly());
+        
+        // Write the Academic Semester (period) and exact slot ranges to the document
+        map.put("period", String.valueOf(row.getAcademicPeriod()));
+        map.put("startSlot", row.getStartSlot());
+        map.put("endSlot", row.getEndSlot());
         
         return map;
     }
