@@ -51,6 +51,44 @@ public class DashboardFactory {
         var roleUrl = DashboardFactory.class.getResource(cssRole);
         if (roleUrl != null) scene.getStylesheets().add(roleUrl.toExternalForm());
 
+        // Real-time Ramadan Theme toggler
+        var ramadanUrl = DashboardFactory.class.getResource("/css/ramadan.css");
+        if (ramadanUrl != null) {
+            String ramadanCss = ramadanUrl.toExternalForm();
+            com.google.cloud.firestore.ListenerRegistration reg = 
+                com.aast.booking.services.RoomService.listenToRamadanMode(isRamadan -> {
+                    javafx.application.Platform.runLater(() -> {
+                        if (isRamadan) {
+                            if (!scene.getStylesheets().contains(ramadanCss)) {
+                                scene.getStylesheets().add(ramadanCss);
+                            }
+                            // Swap logo to Gold
+                            javafx.scene.Node logoNode = scene.getRoot().lookup("#sidebarLogo");
+                            if (logoNode instanceof javafx.scene.image.ImageView imgView) {
+                                imgView.setImage(new javafx.scene.image.Image(
+                                    DashboardFactory.class.getResourceAsStream("/images/logo_gold.png")
+                                ));
+                            }
+                        } else {
+                            scene.getStylesheets().remove(ramadanCss);
+                            // Swap logo back to original
+                            javafx.scene.Node logoNode = scene.getRoot().lookup("#sidebarLogo");
+                            if (logoNode instanceof javafx.scene.image.ImageView imgView) {
+                                imgView.setImage(new javafx.scene.image.Image(
+                                    DashboardFactory.class.getResourceAsStream("/images/logo_aast.jpg")
+                                ));
+                            }
+                        }
+                    });
+                });
+            
+            stage.setOnCloseRequest(event -> {
+                if (reg != null) {
+                    reg.remove();
+                }
+            });
+        }
+
         stage.setTitle(title + " - " + user.getDisplayName());
         stage.setScene(scene);
         stage.setMaximized(true);

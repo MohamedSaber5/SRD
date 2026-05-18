@@ -198,18 +198,27 @@ export default function AdminDashboard() {
           </div>
           <div className="flex flex-wrap gap-3 mt-4 md:mt-0 justify-end">
             {/* Ramadan Mode Toggle */}
-            <button 
-              onClick={toggleRamadanMode}
-              disabled={isSettingsLoading}
-              className={`px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-sm border transition-all hover:-translate-y-1 ${
-                isRamadanMode 
-                  ? 'bg-orange-500 text-white border-orange-600 shadow-orange-200' 
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">{isRamadanMode ? 'brightness_high' : 'schedule'}</span>
-              {isRamadanMode ? 'وضع رمضان: مفعّل' : 'تفعيل وضع رمضان'}
-            </button>
+            {isRamadanMode ? (
+              <button 
+                onClick={toggleRamadanMode}
+                disabled={isSettingsLoading}
+                className="ramadan-ornate-badge pulse-emerald-glow px-6 py-2.5 rounded-full flex items-center gap-2.5 font-bold transition-all duration-300 text-white hover:scale-[1.03]"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#fbbf24" className="shrink-0 drop-shadow-[0_0_5px_rgba(251,191,36,0.8)] animate-pulse">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.23 0 2.4-.22 3.48-.62a10.007 10.007 0 0 1-7.1-12.87C10.05 4.3 11.02 3.01 12 2zm1 4l1.24 2.51L17 8.89l-1.81 1.76.43 2.5L13 11.97l-2.62 1.38.5-2.91-2.11-2.05 2.92-.42L13 6z" />
+                </svg>
+                <span>وضع رمضان: نشط</span>
+              </button>
+            ) : (
+              <button 
+                onClick={toggleRamadanMode}
+                disabled={isSettingsLoading}
+                className="px-5 py-2.5 rounded-xl bg-white text-[#5d4201] border-2 border-[#ebd9bf] shadow-sm hover:border-[#cda250] hover:bg-[#faf6ee] transition-all duration-300 flex items-center gap-2 font-bold hover:-translate-y-0.5"
+              >
+                <span className="material-symbols-outlined text-[#8b6a37] text-[18px]">schedule</span>
+                <span>تفعيل وضع رمضان</span>
+              </button>
+            )}
             <button 
               onClick={() => navigate('/admin/requests')}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-400 to-orange-600 text-white font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center gap-2 relative"
@@ -235,7 +244,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 px-4" dir="rtl">
           <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-gray-100 relative overflow-hidden group">
             <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="p-3 bg-[#eef2f6] text-[#1e3a5f] rounded-xl flex items-center justify-center">
+              <div className="p-3 bg-[#eef2f6] ramadan-badge-green text-[#1e3a5f] rounded-xl flex items-center justify-center">
                 <span className="material-symbols-outlined text-[24px]">book_online</span>
               </div>
               <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold font-headline">مكتمل</span>
@@ -248,7 +257,7 @@ export default function AdminDashboard() {
 
           <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-gray-100 relative overflow-hidden group">
             <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="p-3 bg-[#fbf0dd] text-[#b58b4b] rounded-xl flex items-center justify-center">
+              <div className="p-3 bg-[#fbf0dd] ramadan-badge-gold text-[#b58b4b] rounded-xl flex items-center justify-center">
                 <span className="material-symbols-outlined text-[24px]">pending_actions</span>
               </div>
             </div>
@@ -262,74 +271,106 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 gap-8 px-4 rtl" dir="rtl">
           
           {/* Weekly View - Beautiful CSS Grid Implementation mapping 7 Days */}
-          <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full">
-            <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
-              <h2 className="text-3xl font-headline font-black text-[#001e40]">الجدول الأسبوعي</h2>
-              <div className="flex items-center gap-4 text-[#5a7698] font-bold">
-                <span className="material-symbols-outlined cursor-pointer hover:text-black">chevron_right</span>
-                <span>أكتوبر 2026</span>
-                <span className="material-symbols-outlined cursor-pointer hover:text-black">chevron_left</span>
-              </div>
-            </div>
-            
-            <div className="overflow-x-auto pb-6 custom-scrollbar">
-              <div className="min-w-[1000px]">
+          <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 w-full relative overflow-hidden">
+            {isRamadanMode && (
+              <svg className="mandala-watermark" viewBox="0 0 100 100" fill="none" stroke="#cda250" strokeWidth="0.22" opacity="0.085">
+                {/* Stunning complex geometry mandala */}
+                <circle cx="50" cy="50" r="45" strokeDasharray="1,1" />
+                <circle cx="50" cy="50" r="35" />
+                <circle cx="50" cy="50" r="25" />
+                <circle cx="50" cy="50" r="15" strokeDasharray="2,2" />
+                <circle cx="50" cy="50" r="5" fill="#cda250" opacity="0.2" />
                 
-                {/* Header Row (Days) */}
-                <div className="grid grid-cols-8 text-center text-sm font-bold text-[#5a7698] mb-6">
-                  <div /* Placeholder for Time Col */>الوقت</div>
-                  {weekDays.map(day => (
-                    <div key={day} className="pb-4 border-b border-gray-200">{day}</div>
-                  ))}
+                {/* Petals */}
+                <path d="M50,5 Q55,20 50,35 Q45,20 50,5 Z" />
+                <path d="M50,65 Q55,80 50,95 Q45,80 50,65 Z" />
+                <path d="M5,50 Q20,55 35,50 Q20,45 5,50 Z" />
+                <path d="M65,50 Q80,55 95,50 Q80,45 65,50 Z" />
+                
+                {/* Diagonal Petals */}
+                <path d="M18.2,18.2 Q31,27.6 39.4,39.4 Q27.6,31 18.2,18.2 Z" />
+                <path d="M81.8,81.8 Q69,72.4 60.6,60.6 Q72.4,69 81.8,81.8 Z" />
+                <path d="M18.2,81.8 Q27.6,69 39.4,60.6 Q31,72.4 18.2,81.8 Z" />
+                <path d="M81.8,18.2 Q72.4,31 60.6,39.4 Q69,27.6 81.8,18.2 Z" />
+              </svg>
+            )}
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+                <h2 className="text-3xl font-headline font-black text-[#001e40] flex items-center gap-2">
+                   {isRamadanMode && (
+                     <svg width="24" height="24" viewBox="0 0 24 24" fill="#cda250" className="shrink-0 drop-shadow-[0_0_4px_rgba(205,162,80,0.6)]">
+                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.23 0 2.4-.22 3.48-.62a10.007 10.007 0 0 1-7.1-12.87C10.05 4.3 11.02 3.01 12 2zm1 4l1.24 2.51L17 8.89l-1.81 1.76.43 2.5L13 11.97l-2.62 1.38.5-2.91-2.11-2.05 2.92-.42L13 6z" />
+                     </svg>
+                   )}
+                   <span>الجدول الأسبوعي</span>
+                </h2>
+                <div className="flex items-center gap-4 text-[#5a7698] font-bold">
+                  <span className="material-symbols-outlined cursor-pointer hover:text-black">chevron_right</span>
+                  <span>أكتوبر 2026</span>
+                  <span className="material-symbols-outlined cursor-pointer hover:text-black">chevron_left</span>
                 </div>
-
-                {/* Time Rows */}
-                <div className="space-y-0 relative">
-                  {timeSlots.map((time, rowIdx) => (
-                    <div key={time} className="grid grid-cols-8 text-center h-[100px] border-b border-gray-100 relative group">
-                      
-                      {/* Time cell on the right */}
-                      <div className="flex items-center justify-center text-sm font-bold text-[#5a7698] px-2 h-full border-l border-gray-100">
-                        {time} {parseInt(time) < 12 ? 'ص' : 'م'}
-                      </div>
-
-                      {/* Day Cells mapping */}
-                      {weekDays.map((day, colIdx) => {
-                        const booking = getGridBooking(day, time);
-                        let theme = cardThemes[Math.abs(booking?.roomId?.charCodeAt(0) + colIdx + rowIdx) % cardThemes.length];
-                        if (booking?.is16WeekFixed) theme = cardThemes[0]; 
-                        else if (booking?.roomType === 'multi') theme = cardThemes[1];
-
-                        return (
-                          <div key={`${day}-${time}`} className="relative h-full flex items-center justify-center p-[6px] border-l border-dashed border-gray-100 last:border-l-0">
-                            {booking ? (
-                              <div className={`w-full h-full rounded-[0.7rem] ${theme.bg} ${theme.border} border-r-[6px] flex flex-col justify-center items-center shadow-sm hover:scale-[1.02] hover:shadow-lg transition-all cursor-pointer relative`}>
-                                <div className={`font-headline font-black text-[15px] ${theme.textP} leading-tight`}>
-                                  {booking.roomType === 'multi' ? '' : 'قاعة'} {booking.roomId}
-                                </div>
-                                <div className={`text-[11px] font-bold mt-1 ${theme.textS} text-center leading-tight px-1`}>
-                                  {booking.courseName || (booking.is16WeekFixed ? 'محاضرة ثابتة' : 'حجز اعتيادي')}
-                                </div>
-                              </div>
-                            ) : (
-                              <div 
-                                onClick={() => openModalForCell(day, time)} 
-                                className="w-full h-full rounded-[0.7rem] hover:bg-blue-50 border-2 border-transparent hover:border-dashed hover:border-blue-200 cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100 transition-all text-blue-400 group"
-                              >
-                                <span className="material-symbols-outlined transform group-hover:scale-125 transition-transform text-[32px]">add_circle</span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-
-                    </div>
-                  ))}
-                </div>
-
               </div>
-            </div>
-          </div>
+              
+              <div className="overflow-x-auto pb-6 custom-scrollbar">
+                <div className="min-w-[1000px]">
+                  
+                  {/* Header Row (Days) */}
+                  <div className="grid grid-cols-8 text-center text-sm font-bold text-[#5a7698] mb-6">
+                    <div /* Placeholder for Time Col */>الوقت</div>
+                    {weekDays.map(day => (
+                      <div key={day} className="pb-4 border-b border-gray-200">{day}</div>
+                    ))}
+                  </div>
+  
+                  {/* Time Rows */}
+                  <div className="space-y-0 relative">
+                    {timeSlots.map((time, rowIdx) => (
+                      <div key={time} className="grid grid-cols-8 text-center h-[100px] border-b border-gray-100 relative group">
+                        
+                        {/* Time cell on the right */}
+                        <div className="flex items-center justify-center text-sm font-bold text-[#5a7698] px-2 h-full border-l border-gray-100">
+                          {time} {parseInt(time) < 12 ? 'ص' : 'م'}
+                        </div>
+  
+                        {/* Day Cells mapping */}
+                        {weekDays.map((day, colIdx) => {
+                          const booking = getGridBooking(day, time);
+                          let theme = cardThemes[Math.abs(booking?.roomId?.charCodeAt(0) + colIdx + rowIdx) % cardThemes.length];
+                          if (booking?.is16WeekFixed) theme = cardThemes[0]; 
+                          else if (booking?.roomType === 'multi') theme = cardThemes[1];
+  
+                          return (
+                            <div key={`${day}-${time}`} className="relative h-full flex items-center justify-center p-[6px] border-l border-dashed border-gray-100 last:border-l-0">
+                              {booking ? (
+                                <div className={`w-full h-full rounded-[0.7rem] ${theme.bg} ${theme.border} border-r-[6px] flex flex-col justify-center items-center shadow-sm hover:scale-[1.02] hover:shadow-lg transition-all cursor-pointer relative`}>
+                                  <div className={`font-headline font-black text-[15px] ${theme.textP} leading-tight`}>
+                                    {booking.roomType === 'multi' ? '' : 'قاعة'} {booking.roomId}
+                                  </div>
+                                  <div className={`text-[11px] font-bold mt-1 ${theme.textS} text-center leading-tight px-1`}>
+                                    {booking.courseName || (booking.is16WeekFixed ? 'محاضرة ثابتة' : 'حجز اعتيادي')}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div 
+                                  onClick={() => openModalForCell(day, time)} 
+                                  className="w-full h-full rounded-[0.7rem] hover:bg-blue-50 border-2 border-transparent hover:border-dashed hover:border-blue-200 cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100 transition-all text-blue-400 group"
+                                >
+                                  <span className="material-symbols-outlined transform group-hover:scale-125 transition-transform text-[32px]">add_circle</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+  
+                      </div>
+                    ))}
+                  </div>
+  
+                </div>
+              </div>
+            </div> {/* relative z-10 */}
+          </div> {/* card */}
 
 
         </div>

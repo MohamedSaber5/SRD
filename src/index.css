@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700;900&family=Work+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700;900&family=Work+Sans:wght@400;500;600&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,6 +9,7 @@
   body { 
     font-family: 'IBM Plex Sans Arabic', sans-serif; 
     line-height: 1.6; 
+    transition: background-color 0.5s ease;
   }
   h1, h2, h3, h4, h5, h6 { 
     font-family: 'Tajawal', sans-serif; 
@@ -24,6 +25,216 @@
       scrollbar-width: none;
   }
 }
+
+/* ==========================================================================
+   RAMADAN THEME STYLES (Aesthetic & Immersive Experience)
+   ========================================================================== */
+
+/* Global Wrapper Variables */
+.ramadan-mode {
+  --bg-sand: #FAF5EB;
+  --bg-cream: #FCF9F3;
+  --accent-gold: #cda250;
+  --accent-gold-dark: #b88d3d;
+  --emerald-rich: #13522b;
+  --emerald-light: #1b6b37;
+  
+  background-color: var(--bg-cream) !important;
+  background-image: radial-gradient(circle at 10% 20%, rgba(244, 235, 225, 0.3) 0%, transparent 90%) !important;
+}
+
+/* Sidebar Overrides in Ramadan Mode */
+.ramadan-mode aside {
+  background-color: #fbf9f5 !important;
+  background-image: 
+    radial-gradient(#e8f5ec 0.5px, transparent 0.5px), 
+    radial-gradient(#e8f5ec 0.5px, #fbf9f5 0.5px) !important;
+  background-size: 20px 20px !important;
+  background-position: 0 0, 10px 10px !important;
+  border-left: 2px solid #c2e7cc !important;
+  box-shadow: -4px 0 25px rgba(19, 82, 43, 0.05) !important;
+}
+
+.ramadan-mode aside .text-primary,
+.ramadan-mode aside .text-on-surface {
+  color: #13522b !important;
+}
+
+.ramadan-mode aside .text-on-surface-variant {
+  color: #1b6b37 !important;
+}
+
+.ramadan-mode aside .bg-surface-container-highest {
+  background-color: #e8f5ec !important;
+  color: #13522b !important;
+}
+
+/* Sidebar Navigation Links */
+.ramadan-mode aside a,
+.ramadan-mode aside button {
+  color: #13522b !important;
+}
+
+.ramadan-mode aside a.active,
+.ramadan-mode aside a[aria-current="page"],
+.ramadan-mode aside button.active {
+  background: linear-gradient(to left, #13522b, #1b6b37) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(19, 82, 43, 0.25) !important;
+  border-right: 4px solid #ebd9bf !important;
+}
+
+.ramadan-mode aside a:hover:not(.active):not([aria-current="page"]),
+.ramadan-mode aside button:hover:not(.active) {
+  background-color: #e8f5ec !important;
+  color: #13522b !important;
+}
+
+/* Card Overrides */
+.ramadan-mode .bg-white,
+.ramadan-mode .bg-surface-container-lowest {
+  background-color: #ffffff !important;
+  border: 1px solid #ebd9bf !important;
+  box-shadow: 0 10px 30px -10px rgba(139, 106, 55, 0.08) !important;
+}
+
+.ramadan-mode .bg-white:hover,
+.ramadan-mode .bg-surface-container-lowest:hover {
+  border-color: #cda250 !important;
+  box-shadow: 0 15px 35px -10px rgba(139, 106, 55, 0.15) !important;
+}
+
+/* Heading Overrides */
+.ramadan-mode h1,
+.ramadan-mode h2,
+.ramadan-mode .text-primary {
+  color: #13522b !important;
+}
+
+.ramadan-mode .text-secondary {
+  color: #8b6a37 !important;
+}
+
+/* Top bar override */
+.ramadan-mode nav.fixed {
+  background-color: rgba(252, 249, 243, 0.85) !important;
+  border-bottom: 1px solid rgba(226, 213, 197, 0.4) !important;
+}
+
+/* Ornate Switch Styles */
+.ramadan-ornate-badge {
+  position: relative;
+  background: linear-gradient(135deg, #13522b 0%, #1e6b38 100%);
+  border: 2px solid #ebd9bf;
+  border-radius: 9999px;
+  overflow: visible;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'Tajawal', sans-serif;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(19, 82, 43, 0.3), inset 0 0 10px rgba(251, 191, 36, 0.15);
+}
+
+.ramadan-ornate-badge::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 1px solid #cda250;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.ramadan-ornate-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(19, 82, 43, 0.6), inset 0 0 15px rgba(251, 191, 36, 0.3);
+  border-color: #cda250;
+}
+
+/* Pulsing Neon Green Glow */
+@keyframes pulse-emerald {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.7), inset 0 0 15px rgba(251, 191, 36, 0.4);
+  }
+}
+
+.pulse-emerald-glow {
+  animation: pulse-emerald 2s infinite;
+}
+
+/* Swinging animations for decorations */
+@keyframes sway {
+  0% { transform: rotate(-3.5deg); }
+  100% { transform: rotate(3.5deg); }
+}
+
+.lantern-sway {
+  transform-origin: top center;
+  animation: sway 4s ease-in-out infinite alternate;
+}
+
+.lantern-sway-slow {
+  transform-origin: top center;
+  animation: sway 5.2s ease-in-out infinite alternate;
+  animation-delay: -1.5s;
+}
+
+.lantern-sway-slower {
+  transform-origin: top center;
+  animation: sway 6.5s ease-in-out infinite alternate;
+  animation-delay: -0.5s;
+}
+
+/* Mandala Overlay behind Calendar */
+.mandala-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 450px;
+  height: 450px;
+  opacity: 0.055;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Gentle glow for card statistics */
+.ramadan-mode .bg-green-50,
+.ramadan-mode .bg-green-100 {
+  background-color: #e8f5ec !important;
+  color: #13522b !important;
+}
+
+.ramadan-mode .ramadan-badge-green {
+  background-color: #e8f5ec !important;
+  color: #13522b !important;
+}
+
+.ramadan-mode .ramadan-badge-gold {
+  background-color: #faf2e3 !important;
+  color: #8b6a37 !important;
+}
+
+.ramadan-mode .text-green-600,
+.ramadan-mode .text-green-700 {
+  color: #13522b !important;
+}
+
+/* Dynamic Sidebar Logo Switcher under Ramadan Mode */
+.logo-ramadan {
+  display: none !important;
+}
+.ramadan-mode .logo-classic {
+  display: none !important;
+}
+.ramadan-mode .logo-ramadan {
+  display: block !important;
+}
+
+/* Print Overrides */
 @media print {
   @page {
     size: A4 portrait;

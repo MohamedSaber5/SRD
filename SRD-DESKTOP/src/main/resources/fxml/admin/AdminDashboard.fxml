@@ -32,7 +32,7 @@
 
             <!-- Brand -->
             <VBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 16 0;">
-                <javafx.scene.image.ImageView fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
+                <javafx.scene.image.ImageView id="sidebarLogo" fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
                     <image><javafx.scene.image.Image url="@../../images/logo_aast.jpg" /></image>
                 </javafx.scene.image.ImageView>
                 <Label styleClass="admin-sidebar-title" text="نظام حجز القاعات" wrapText="true" textAlignment="CENTER" />

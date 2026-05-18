@@ -16,7 +16,7 @@ export default function SideNavBar({ isOpen, closeMenu }) {
 
   const getNavClass = ({ isActive }) =>
     isActive
-      ? "flex items-center gap-3 bg-gradient-to-l from-primary to-primary-container text-white rounded-xl px-4 py-3 shadow-lg hover:translate-x-[-4px] transition-transform duration-200"
+      ? "flex items-center gap-3 bg-gradient-to-l from-primary to-primary-container text-white rounded-xl px-4 py-3 shadow-lg hover:translate-x-[-4px] transition-transform duration-200 active"
       : "flex items-center gap-3 text-on-surface dark:text-slate-400 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-slate-800 rounded-xl transition-colors hover:translate-x-[-4px] transition-transform duration-200";
 
   return (
@@ -36,7 +36,8 @@ export default function SideNavBar({ isOpen, closeMenu }) {
         </button>
         
         <div className="mb-8 flex flex-col items-center w-full mt-2 md:mt-0">
-        <img src="/logo_aast.jpg" alt="AAST Logo" className="w-16 h-16 rounded-full mb-3 object-cover shadow-sm" onError={(e) => e.target.style.display='none'} />
+        <img src="/logo_aast.jpg" alt="AAST Logo" className="logo-classic w-16 h-16 rounded-full mb-3 object-cover shadow-sm" onError={(e) => e.target.style.display='none'} />
+        <img src="/logo_gold.png" alt="AAST Logo Gold" className="logo-ramadan w-16 h-16 rounded-full mb-3 object-cover shadow-sm" onError={(e) => e.target.style.display='none'} />
         <div className="text-xl font-black text-primary dark:text-white mb-1 text-center leading-tight">نظام حجز القاعات</div>
         <div className="text-[10px] text-on-surface-variant font-bold mb-2 text-center">الأكاديمية العربية للعلوم والتكنولوجيا</div>
         <div className="text-xs text-on-surface-variant font-bold bg-surface-container-highest px-3 py-1 rounded-full">

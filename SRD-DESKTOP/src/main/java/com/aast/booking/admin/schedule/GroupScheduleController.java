@@ -120,7 +120,6 @@ public class GroupScheduleController implements Initializable {
         comboPeriod.getSelectionModel().select("الفترة 6");
 
         // 3. Populate Groups (A to N)
-        comboGroup.getItems().add("الكل");
         for (char c = 'A'; c <= 'N'; c++) {
             comboGroup.getItems().add(String.valueOf(c));
         }

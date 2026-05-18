@@ -146,14 +146,28 @@ export default function BranchManagerDashboard() {
           <p className="text-on-surface-variant mt-2 text-lg">مراجعة واعتماد طلبات القاعات متعددة الأغراض</p>
         </div>
         <div className="flex flex-col md:flex-row gap-3">
-          <button 
-            onClick={toggleRamadanMode}
-            disabled={isSettingsLoading}
-            className={`px-5 py-2.5 rounded-2xl flex items-center gap-3 font-bold transition-all shadow-sm border ${isRamadanMode ? 'bg-orange-500 text-white border-orange-600' : 'bg-surface-container-highest text-on-surface border-surface-container-high'}`}
-          >
-            <span className="material-symbols-outlined">{isRamadanMode ? 'ramadan_fasting' : 'schedule'}</span>
-            {isRamadanMode ? 'وضع رمضان: مفعّل' : 'تفعيل وضع رمضان'}
-          </button>
+          {/* Ramadan Mode Toggle */}
+          {isRamadanMode ? (
+            <button 
+              onClick={toggleRamadanMode}
+              disabled={isSettingsLoading}
+              className="ramadan-ornate-badge pulse-emerald-glow px-6 py-2.5 rounded-full flex items-center gap-2.5 font-bold transition-all duration-300 text-white hover:scale-[1.03]"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#fbbf24" className="shrink-0 drop-shadow-[0_0_5px_rgba(251,191,36,0.8)] animate-pulse">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.23 0 2.4-.22 3.48-.62a10.007 10.007 0 0 1-7.1-12.87C10.05 4.3 11.02 3.01 12 2zm1 4l1.24 2.51L17 8.89l-1.81 1.76.43 2.5L13 11.97l-2.62 1.38.5-2.91-2.11-2.05 2.92-.42L13 6z" />
+              </svg>
+              <span>وضع رمضان: نشط</span>
+            </button>
+          ) : (
+            <button 
+              onClick={toggleRamadanMode}
+              disabled={isSettingsLoading}
+              className="px-5 py-2.5 rounded-xl bg-white text-[#5d4201] border-2 border-[#ebd9bf] shadow-sm hover:border-[#cda250] hover:bg-[#faf6ee] transition-all duration-300 flex items-center gap-2 font-bold hover:-translate-y-0.5"
+            >
+              <span className="material-symbols-outlined text-[#8b6a37] text-[18px]">schedule</span>
+              <span>تفعيل وضع رمضان</span>
+            </button>
+          )}
           <div className="bg-secondary/10 px-4 py-2 rounded-2xl flex items-center gap-2 border border-secondary/20 shadow-sm">
             <span className="material-symbols-outlined text-secondary">verified_user</span>
             <span className="text-secondary font-bold">صلاحية الاعتماد النهائي</span>

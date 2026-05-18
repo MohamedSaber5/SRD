@@ -26,7 +26,7 @@
 
             <!-- Logo + Title -->
             <VBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 16 0;" stylesheets="@../../css/dashboard-common.css">
-                <ImageView fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
+                <ImageView id="sidebarLogo" fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
                     <image><Image url="@../../images/logo_aast.jpg" /></image>
                 </ImageView>
                 <Label styleClass="bm-sidebar-title" text="نظام حجز القاعات" wrapText="true" />

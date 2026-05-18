@@ -1,0 +1,165 @@
+/* ══════════════════════════════════════════════════════════════
+   Ramadan Premium Theme — JavaFX Stylesheet
+   Created to mirror the high-end festive web application style.
+   Colors: Warm Parchment (#faf5eb), Emerald Rich (#13522b), Gold (#8b6a37)
+   ══════════════════════════════════════════════════════════════ */
+
+.root {
+    -fx-background-color: #faf5eb !important;
+}
+
+/* ── SIDEBARS OVERRIDES ─────────────────────────────────────── */
+.admin-sidebar, .bm-sidebar {
+    -fx-background-color: #f3eae0 !important;
+    -fx-border-color: #ebd9bf !important;
+    -fx-border-width: 0 0 0 1 !important;
+}
+
+.admin-sidebar-title, .bm-sidebar-title {
+    -fx-text-fill: #13522b !important;
+}
+
+.admin-sidebar-subtitle, .bm-sidebar-subtitle {
+    -fx-text-fill: #8b6a37 !important;
+}
+
+/* Sidebar navigation buttons */
+.admin-nav-btn, .bm-nav-btn {
+    -fx-text-fill: #8b6a37 !important;
+}
+
+.admin-nav-btn:hover, .bm-nav-btn:hover {
+    -fx-background-color: #e5d7c8 !important;
+    -fx-text-fill: #13522b !important;
+}
+
+.admin-nav-btn-active, .bm-nav-btn-active {
+    -fx-background-color: linear-gradient(to left, #13522b, #1b6b37) !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-border-color: #e2d5c5 !important;
+}
+
+/* ── HEADER BARS OVERRIDES ──────────────────────────────────── */
+.admin-header, .bm-header {
+    -fx-background-color: #fcf8f2 !important;
+    -fx-border-color: #ebd9bf !important;
+    -fx-border-width: 0 0 1 0 !important;
+}
+
+.admin-header-title, .bm-header-title {
+    -fx-text-fill: #13522b !important;
+}
+
+.admin-header-subtitle, .bm-header-subtitle {
+    -fx-text-fill: #8b6a37 !important;
+}
+
+/* ── STATISTICS CARDS OVERRIDES ──────────────────────────────── */
+.admin-stat-card, .bm-stat-card {
+    -fx-background-color: #ffffff !important;
+    -fx-border-color: #ebd9bf !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 106, 55, 0.08), 12, 0, 0, 4) !important;
+}
+
+.admin-stat-card:hover, .bm-stat-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(19, 82, 43, 0.12), 16, 0, 0, 6) !important;
+}
+
+.admin-stat-label, .bm-stat-label {
+    -fx-text-fill: #8b6a37 !important;
+}
+
+.admin-stat-value, .bm-stat-value {
+    -fx-text-fill: #13522b !important;
+}
+
+.admin-stat-value-green, .bm-stat-value-green {
+    -fx-text-fill: #13522b !important;
+}
+
+.admin-stat-value-gold, .bm-stat-value-amber {
+    -fx-text-fill: #8b6a37 !important;
+}
+
+.admin-stat-icon-blue {
+    -fx-background-color: #e8f5ec !important;
+    -fx-text-fill: #13522b !important;
+}
+
+.admin-stat-icon-gold {
+    -fx-background-color: #faf2e3 !important;
+    -fx-text-fill: #8b6a37 !important;
+}
+
+/* ── SECTION & CONTAINER CARDS OVERRIDES ─────────────────────── */
+.admin-section-card, .bm-form-card, .bm-request-card, .request-card {
+    -fx-background-color: #ffffff !important;
+    -fx-border-color: #ebd9bf !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 106, 55, 0.06), 10, 0, 0, 3) !important;
+}
+
+.admin-section-title, .bm-section-title, .request-title {
+    -fx-text-fill: #13522b !important;
+}
+
+.admin-section-subtitle, .bm-section-hint {
+    -fx-text-fill: #8b6a37 !important;
+}
+
+/* ── TABLES & SCROLLPANES OVERRIDES ─────────────────────────── */
+.admin-table {
+    -fx-border-color: #ebd9bf !important;
+}
+
+.admin-table .column-header {
+    -fx-background-color: #fbf9f5 !important;
+    -fx-text-fill: #13522b !important;
+    -fx-border-color: #ebd9bf !important;
+}
+
+.admin-table .table-row-cell:odd {
+    -fx-background-color: #faf7f2 !important;
+}
+
+.admin-table .table-row-cell:even {
+    -fx-background-color: #ffffff !important;
+}
+
+.admin-main-scroll, .admin-main-scroll .viewport, .bm-scroll, .bm-scroll .viewport {
+    -fx-background-color: #faf5eb !important;
+    -fx-background: #faf5eb !important;
+}
+
+/* ── RAMADAN TOGGLE GLOW BUTTON ─────────────────────────────── */
+.admin-ramadan-on {
+    -fx-background-color: #e8f5ec !important;
+    -fx-text-fill: #13522b !important;
+    -fx-border-color: #c2e7cc !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19, 82, 43, 0.3), 10, 0, 0, 2) !important;
+}
+
+.admin-ramadan-off {
+    -fx-background-color: #fbf9f5 !important;
+    -fx-text-fill: #8b6a37 !important;
+    -fx-border-color: #ebd9bf !important;
+}
+
+/* ── ACTION BUTTONS OVERRIDES ────────────────────────────────── */
+.admin-primary-btn, .bm-approve-btn, .btn-approve-card {
+    -fx-background-color: #13522b !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19, 82, 43, 0.2), 6, 0, 0, 2) !important;
+}
+
+.admin-primary-btn:hover, .bm-approve-btn:hover, .btn-approve-card:hover {
+    -fx-background-color: #1b6b37 !important;
+}
+
+.admin-action-btn {
+    -fx-background-color: linear-gradient(to right, #13522b, #1b6b37) !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(19, 82, 43, 0.25), 8, 0, 0, 2) !important;
+}
+
+.admin-action-btn:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(19, 82, 43, 0.4), 12, 0, 0, 4) !important;
+}

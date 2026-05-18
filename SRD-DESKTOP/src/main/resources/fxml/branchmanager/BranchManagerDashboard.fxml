@@ -36,9 +36,12 @@
         <VBox spacing="8" styleClass="bm-sidebar">
             <padding><Insets bottom="24" left="18" right="18" top="28" /></padding>
 
-            <VBox spacing="3" style="-fx-padding: 0 0 20 0;">
-                <Label styleClass="bm-sidebar-title" text="نظام حجز القاعات" wrapText="true" />
-                <Label styleClass="bm-sidebar-subtitle" text="الأكاديمية العربية" />
+            <VBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 20 0;">
+                <javafx.scene.image.ImageView id="sidebarLogo" fitHeight="60" fitWidth="60" preserveRatio="true" smooth="true">
+                    <image><javafx.scene.image.Image url="@../../images/logo_aast.jpg" /></image>
+                </javafx.scene.image.ImageView>
+                <Label styleClass="bm-sidebar-title" text="نظام حجز القاعات" wrapText="true" textAlignment="CENTER" />
+                <Label styleClass="bm-sidebar-subtitle" text="الأكاديمية العربية" textAlignment="CENTER" />
                 <Label fx:id="roleLabel" style="-fx-font-size:11px; -fx-text-fill:#775a19; -fx-font-weight:bold;" text="مدير الفرع" />
             </VBox>
 
